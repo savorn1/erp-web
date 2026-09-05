@@ -1,0 +1,52 @@
+// Wraps the backend's admin-only StockMovementController
+// (/api/admin/stock-movements/**, requires ROLE_ADMIN). Read-only audit
+// trail — written only by goods receipt posting so far.
+
+export type StockMovementType = 'RECEIPT'
+
+export interface StockMovement {
+  id: number
+  companyId: number
+  productId: number
+  productName: string | null
+  productSku: string | null
+  warehouseId: number
+  warehouseName: string | null
+  binId: number | null
+  binName: string | null
+  type: StockMovementType
+  quantityDelta: number
+  referenceType: string
+  referenceId: number
+  createdBy: string | null
+  createdAt: string
+}
+
+export interface StockMovementFilter {
+  companyId?: number
+  productId?: number
+  warehouseId?: number
+  type?: StockMovementType
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+  page?: number
+  size?: number
+}
+
+interface PageEnvelope<T> {
+  traceId: string
+  statusCode: number
+  message: string
+  data: T[]
+  metadata: { hasNext: boolean; hasPrev: boolean; totalPage: number; currentPage: number; limit: number; totalCount: number }
+}
+
+export function useStockMovements() {
+  const api = useApi()
+
+  function list(filter: StockMovementFilter = {}) {
+    return api<PageEnvelope<StockMovement>>('/api/admin/stock-movements', { query: filter })
+  }
+
+  return { list }
+}
