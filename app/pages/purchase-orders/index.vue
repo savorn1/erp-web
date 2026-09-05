@@ -2,9 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Purchase orders</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate">
-        New purchase order
-      </UButton>
+      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New purchase order </UButton>
     </div>
 
     <UAlert
@@ -23,9 +21,7 @@
         <USelect v-model="filter.companyId" :items="companyFilterOptions" placeholder="Company" class="w-44" />
         <USelect v-model="filter.supplierId" :items="supplierFilterOptions" placeholder="Supplier" class="w-44" />
         <USelect v-model="filter.status" :items="statusFilterOptions" placeholder="Status" class="w-40" />
-        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters">
-          Clear filters
-        </UButton>
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
@@ -50,13 +46,29 @@
             <UButton size="xs" color="primary" variant="soft" icon="i-lucide-eye" @click="openView(row)">
               {{ row.status === 'DRAFT' ? 'Edit' : 'View' }}
             </UButton>
-            <UButton v-if="row.status === 'DRAFT'" size="xs" color="success" variant="soft" icon="i-lucide-send" :loading="actingId === row.id" @click="onSubmit(row)">
+            <UButton
+              v-if="row.status === 'DRAFT'"
+              size="xs"
+              color="success"
+              variant="soft"
+              icon="i-lucide-send"
+              :loading="actingId === row.id"
+              @click="onSubmit(row)"
+            >
               Submit
             </UButton>
             <NuxtLink v-if="row.status === 'SUBMITTED' || row.status === 'PARTIALLY_RECEIVED'" :to="`/goods-receipts?poId=${row.id}`">
               <UButton size="xs" color="info" variant="soft" icon="i-lucide-package-check">Receive</UButton>
             </NuxtLink>
-            <UButton v-if="row.status === 'DRAFT' || row.status === 'SUBMITTED'" size="xs" color="warning" variant="soft" icon="i-lucide-ban" :loading="actingId === row.id" @click="onCancel(row)">
+            <UButton
+              v-if="row.status === 'DRAFT' || row.status === 'SUBMITTED'"
+              size="xs"
+              color="warning"
+              variant="soft"
+              icon="i-lucide-ban"
+              :loading="actingId === row.id"
+              @click="onCancel(row)"
+            >
               Cancel
             </UButton>
             <UButton v-if="row.status === 'DRAFT'" size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="confirmDelete = row">
@@ -89,11 +101,7 @@
       </div>
     </UCard>
 
-    <UModal
-      v-model:open="showForm"
-      :title="formTitle"
-      :ui="{ content: 'sm:max-w-4xl' }"
-    >
+    <UModal v-model:open="showForm" :title="formTitle" :ui="{ content: 'sm:max-w-4xl' }">
       <template #body>
         <div v-if="loadingDetail" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
         <template v-else>
@@ -124,22 +132,23 @@
           </div>
 
           <div class="space-y-2 mb-4">
-            <div v-if="form.lines.length === 0" class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg">
+            <div
+              v-if="form.lines.length === 0"
+              class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
+            >
               No line items yet
             </div>
-            <div
-              v-for="(line, i) in form.lines"
-              :key="i"
-              class="grid grid-cols-12 gap-2 items-center"
-            >
-              <USelect
-                v-model="line.productId"
-                :items="productOptionsFor(form.companyId)"
-                placeholder="Product"
+            <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center">
+              <USelect v-model="line.productId" :items="productOptionsFor(form.companyId)" placeholder="Product" :disabled="!formEditable" class="col-span-5" />
+              <UInput
+                v-model.number="line.quantityOrdered"
+                type="number"
+                min="0.0001"
+                step="0.0001"
+                placeholder="Qty"
                 :disabled="!formEditable"
-                class="col-span-5"
+                class="col-span-2"
               />
-              <UInput v-model.number="line.quantityOrdered" type="number" min="0.0001" step="0.0001" placeholder="Qty" :disabled="!formEditable" class="col-span-2" />
               <UInput v-model.number="line.unitCost" type="number" min="0" step="0.01" placeholder="Unit cost" :disabled="!formEditable" class="col-span-2" />
               <div class="col-span-2 text-sm text-gray-500 dark:text-gray-400 text-right">
                 {{ formatCurrency((line.quantityOrdered || 0) * (line.unitCost || 0)) }}
@@ -149,9 +158,7 @@
             </div>
           </div>
 
-          <div class="flex justify-end text-sm font-medium text-gray-900 dark:text-white mb-4">
-            Total: {{ formatCurrency(formTotal) }}
-          </div>
+          <div class="flex justify-end text-sm font-medium text-gray-900 dark:text-white mb-4">Total: {{ formatCurrency(formTotal) }}</div>
 
           <UAlert v-if="formError" color="error" variant="subtle" class="mb-3" :title="formError" />
 
@@ -170,7 +177,11 @@
       confirm-label="Delete"
       color="error"
       :loading="deleting"
-      @update:model-value="(v: boolean) => { if (!v) confirmDelete = null }"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) confirmDelete = null
+        }
+      "
       @confirm="onDelete"
     />
   </div>
@@ -230,15 +241,16 @@ const statusFilterOptions = [
 ]
 
 function supplierOptionsFor(companyId: number | undefined) {
-  return suppliers.value.filter((s) => s.status === 'ACTIVE' && (companyId === undefined || s.companyId === companyId))
+  return suppliers.value
+    .filter((s) => s.status === 'ACTIVE' && (companyId === undefined || s.companyId === companyId))
     .map((s) => ({ label: s.name, value: s.id }))
 }
 function warehouseOptionsFor(companyId: number | undefined) {
-  return warehouses.value.filter((w) => w.active && (companyId === undefined || w.companyId === companyId))
-    .map((w) => ({ label: w.name, value: w.id }))
+  return warehouses.value.filter((w) => w.active && (companyId === undefined || w.companyId === companyId)).map((w) => ({ label: w.name, value: w.id }))
 }
 function productOptionsFor(companyId: number | undefined) {
-  return products.value.filter((p) => p.status === 'ACTIVE' && (companyId === undefined || p.companyId === companyId))
+  return products.value
+    .filter((p) => p.status === 'ACTIVE' && (companyId === undefined || p.companyId === companyId))
     .map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
 }
 

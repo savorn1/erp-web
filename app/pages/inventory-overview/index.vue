@@ -9,9 +9,7 @@
         <UInput v-model="search" placeholder="Search product name / SKU" icon="i-lucide-search" class="w-56" @update:model-value="onSearchInput" />
         <USelect v-model="filter.companyId" :items="companyFilterOptions" placeholder="Company" class="w-44" />
         <USelect v-model="filter.warehouseId" :items="warehouseFilterOptions" placeholder="Warehouse" class="w-44" />
-        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters">
-          Clear filters
-        </UButton>
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 

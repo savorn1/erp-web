@@ -2,9 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Warehouse zones</h1>
-      <UButton icon="i-lucide-plus" :disabled="warehouseOptions.length === 0" @click="openCreate">
-        New zone
-      </UButton>
+      <UButton icon="i-lucide-plus" :disabled="warehouseOptions.length === 0" @click="openCreate"> New zone </UButton>
     </div>
 
     <UAlert
@@ -22,9 +20,7 @@
         <UInput v-model="search" placeholder="Search name" icon="i-lucide-search" class="w-56" />
         <USelect v-model="filter.warehouseId" :items="warehouseFilterOptions" placeholder="Warehouse" class="w-48" />
         <USelect v-model="filter.active" :items="statusFilterOptions" placeholder="Status" class="w-36" />
-        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters">
-          Clear filters
-        </UButton>
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
@@ -111,7 +107,11 @@
       confirm-label="Delete"
       color="error"
       :loading="deleting"
-      @update:model-value="(v: boolean) => { if (!v) confirmDelete = null }"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) confirmDelete = null
+        }
+      "
       @confirm="onDelete"
     />
   </div>
@@ -183,9 +183,22 @@ const formFields = computed<FieldDef[]>(() => [
 ])
 
 const {
-  showCreate, creating, error: createError, createForm, openCreate, onCreate,
-  showEdit, editing, editError, editingRow: editingZone, editForm, openEdit, onEdit,
-  deleting, confirmDelete, onDelete
+  showCreate,
+  creating,
+  error: createError,
+  createForm,
+  openCreate,
+  onCreate,
+  showEdit,
+  editing,
+  editError,
+  editingRow: editingZone,
+  editForm,
+  openEdit,
+  onEdit,
+  deleting,
+  confirmDelete,
+  onDelete
 } = useCrudModals<WarehouseZone, WarehouseZonePayload>(
   {
     create: (payload) => create(payload),

@@ -2,9 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Stock counts</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate">
-        New stock count
-      </UButton>
+      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New stock count </UButton>
     </div>
 
     <UAlert
@@ -22,9 +20,7 @@
         <UInput v-model="search" placeholder="Search count number" icon="i-lucide-search" class="w-56" />
         <USelect v-model="filter.warehouseId" :items="warehouseFilterOptions" placeholder="Warehouse" class="w-44" />
         <USelect v-model="filter.status" :items="statusFilterOptions" placeholder="Status" class="w-40" />
-        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters">
-          Clear filters
-        </UButton>
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
@@ -105,7 +101,10 @@
         </div>
 
         <div class="space-y-2 mb-4">
-          <div v-if="form.lines.length === 0" class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg">
+          <div
+            v-if="form.lines.length === 0"
+            class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
+          >
             No products added yet
           </div>
           <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center">
@@ -130,23 +129,36 @@
         <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingCount">
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
-            <div><dt class="text-gray-400">Warehouse</dt><dd class="text-gray-900 dark:text-white">{{ viewingCount.warehouseName }}</dd></div>
-            <div><dt class="text-gray-400">Status</dt><dd class="text-gray-900 dark:text-white">{{ viewingCount.status }}</dd></div>
-            <div><dt class="text-gray-400">Counted by</dt><dd class="text-gray-900 dark:text-white">{{ viewingCount.countedBy ?? '—' }}</dd></div>
-            <div v-if="viewingCount.adjustmentNumber"><dt class="text-gray-400">Reconciliation</dt><dd class="text-gray-900 dark:text-white">{{ viewingCount.adjustmentNumber }}</dd></div>
-            <div v-if="viewingCount.notes" class="col-span-2"><dt class="text-gray-400">Notes</dt><dd class="text-gray-900 dark:text-white">{{ viewingCount.notes }}</dd></div>
+            <div>
+              <dt class="text-gray-400">Warehouse</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingCount.warehouseName }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-400">Status</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingCount.status }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-400">Counted by</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingCount.countedBy ?? '—' }}</dd>
+            </div>
+            <div v-if="viewingCount.adjustmentNumber">
+              <dt class="text-gray-400">Reconciliation</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingCount.adjustmentNumber }}</dd>
+            </div>
+            <div v-if="viewingCount.notes" class="col-span-2">
+              <dt class="text-gray-400">Notes</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingCount.notes }}</dd>
+            </div>
           </dl>
 
           <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lines</p>
           <div class="space-y-2 mb-4">
-            <div
-              v-for="line in viewingLines"
-              :key="line.id"
-              class="rounded-lg border border-gray-200 dark:border-gray-800 p-3"
-            >
+            <div v-for="line in viewingLines" :key="line.id" class="rounded-lg border border-gray-200 dark:border-gray-800 p-3">
               <div class="flex items-center justify-between gap-2 mb-1">
                 <span class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ line.productName }} ({{ line.productSku }})</span>
-                <span class="text-xs text-gray-400 shrink-0">System: {{ line.systemQuantity }}<span v-if="line.binName"> — {{ line.binName }}</span></span>
+                <span class="text-xs text-gray-400 shrink-0"
+                  >System: {{ line.systemQuantity }}<span v-if="line.binName"> — {{ line.binName }}</span></span
+                >
               </div>
               <UInput
                 v-if="viewingCount.status === 'DRAFT'"
@@ -159,8 +171,10 @@
               />
               <p v-else class="text-sm">
                 Counted: {{ line.countedQuantity ?? '—' }}
-                <span v-if="line.varianceQuantity !== null && line.varianceQuantity !== undefined"
-                      :class="line.varianceQuantity === 0 ? 'text-gray-400' : line.varianceQuantity > 0 ? 'text-success' : 'text-error'">
+                <span
+                  v-if="line.varianceQuantity !== null && line.varianceQuantity !== undefined"
+                  :class="line.varianceQuantity === 0 ? 'text-gray-400' : line.varianceQuantity > 0 ? 'text-success' : 'text-error'"
+                >
                   ({{ line.varianceQuantity > 0 ? '+' : '' }}{{ line.varianceQuantity }})
                 </span>
               </p>
@@ -175,9 +189,7 @@
             <UButton v-if="viewingCount.status === 'DRAFT'" color="success" :loading="completing" :disabled="!allLinesCounted" @click="onComplete">
               Complete count
             </UButton>
-            <UButton v-if="viewingCount.status === 'COMPLETED'" color="success" :loading="reconciling" @click="onReconcile">
-              Reconcile
-            </UButton>
+            <UButton v-if="viewingCount.status === 'COMPLETED'" color="success" :loading="reconciling" @click="onReconcile"> Reconcile </UButton>
           </div>
         </template>
       </template>
@@ -190,7 +202,11 @@
       confirm-label="Delete"
       color="error"
       :loading="deleting"
-      @update:model-value="(v: boolean) => { if (!v) confirmDelete = null }"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) confirmDelete = null
+        }
+      "
       @confirm="onDelete"
     />
   </div>
@@ -222,12 +238,7 @@ const loadingLookups = ref(false)
 async function loadLookups() {
   loadingLookups.value = true
   try {
-    const [c, w, p, b] = await Promise.all([
-      listCompanies({ size: 200 }),
-      listWarehouses({ size: 200 }),
-      listProducts({ size: 200 }),
-      listBins({ size: 200 })
-    ])
+    const [c, w, p, b] = await Promise.all([listCompanies({ size: 200 }), listWarehouses({ size: 200 }), listProducts({ size: 200 }), listBins({ size: 200 })])
     companies.value = c.data
     warehouses.value = w.data
     products.value = p.data
@@ -247,11 +258,11 @@ const statusFilterOptions = [
 ]
 
 function warehouseOptionsFor(companyId: number | undefined) {
-  return warehouses.value.filter((w) => w.active && (companyId === undefined || w.companyId === companyId))
-    .map((w) => ({ label: w.name, value: w.id }))
+  return warehouses.value.filter((w) => w.active && (companyId === undefined || w.companyId === companyId)).map((w) => ({ label: w.name, value: w.id }))
 }
 function untrackedProductOptionsFor(companyId: number | undefined) {
-  return products.value.filter((p) => p.status === 'ACTIVE' && p.trackingType === 'NONE' && (companyId === undefined || p.companyId === companyId))
+  return products.value
+    .filter((p) => p.status === 'ACTIVE' && p.trackingType === 'NONE' && (companyId === undefined || p.companyId === companyId))
     .map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
 }
 
@@ -375,7 +386,9 @@ const savingCounts = ref(false)
 const completing = ref(false)
 const reconciling = ref(false)
 
-const allLinesCounted = computed(() => viewingLines.value.length > 0 && viewingLines.value.every((l) => l.countedQuantity !== null && l.countedQuantity !== undefined))
+const allLinesCounted = computed(
+  () => viewingLines.value.length > 0 && viewingLines.value.every((l) => l.countedQuantity !== null && l.countedQuantity !== undefined)
+)
 
 async function openView(row: StockCount) {
   showView.value = true
@@ -402,7 +415,10 @@ async function onSaveCounts(): Promise<boolean> {
   }
   savingCounts.value = true
   try {
-    const updated = await submitCounts(viewingCount.value.id, linesToSave.map((l) => ({ lineId: l.id, countedQuantity: l.countedQuantity! })))
+    const updated = await submitCounts(
+      viewingCount.value.id,
+      linesToSave.map((l) => ({ lineId: l.id, countedQuantity: l.countedQuantity! }))
+    )
     viewingCount.value = updated
     viewingLines.value = (updated.lines ?? []).map((l) => ({ ...l }))
     toast.add({ title: 'Counted quantities saved', color: 'success' })
@@ -444,7 +460,9 @@ async function onReconcile() {
     viewingLines.value = (updated.lines ?? []).map((l) => ({ ...l }))
     toast.add({
       title: 'Stock count reconciled',
-      description: updated.adjustmentNumber ? `Adjustment ${updated.adjustmentNumber} created — approve it to apply the change` : 'No variance found — nothing to adjust',
+      description: updated.adjustmentNumber
+        ? `Adjustment ${updated.adjustmentNumber} created — approve it to apply the change`
+        : 'No variance found — nothing to adjust',
       color: 'success'
     })
     await load()

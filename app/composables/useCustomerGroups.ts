@@ -8,6 +8,8 @@ export interface CustomerGroup {
   companyId: number
   companyName: string | null
   name: string
+  priceGroupId: number | null
+  priceGroupName: string | null
   active: boolean
 }
 
@@ -24,6 +26,7 @@ export interface CustomerGroupFilter {
 export interface CustomerGroupPayload {
   companyId: number
   name: string
+  priceGroupId?: number
   active: boolean
 }
 

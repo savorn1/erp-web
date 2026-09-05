@@ -19,65 +19,35 @@
       <template #header>
         <div class="flex items-center gap-2">
           <UIcon name="i-lucide-user-round" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
-          <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-            Account
-          </h2>
+          <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Account</h2>
         </div>
       </template>
-      <DynamicForm
-        v-model="profileForm"
-        :fields="profileFields"
-        :loading="savingProfile"
-        :error="profileError"
-        submit-label="Save"
-        @submit="onSaveProfile"
-      />
+      <DynamicForm v-model="profileForm" :fields="profileFields" :loading="savingProfile" :error="profileError" submit-label="Save" @submit="onSaveProfile" />
     </UCard>
 
     <UCard>
       <template #header>
         <div class="flex items-center gap-2">
           <UIcon name="i-lucide-palette" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
-          <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-            Preferences
-          </h2>
+          <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Preferences</h2>
         </div>
       </template>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
-        Choose how tables look across the app.
-      </p>
-      <UTabs
-        :model-value="theme"
-        :items="tableStyleItems"
-        :content="false"
-        class="w-full"
-        @update:model-value="(value) => setTheme(value as TableTheme)"
-      />
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Choose how tables look across the app.</p>
+      <UTabs :model-value="theme" :items="tableStyleItems" :content="false" class="w-full" @update:model-value="(value) => setTheme(value as TableTheme)" />
     </UCard>
 
     <UCard>
       <template #header>
         <div class="flex items-center gap-2">
           <UIcon name="i-lucide-shield-check" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
-          <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-            Security
-          </h2>
+          <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Security</h2>
         </div>
       </template>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
-        Change your password to keep your account secure.
-      </p>
-      <UButton color="neutral" variant="soft" icon="i-lucide-key-round" @click="showChangePassword = true">
-        Change password
-      </UButton>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Change your password to keep your account secure.</p>
+      <UButton color="neutral" variant="soft" icon="i-lucide-key-round" @click="showChangePassword = true"> Change password </UButton>
     </UCard>
 
-    <ChangePasswordModal
-      v-model="showChangePassword"
-      :loading="savingPassword"
-      :error="passwordError"
-      @submit="onChangePassword"
-    />
+    <ChangePasswordModal v-model="showChangePassword" :loading="savingPassword" :error="passwordError" @submit="onChangePassword" />
   </div>
 </template>
 
@@ -107,9 +77,7 @@ const showChangePassword = ref(false)
 const savingPassword = ref(false)
 const passwordError = ref('')
 
-const profileFields: FieldDef[] = [
-  { name: 'email', type: 'email', hint: 'Used for password reset links.' }
-]
+const profileFields: FieldDef[] = [{ name: 'email', type: 'email', hint: 'Used for password reset links.' }]
 
 async function loadProfile() {
   profile.value = await getProfile()

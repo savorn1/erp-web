@@ -2,20 +2,20 @@
   <div class="space-y-3">
     <div
       class="relative rounded-lg border-2 border-dashed p-4 text-center transition-colors cursor-pointer"
-      :class="dragOver
-        ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/30'
-        : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'"
+      :class="
+        dragOver
+          ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/30'
+          : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
+      "
       @click="fileInput?.click()"
       @dragover.prevent="dragOver = true"
       @dragleave.prevent="dragOver = false"
       @drop.prevent="onDrop"
     >
-      <input ref="fileInput" type="file" class="hidden" :accept="accept" @change="onFileChange">
+      <input ref="fileInput" type="file" class="hidden" :accept="accept" @change="onFileChange" />
       <template v-if="!selectedFile">
         <UIcon name="i-lucide-upload-cloud" class="size-6 text-gray-400 mx-auto mb-1.5" />
-        <p class="text-sm text-gray-500 dark:text-gray-400">
-          <span class="text-primary-500 font-medium">Click to browse</span> or drag a file here
-        </p>
+        <p class="text-sm text-gray-500 dark:text-gray-400"><span class="text-primary-500 font-medium">Click to browse</span> or drag a file here</p>
         <p class="text-xs text-gray-400 mt-1">{{ hint ?? `Up to ${maxSizeMb} MB` }}</p>
       </template>
       <div v-else class="flex items-center justify-between gap-3 text-left" @click.stop>
@@ -33,29 +33,30 @@
     <template v-if="selectedFile">
       <UInput v-model="description" :placeholder="descriptionPlaceholder" class="w-full" />
       <UAlert v-if="error" color="error" variant="subtle" :title="error" />
-      <UButton :loading="uploading" icon="i-lucide-upload" @click="submit">
-        Upload
-      </UButton>
+      <UButton :loading="uploading" icon="i-lucide-upload" @click="submit"> Upload </UButton>
     </template>
     <UAlert v-else-if="error" color="error" variant="subtle" :title="error" />
   </div>
 </template>
 
 <script setup lang="ts">
-const props = withDefaults(defineProps<{
-  // Composable's own upload(entityId, file, description) already has the
-  // entityId bound by the caller — this just takes what's left.
-  upload: (file: File, description?: string) => Promise<unknown>
-  accept?: string
-  maxSizeMb?: number
-  descriptionPlaceholder?: string
-  hint?: string
-}>(), {
-  accept: undefined,
-  maxSizeMb: 20,
-  descriptionPlaceholder: 'Description (optional)',
-  hint: undefined
-})
+const props = withDefaults(
+  defineProps<{
+    // Composable's own upload(entityId, file, description) already has the
+    // entityId bound by the caller — this just takes what's left.
+    upload: (file: File, description?: string) => Promise<unknown>
+    accept?: string
+    maxSizeMb?: number
+    descriptionPlaceholder?: string
+    hint?: string
+  }>(),
+  {
+    accept: undefined,
+    maxSizeMb: 20,
+    descriptionPlaceholder: 'Description (optional)',
+    hint: undefined
+  }
+)
 
 const emit = defineEmits<{ uploaded: [] }>()
 

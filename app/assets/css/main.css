@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "@nuxt/ui";
+@import 'tailwindcss';
+@import '@nuxt/ui';
 
 /* "Blueprint" brand palette — a muted drafting-table blue rather than
    Tailwind's stock vibrant `blue`, plus two supporting accents. Referenced

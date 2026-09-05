@@ -2,14 +2,7 @@
   <UModal v-model:open="open" :ui="{ content: 'sm:max-w-3xl' }">
     <template #content>
       <div class="relative bg-black">
-        <UButton
-          icon="i-lucide-x"
-          color="neutral"
-          variant="solid"
-          size="sm"
-          class="absolute top-3 right-3 z-10"
-          @click="open = false"
-        />
+        <UButton icon="i-lucide-x" color="neutral" variant="solid" size="sm" class="absolute top-3 right-3 z-10" @click="open = false" />
         <button
           v-if="images.length > 1"
           type="button"
@@ -27,14 +20,12 @@
           <UIcon name="i-lucide-chevron-right" class="size-5" />
         </button>
 
-        <img
-          v-if="current"
-          :src="current.url"
-          :alt="current.caption ?? current.fileName"
-          class="w-full max-h-[80vh] object-contain"
-        >
+        <img v-if="current" :src="current.url" :alt="current.caption ?? current.fileName" class="w-full max-h-[80vh] object-contain" />
 
-        <div v-if="current && (current.caption || images.length > 1)" class="flex items-center justify-between gap-3 px-4 py-2.5 bg-black/80 text-sm text-gray-200">
+        <div
+          v-if="current && (current.caption || images.length > 1)"
+          class="flex items-center justify-between gap-3 px-4 py-2.5 bg-black/80 text-sm text-gray-200"
+        >
           <span class="truncate">{{ current.caption ?? current.fileName }}</span>
           <span v-if="images.length > 1" class="shrink-0 text-gray-400">{{ index + 1 }} / {{ images.length }}</span>
         </div>

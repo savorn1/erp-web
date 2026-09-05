@@ -2,9 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Branches</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate">
-        New branch
-      </UButton>
+      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New branch </UButton>
     </div>
 
     <UAlert
@@ -19,45 +17,14 @@
 
     <UCard class="mb-4">
       <div class="flex flex-wrap gap-3">
-        <UInput
-          v-model="search"
-          placeholder="Search name"
-          icon="i-lucide-search"
-          class="w-56"
-        />
-        <USelect
-          v-model="filter.companyId"
-          :items="companyFilterOptions"
-          placeholder="Company"
-          class="w-48"
-        />
-        <USelect
-          v-model="filter.active"
-          :items="statusFilterOptions"
-          placeholder="Status"
-          class="w-36"
-        />
-        <UButton
-          v-if="hasActiveFilter"
-          size="sm"
-          color="neutral"
-          variant="ghost"
-          icon="i-lucide-x"
-          @click="clearFilters"
-        >
-          Clear filters
-        </UButton>
+        <UInput v-model="search" placeholder="Search name" icon="i-lucide-search" class="w-56" />
+        <USelect v-model="filter.companyId" :items="companyFilterOptions" placeholder="Company" class="w-48" />
+        <USelect v-model="filter.active" :items="statusFilterOptions" placeholder="Status" class="w-36" />
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
-    <UAlert
-      v-if="error"
-      color="error"
-      variant="subtle"
-      class="mb-4"
-      :title="error"
-      icon="i-lucide-triangle-alert"
-    />
+    <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
     <TruncatedResultsAlert v-if="truncated" />
 
     <UCard>
@@ -75,9 +42,7 @@
       >
         <template #actions-data="{ row }">
           <div class="flex items-center gap-2">
-            <UButton size="xs" color="primary" variant="soft" icon="i-lucide-pencil" @click="openEdit(row)">
-              Edit
-            </UButton>
+            <UButton size="xs" color="primary" variant="soft" icon="i-lucide-pencil" @click="openEdit(row)"> Edit </UButton>
             <UButton
               size="xs"
               :color="row.active ? 'neutral' : 'success'"
@@ -88,9 +53,7 @@
             >
               {{ row.active ? 'Deactivate' : 'Activate' }}
             </UButton>
-            <UButton size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="confirmDelete = row">
-              Delete
-            </UButton>
+            <UButton size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="confirmDelete = row"> Delete </UButton>
           </div>
         </template>
 
@@ -155,7 +118,11 @@
       confirm-label="Delete"
       color="error"
       :loading="deleting"
-      @update:model-value="(v: boolean) => { if (!v) confirmDelete = null }"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) confirmDelete = null
+        }
+      "
       @confirm="onDelete"
     />
   </div>
@@ -183,10 +150,7 @@ const users = ref<{ id: number; username: string }[]>([])
 async function loadLookups() {
   loadingCompanies.value = true
   try {
-    const [companiesRes, usersRes] = await Promise.all([
-      listCompanies({ size: 200 }),
-      listUsers({ size: 200 })
-    ])
+    const [companiesRes, usersRes] = await Promise.all([listCompanies({ size: 200 }), listUsers({ size: 200 })])
     companies.value = companiesRes.data
     users.value = usersRes.data
   } finally {
@@ -194,13 +158,8 @@ async function loadLookups() {
   }
 }
 
-const activeCompanyOptions = computed(() =>
-  companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id }))
-)
-const companyFilterOptions = computed(() => [
-  { label: 'All companies', value: undefined },
-  ...companies.value.map((c) => ({ label: c.name, value: c.id }))
-])
+const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
+const companyFilterOptions = computed(() => [{ label: 'All companies', value: undefined }, ...companies.value.map((c) => ({ label: c.name, value: c.id }))])
 const managerOptions = computed(() => users.value.map((u) => ({ label: u.username, value: u.id })))
 
 const filter = reactive<{ companyId: number | undefined; active: boolean | undefined }>({
@@ -218,7 +177,14 @@ const sort = ref<{ column: string; direction: 'asc' | 'desc' } | undefined>({
   direction: 'desc'
 })
 
-const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientTable(rows, {
+const {
+  page,
+  pageSize,
+  total,
+  rows: pagedRows,
+  truncated,
+  search
+} = useClientTable(rows, {
   pageSize: 10,
   searchFields: ['name']
 })
@@ -254,7 +220,7 @@ async function load() {
 const branchFields = computed<FieldDef[]>(() => [
   { name: 'companyId', label: 'Company', type: 'select', required: true, options: activeCompanyOptions.value },
   { name: 'name', required: true },
-  { name: 'managerId', label: 'Branch manager', type: 'select', options: managerOptions.value, hint: 'Optional — assign a user as this branch\'s manager.' },
+  { name: 'managerId', label: 'Branch manager', type: 'select', options: managerOptions.value, hint: "Optional — assign a user as this branch's manager." },
   { name: 'phone' },
   { name: 'email', type: 'email' },
   { name: 'timezone', hint: 'IANA timezone, e.g. Asia/Phnom_Penh.' },

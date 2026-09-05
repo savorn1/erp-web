@@ -2,9 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Warehouses</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate">
-        New warehouse
-      </UButton>
+      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New warehouse </UButton>
     </div>
 
     <UAlert
@@ -22,9 +20,7 @@
         <UInput v-model="search" placeholder="Search name" icon="i-lucide-search" class="w-56" />
         <USelect v-model="filter.companyId" :items="companyFilterOptions" placeholder="Company" class="w-48" />
         <USelect v-model="filter.active" :items="statusFilterOptions" placeholder="Status" class="w-36" />
-        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters">
-          Clear filters
-        </UButton>
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
@@ -122,7 +118,11 @@
       confirm-label="Delete"
       color="error"
       :loading="deleting"
-      @update:model-value="(v: boolean) => { if (!v) confirmDelete = null }"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) confirmDelete = null
+        }
+      "
       @confirm="onDelete"
     />
   </div>
@@ -150,10 +150,7 @@ const users = ref<{ id: number; username: string }[]>([])
 async function loadLookups() {
   loadingCompanies.value = true
   try {
-    const [companiesRes, usersRes] = await Promise.all([
-      listCompanies({ size: 200 }),
-      listUsers({ size: 200 })
-    ])
+    const [companiesRes, usersRes] = await Promise.all([listCompanies({ size: 200 }), listUsers({ size: 200 })])
     companies.value = companiesRes.data
     users.value = usersRes.data
   } finally {
@@ -207,7 +204,13 @@ async function load() {
 const warehouseFields: FieldDef[] = [
   { name: 'companyId', label: 'Company', type: 'select', required: true, options: activeCompanyOptions.value },
   { name: 'name', required: true },
-  { name: 'managerId', label: 'Warehouse manager', type: 'select', options: managerOptions.value, hint: 'Optional — assign a user as this warehouse\'s manager.' },
+  {
+    name: 'managerId',
+    label: 'Warehouse manager',
+    type: 'select',
+    options: managerOptions.value,
+    hint: "Optional — assign a user as this warehouse's manager."
+  },
   { name: 'phone' },
   { name: 'email', type: 'email' },
   { name: 'timezone', hint: 'IANA timezone, e.g. Asia/Phnom_Penh.' },
@@ -220,9 +223,22 @@ const warehouseFields: FieldDef[] = [
 ]
 
 const {
-  showCreate, creating, error: createError, createForm, openCreate, onCreate,
-  showEdit, editing, editError, editingRow: editingWarehouse, editForm, openEdit, onEdit,
-  deleting, confirmDelete, onDelete
+  showCreate,
+  creating,
+  error: createError,
+  createForm,
+  openCreate,
+  onCreate,
+  showEdit,
+  editing,
+  editError,
+  editingRow: editingWarehouse,
+  editForm,
+  openEdit,
+  onEdit,
+  deleting,
+  confirmDelete,
+  onDelete
 } = useCrudModals<Warehouse, WarehousePayload>(
   {
     create: (payload) => create(payload),

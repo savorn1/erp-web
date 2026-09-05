@@ -25,9 +25,7 @@ const emit = defineEmits<{ submit: [newPassword: string] }>()
 
 const form = ref<Record<string, any>>({})
 
-const fields: FieldDef[] = [
-  { name: 'newPassword', label: 'New password', type: 'password', required: true, hint: 'Minimum 6 characters.' }
-]
+const fields: FieldDef[] = [{ name: 'newPassword', label: 'New password', type: 'password', required: true, hint: 'Minimum 6 characters.' }]
 
 // Reset the form (and any leftover error state carried by v-model) each time
 // the modal is reopened, so a previous target's typed password never leaks

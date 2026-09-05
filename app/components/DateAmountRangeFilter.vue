@@ -15,16 +15,7 @@
     <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Max amount</label>
     <UInput v-model="maxAmount" type="number" step="0.01" placeholder="0.00" class="w-24" />
   </div>
-  <UButton
-    v-if="hasAnyFilter && !hideClear"
-    size="sm"
-    color="neutral"
-    variant="ghost"
-    icon="i-lucide-x"
-    @click="clear"
-  >
-    Clear
-  </UButton>
+  <UButton v-if="hasAnyFilter && !hideClear" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clear"> Clear </UButton>
 </template>
 
 <script setup lang="ts">
@@ -48,9 +39,7 @@ const endDate = defineModel<string | undefined>('endDate', { default: undefined 
 const minAmount = defineModel<number | undefined>('minAmount', { default: undefined })
 const maxAmount = defineModel<number | undefined>('maxAmount', { default: undefined })
 
-const hasAnyFilter = computed(
-  () => !!startDate.value || !!endDate.value || minAmount.value !== undefined || maxAmount.value !== undefined
-)
+const hasAnyFilter = computed(() => !!startDate.value || !!endDate.value || minAmount.value !== undefined || maxAmount.value !== undefined)
 
 function clear() {
   startDate.value = undefined

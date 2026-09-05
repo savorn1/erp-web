@@ -2,9 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Products</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate">
-        New product
-      </UButton>
+      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New product </UButton>
     </div>
 
     <UAlert
@@ -24,9 +22,7 @@
         <USelect v-model="filter.categoryId" :items="categoryFilterOptions" placeholder="Category" class="w-44" />
         <USelect v-model="filter.brandId" :items="brandFilterOptions" placeholder="Brand" class="w-40" />
         <USelect v-model="filter.status" :items="statusFilterOptions" placeholder="Status" class="w-36" />
-        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters">
-          Clear filters
-        </UButton>
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
@@ -47,12 +43,7 @@
         @refresh="load"
       >
         <template #image-data="{ row }">
-          <img
-            v-if="row.imageUrl"
-            :src="row.imageUrl"
-            :alt="row.name"
-            class="w-9 h-9 rounded object-cover border border-gray-200 dark:border-gray-800"
-          >
+          <img v-if="row.imageUrl" :src="row.imageUrl" :alt="row.name" class="w-9 h-9 rounded object-cover border border-gray-200 dark:border-gray-800" />
           <span v-else class="flex items-center justify-center w-9 h-9 rounded bg-gray-100 dark:bg-gray-800 text-gray-400">
             <UIcon name="i-lucide-package" class="w-4 h-4" />
           </span>
@@ -94,7 +85,12 @@
 
     <UModal v-model:open="showCreate" title="New product" :ui="{ content: 'sm:max-w-2xl' }">
       <template #body>
-        <ProductImagePicker :image-url="createForm.imageUrl" :loading="uploadingImage" @pick="triggerImageUpload('create')" @remove="createForm.imageUrl = ''" />
+        <ProductImagePicker
+          :image-url="createForm.imageUrl"
+          :loading="uploadingImage"
+          @pick="triggerImageUpload('create')"
+          @remove="createForm.imageUrl = ''"
+        />
         <DynamicForm
           v-model="createForm"
           :fields="productFields"
@@ -124,7 +120,7 @@
       </template>
     </UModal>
 
-    <input ref="imageInputRef" type="file" accept="image/*" class="hidden" @change="onImageFileChange">
+    <input ref="imageInputRef" type="file" accept="image/*" class="hidden" @change="onImageFileChange" />
 
     <ConfirmModal
       :model-value="confirmDelete !== null"
@@ -133,7 +129,11 @@
       confirm-label="Delete"
       color="error"
       :loading="deleting"
-      @update:model-value="(v: boolean) => { if (!v) confirmDelete = null }"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) confirmDelete = null
+        }
+      "
       @confirm="onDelete"
     />
   </div>
@@ -201,15 +201,16 @@ const statusFilterOptions = [
 ]
 
 function optionsFor(list: { id: number; name: string; companyId: number; active: boolean }[], companyId: number | undefined) {
-  return list.filter((item) => item.active && (companyId === undefined || item.companyId === companyId))
-    .map((item) => ({ label: item.name, value: item.id }))
+  return list.filter((item) => item.active && (companyId === undefined || item.companyId === companyId)).map((item) => ({ label: item.name, value: item.id }))
 }
 function unitOptionsFor(companyId: number | undefined) {
-  return units.value.filter((u) => u.active && (companyId === undefined || u.companyId === companyId))
+  return units.value
+    .filter((u) => u.active && (companyId === undefined || u.companyId === companyId))
     .map((u) => ({ label: `${u.name} (${u.abbreviation})`, value: u.id }))
 }
 function supplierOptionsFor(companyId: number | undefined) {
-  return suppliers.value.filter((s) => s.status === 'ACTIVE' && (companyId === undefined || s.companyId === companyId))
+  return suppliers.value
+    .filter((s) => s.status === 'ACTIVE' && (companyId === undefined || s.companyId === companyId))
     .map((s) => ({ label: s.name, value: s.id }))
 }
 
@@ -232,7 +233,7 @@ const columns: ColumnDef<Product>[] = [
   { key: 'costPrice', label: 'Cost price', type: 'currency' },
   { key: 'sellingPrice', label: 'Selling price', type: 'currency' },
   { key: 'taxRate', label: 'Tax', type: 'percent' },
-  { key: 'trackingType', label: 'Tracking', value: (row) => row.trackingType === 'NONE' ? '—' : row.trackingType },
+  { key: 'trackingType', label: 'Tracking', value: (row) => (row.trackingType === 'NONE' ? '—' : row.trackingType) },
   { key: 'status', type: 'status' },
   { key: 'actions', label: '' }
 ]
@@ -290,14 +291,25 @@ const productFields = computed<FieldDef[]>(() => [
 // option lists below — DynamicForm re-renders when `productFields` changes, so
 // switching a product's company narrows those selects to that company's data.
 const activeFormTarget = ref<'create' | 'edit'>('create')
-const currentFormCompanyId = computed(() =>
-  activeFormTarget.value === 'create' ? createForm.value?.companyId : editForm.value?.companyId
-)
+const currentFormCompanyId = computed(() => (activeFormTarget.value === 'create' ? createForm.value?.companyId : editForm.value?.companyId))
 
 const {
-  showCreate, creating, error: createError, createForm, openCreate: openCreateModal, onCreate,
-  showEdit, editing, editError, editingRow: editingProduct, editForm, openEdit: openEditModal, onEdit,
-  deleting, confirmDelete, onDelete
+  showCreate,
+  creating,
+  error: createError,
+  createForm,
+  openCreate: openCreateModal,
+  onCreate,
+  showEdit,
+  editing,
+  editError,
+  editingRow: editingProduct,
+  editForm,
+  openEdit: openEditModal,
+  onEdit,
+  deleting,
+  confirmDelete,
+  onDelete
 } = useCrudModals<Product, ProductPayload>(
   {
     create: (payload) => create(payload),
@@ -385,10 +397,14 @@ function statusMenuItems(row: Product) {
     { label: 'Inactive', status: 'INACTIVE' },
     { label: 'Discontinued', status: 'DISCONTINUED' }
   ]
-  return [options.filter((o) => o.status !== row.status).map((o) => ({
-    label: o.label,
-    onSelect: () => onStatusChange(row, o.status)
-  }))]
+  return [
+    options
+      .filter((o) => o.status !== row.status)
+      .map((o) => ({
+        label: o.label,
+        onSelect: () => onStatusChange(row, o.status)
+      }))
+  ]
 }
 
 async function onStatusChange(row: Product, status: ProductStatus) {
@@ -408,9 +424,8 @@ onMounted(async () => {
 watch(sort, load)
 watch(() => [filter.companyId, filter.categoryId, filter.brandId, filter.status], load)
 
-const hasActiveFilter = computed(() =>
-  search.value !== '' || filter.companyId !== undefined || filter.categoryId !== undefined ||
-  filter.brandId !== undefined || filter.status !== undefined
+const hasActiveFilter = computed(
+  () => search.value !== '' || filter.companyId !== undefined || filter.categoryId !== undefined || filter.brandId !== undefined || filter.status !== undefined
 )
 function clearFilters() {
   search.value = ''

@@ -1,9 +1,6 @@
 import type { ColumnDef, ColumnType } from '#shared/types'
 
-export function formatColumnText<T extends Record<string, unknown>>(
-  column: ColumnDef<T>,
-  row: T
-): string {
+export function formatColumnText<T extends Record<string, unknown>>(column: ColumnDef<T>, row: T): string {
   const rawValue = column.value ? column.value(row) : row[column.key]
   const prefix = column.prefix ? column.prefix(row) : ''
   const suffix = typeof column.suffix === 'function' ? column.suffix(row) : (column.suffix ?? '')

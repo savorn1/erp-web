@@ -2,9 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Opportunities</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate">
-        New opportunity
-      </UButton>
+      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New opportunity </UButton>
     </div>
 
     <UAlert
@@ -23,9 +21,7 @@
         <USelect v-model="filter.companyId" :items="companyFilterOptions" placeholder="Company" class="w-44" />
         <USelect v-model="filter.stage" :items="stageFilterOptions" placeholder="Stage" class="w-44" />
         <USelect v-model="filter.assignedToUserId" :items="userFilterOptions" placeholder="Salesperson" class="w-44" />
-        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters">
-          Clear filters
-        </UButton>
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
@@ -58,9 +54,7 @@
             <UButton v-if="!isClosed(row)" size="xs" color="success" variant="soft" icon="i-lucide-trophy" :loading="actingId === row.id" @click="onWin(row)">
               Win
             </UButton>
-            <UButton v-if="!isClosed(row)" size="xs" color="error" variant="soft" icon="i-lucide-thumbs-down" @click="openLose(row)">
-              Lose
-            </UButton>
+            <UButton v-if="!isClosed(row)" size="xs" color="error" variant="soft" icon="i-lucide-thumbs-down" @click="openLose(row)"> Lose </UButton>
             <UButton v-if="!isClosed(row)" size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="confirmDelete = row">Delete</UButton>
           </div>
         </template>
@@ -147,11 +141,7 @@
           <div v-if="loadingActivities" class="text-sm text-gray-400">Loading…</div>
           <EmptyState v-else-if="activities.length === 0" icon="i-lucide-history" title="No activity yet" />
           <ul v-else class="space-y-2 max-h-96 overflow-y-auto">
-            <li
-              v-for="a in activities"
-              :key="a.id"
-              class="rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm"
-            >
+            <li v-for="a in activities" :key="a.id" class="rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm">
               <div class="flex items-center justify-between gap-2">
                 <span class="font-medium text-gray-900 dark:text-white">{{ a.description }}</span>
                 <span class="text-xs text-gray-400 shrink-0">{{ activityTypeLabel(a.type) }}</span>
@@ -185,16 +175,14 @@
         </div>
 
         <div class="space-y-2 mb-4">
-          <div v-if="quoteForm.lines.length === 0" class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg">
+          <div
+            v-if="quoteForm.lines.length === 0"
+            class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
+          >
             No line items yet
           </div>
           <div v-for="(line, i) in quoteForm.lines" :key="i" class="grid grid-cols-12 gap-2 items-center">
-            <USelect
-              v-model="line.productId"
-              :items="productOptionsFor(quoteTarget?.companyId)"
-              placeholder="Product"
-              class="col-span-5"
-            />
+            <USelect v-model="line.productId" :items="productOptionsFor(quoteTarget?.companyId)" placeholder="Product" class="col-span-5" />
             <UInput v-model.number="line.quantity" type="number" min="0.0001" step="0.0001" placeholder="Qty" class="col-span-2" />
             <UInput v-model.number="line.unitPrice" type="number" min="0" step="0.01" placeholder="Unit price" class="col-span-2" />
             <div class="col-span-2 text-sm text-gray-500 dark:text-gray-400 text-right">
@@ -204,9 +192,7 @@
           </div>
         </div>
 
-        <div class="flex justify-end text-sm font-medium text-gray-900 dark:text-white mb-4">
-          Total: {{ formatCurrency(quoteTotal) }}
-        </div>
+        <div class="flex justify-end text-sm font-medium text-gray-900 dark:text-white mb-4">Total: {{ formatCurrency(quoteTotal) }}</div>
 
         <UAlert v-if="quoteError" color="error" variant="subtle" class="mb-3" :title="quoteError" />
 
@@ -224,7 +210,11 @@
       confirm-label="Delete"
       color="error"
       :loading="deleting"
-      @update:model-value="(v: boolean) => { if (!v) confirmDelete = null }"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) confirmDelete = null
+        }
+      "
       @confirm="onDelete"
     />
   </div>
@@ -271,11 +261,13 @@ const companyFilterOptions = computed(() => [{ label: 'All companies', value: un
 const activeUserOptions = computed(() => users.value.filter((u) => u.enabled).map((u) => ({ label: u.username, value: u.id })))
 const userFilterOptions = computed(() => [{ label: 'All salespeople', value: undefined }, ...users.value.map((u) => ({ label: u.username, value: u.id }))])
 function customerOptionsFor(companyId: number | undefined) {
-  return customers.value.filter((c) => c.status === 'ACTIVE' && (companyId === undefined || c.companyId === companyId))
+  return customers.value
+    .filter((c) => c.status === 'ACTIVE' && (companyId === undefined || c.companyId === companyId))
     .map((c) => ({ label: c.name, value: c.id }))
 }
 function productOptionsFor(companyId: number | undefined) {
-  return products.value.filter((p) => p.status === 'ACTIVE' && (companyId === undefined || p.companyId === companyId))
+  return products.value
+    .filter((p) => p.status === 'ACTIVE' && (companyId === undefined || p.companyId === companyId))
     .map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
 }
 
@@ -296,7 +288,10 @@ function isClosed(row: Opportunity) {
   return row.stage === 'CLOSED_WON' || row.stage === 'CLOSED_LOST'
 }
 function activityTypeLabel(type: string) {
-  return type.replace('_', ' ').toLowerCase().replace(/^\w/, (c) => c.toUpperCase())
+  return type
+    .replace('_', ' ')
+    .toLowerCase()
+    .replace(/^\w/, (c) => c.toUpperCase())
 }
 
 const filter = reactive<{
@@ -361,9 +356,22 @@ const editFields = computed<FieldDef[]>(() => [
 ])
 
 const {
-  showCreate, creating, error: createError, createForm, openCreate: openCreateModal, onCreate,
-  showEdit, editing, editError, editingRow: editingOpportunity, editForm, openEdit, onEdit,
-  deleting, confirmDelete, onDelete
+  showCreate,
+  creating,
+  error: createError,
+  createForm,
+  openCreate: openCreateModal,
+  onCreate,
+  showEdit,
+  editing,
+  editError,
+  editingRow: editingOpportunity,
+  editForm,
+  openEdit,
+  onEdit,
+  deleting,
+  confirmDelete,
+  onDelete
 } = useCrudModals<Opportunity, OpportunityPayload, Omit<OpportunityPayload, 'leadId' | 'customerId'>>(
   {
     create: (payload) => create(payload),
@@ -409,13 +417,22 @@ function openCreate() {
   activeFormCompanyId.value = activeCompanyOptions.value[0]?.value
   openCreateModal()
 }
-watch(() => createForm.value?.companyId, (id) => { activeFormCompanyId.value = id })
+watch(
+  () => createForm.value?.companyId,
+  (id) => {
+    activeFormCompanyId.value = id
+  }
+)
 
 function stageMenuItems(row: Opportunity) {
-  return [openStageOptions.filter((o) => o.value !== row.stage).map((o) => ({
-    label: o.label,
-    onSelect: () => onStageChange(row, o.value as OpportunityStage)
-  }))]
+  return [
+    openStageOptions
+      .filter((o) => o.value !== row.stage)
+      .map((o) => ({
+        label: o.label,
+        onSelect: () => onStageChange(row, o.value as OpportunityStage)
+      }))
+  ]
 }
 async function onStageChange(row: Opportunity, stage: OpportunityStage) {
   try {
@@ -441,11 +458,7 @@ async function onWin(row: Opportunity) {
   }
 }
 
-const {
-  open: showLose,
-  target: loseTarget,
-  openWith: openLoseWith
-} = useTargetModal<Opportunity>()
+const { open: showLose, target: loseTarget, openWith: openLoseWith } = useTargetModal<Opportunity>()
 const loseReason = ref('')
 const losing = ref(false)
 const loseError = ref('')
@@ -470,11 +483,7 @@ async function onLoseSubmit() {
   }
 }
 
-const {
-  open: showHistory,
-  target: historyTarget,
-  openWith: openHistoryWith
-} = useTargetModal<Opportunity>()
+const { open: showHistory, target: historyTarget, openWith: openHistoryWith } = useTargetModal<Opportunity>()
 
 const activities = ref<OpportunityActivity[]>([])
 const loadingActivities = ref(false)
@@ -533,11 +542,7 @@ interface QuoteLineForm {
   unitPrice: number | undefined
 }
 
-const {
-  open: showQuote,
-  target: quoteTarget,
-  openWith: openQuoteWith
-} = useTargetModal<Opportunity>()
+const { open: showQuote, target: quoteTarget, openWith: openQuoteWith } = useTargetModal<Opportunity>()
 
 const quoteForm = reactive<{ quotationDate: string; validUntil: string; notes: string; lines: QuoteLineForm[] }>({
   quotationDate: new Date().toISOString().slice(0, 10),
@@ -597,8 +602,8 @@ onMounted(async () => {
 watch(sort, load)
 watch(() => [filter.companyId, filter.stage, filter.assignedToUserId], load)
 
-const hasActiveFilter = computed(() =>
-  search.value !== '' || filter.companyId !== undefined || filter.stage !== undefined || filter.assignedToUserId !== undefined
+const hasActiveFilter = computed(
+  () => search.value !== '' || filter.companyId !== undefined || filter.stage !== undefined || filter.assignedToUserId !== undefined
 )
 function clearFilters() {
   search.value = ''

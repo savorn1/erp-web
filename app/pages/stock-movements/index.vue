@@ -9,9 +9,7 @@
       <div class="flex flex-wrap gap-3">
         <USelect v-model="filter.warehouseId" :items="warehouseFilterOptions" placeholder="Warehouse" class="w-44" />
         <USelect v-model="filter.productId" :items="productFilterOptions" placeholder="Product" class="w-48" />
-        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters">
-          Clear filters
-        </UButton>
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
@@ -82,7 +80,10 @@ async function loadLookups() {
 }
 
 const warehouseFilterOptions = computed(() => [{ label: 'All warehouses', value: undefined }, ...warehouses.value.map((w) => ({ label: w.name, value: w.id }))])
-const productFilterOptions = computed(() => [{ label: 'All products', value: undefined }, ...products.value.map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))])
+const productFilterOptions = computed(() => [
+  { label: 'All products', value: undefined },
+  ...products.value.map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
+])
 
 const filter = reactive<{ warehouseId: number | undefined; productId: number | undefined }>({ warehouseId: undefined, productId: undefined })
 

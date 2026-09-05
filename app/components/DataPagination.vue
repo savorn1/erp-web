@@ -1,9 +1,7 @@
 <template>
   <div class="flex flex-wrap items-center justify-between gap-4">
     <div class="flex flex-wrap items-center gap-4">
-      <span class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-        Showing {{ shownCount }} of {{ total }}
-      </span>
+      <span class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap"> Showing {{ shownCount }} of {{ total }} </span>
 
       <div class="flex items-center gap-1">
         <button

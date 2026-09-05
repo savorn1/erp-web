@@ -2,9 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Sales invoices</h1>
-      <UButton icon="i-lucide-plus" @click="openCreate()">
-        Generate invoice
-      </UButton>
+      <UButton icon="i-lucide-plus" @click="openCreate()"> Generate invoice </UButton>
     </div>
 
     <UCard class="mb-4">
@@ -13,9 +11,7 @@
         <USelect v-model="filter.companyId" :items="companyFilterOptions" placeholder="Company" class="w-44" />
         <USelect v-model="filter.customerId" :items="customerFilterOptions" placeholder="Customer" class="w-44" />
         <USelect v-model="filter.status" :items="statusFilterOptions" placeholder="Status" class="w-40" />
-        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters">
-          Clear filters
-        </UButton>
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
@@ -38,10 +34,29 @@
         <template #actions-data="{ row }">
           <div class="flex items-center gap-2 flex-wrap">
             <UButton size="xs" color="primary" variant="soft" icon="i-lucide-eye" @click="openView(row)">View</UButton>
-            <UButton v-if="row.status === 'DRAFT'" size="xs" color="success" variant="soft" icon="i-lucide-check" :loading="actingId === row.id" @click="onApprove(row)">
+            <UButton
+              v-if="row.status === 'DRAFT'"
+              size="xs"
+              color="success"
+              variant="soft"
+              icon="i-lucide-check"
+              :loading="actingId === row.id"
+              @click="onApprove(row)"
+            >
               Approve
             </UButton>
-            <UButton v-if="row.status === 'DRAFT' || row.status === 'APPROVED'" size="xs" color="error" variant="soft" icon="i-lucide-ban" :loading="actingId === row.id" @click="onCancel(row)">
+            <NuxtLink v-if="row.status === 'APPROVED' && row.paymentStatus !== 'PAID'" :to="`/payments?fromInvoice=${row.id}`">
+              <UButton size="xs" color="success" variant="soft" icon="i-lucide-banknote">Record payment</UButton>
+            </NuxtLink>
+            <UButton
+              v-if="row.status === 'DRAFT' || row.status === 'APPROVED'"
+              size="xs"
+              color="error"
+              variant="soft"
+              icon="i-lucide-ban"
+              :loading="actingId === row.id"
+              @click="onCancel(row)"
+            >
               Cancel
             </UButton>
             <UButton v-if="row.status === 'DRAFT'" size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="confirmDelete = row">
@@ -79,7 +94,13 @@
       <template #body>
         <div class="space-y-4">
           <UFormField label="Source">
-            <URadioGroup v-model="createSource" :items="[{ label: 'From sales order (bills full ordered quantity)', value: 'salesOrder' }, { label: 'From delivery (bills only what shipped)', value: 'delivery' }]" />
+            <URadioGroup
+              v-model="createSource"
+              :items="[
+                { label: 'From sales order (bills full ordered quantity)', value: 'salesOrder' },
+                { label: 'From delivery (bills only what shipped)', value: 'delivery' }
+              ]"
+            />
           </UFormField>
 
           <UFormField v-if="createSource === 'salesOrder'" label="Sales order" required>
@@ -115,24 +136,42 @@
         <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingInvoice">
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
-            <div><dt class="text-gray-400">Customer</dt><dd class="text-gray-900 dark:text-white">{{ viewingInvoice.customerName }}</dd></div>
-            <div><dt class="text-gray-400">Status</dt><dd class="text-gray-900 dark:text-white">{{ viewingInvoice.status }}</dd></div>
-            <div><dt class="text-gray-400">Source</dt><dd class="text-gray-900 dark:text-white">{{ viewingInvoice.soNumber ?? '—' }}<span v-if="viewingInvoice.deliveryNumber"> · {{ viewingInvoice.deliveryNumber }}</span></dd></div>
-            <div><dt class="text-gray-400">Invoice date</dt><dd class="text-gray-900 dark:text-white">{{ formatDate(viewingInvoice.invoiceDate) }}</dd></div>
-            <div v-if="viewingInvoice.dueDate"><dt class="text-gray-400">Due date</dt><dd class="text-gray-900 dark:text-white">{{ formatDate(viewingInvoice.dueDate) }}</dd></div>
-            <div v-if="viewingInvoice.notes" class="col-span-2"><dt class="text-gray-400">Notes</dt><dd class="text-gray-900 dark:text-white">{{ viewingInvoice.notes }}</dd></div>
+            <div>
+              <dt class="text-gray-400">Customer</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingInvoice.customerName }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-400">Status</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingInvoice.status }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-400">Source</dt>
+              <dd class="text-gray-900 dark:text-white">
+                {{ viewingInvoice.soNumber ?? '—' }}<span v-if="viewingInvoice.deliveryNumber"> · {{ viewingInvoice.deliveryNumber }}</span>
+              </dd>
+            </div>
+            <div>
+              <dt class="text-gray-400">Invoice date</dt>
+              <dd class="text-gray-900 dark:text-white">{{ formatDate(viewingInvoice.invoiceDate) }}</dd>
+            </div>
+            <div v-if="viewingInvoice.dueDate">
+              <dt class="text-gray-400">Due date</dt>
+              <dd class="text-gray-900 dark:text-white">{{ formatDate(viewingInvoice.dueDate) }}</dd>
+            </div>
+            <div v-if="viewingInvoice.notes" class="col-span-2">
+              <dt class="text-gray-400">Notes</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingInvoice.notes }}</dd>
+            </div>
           </dl>
 
           <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lines</p>
           <ul class="space-y-1.5 mb-4">
-            <li
-              v-for="line in viewingInvoice.lines"
-              :key="line.id"
-              class="text-sm rounded-md border border-gray-200 dark:border-gray-800 px-3 py-1.5"
-            >
+            <li v-for="line in viewingInvoice.lines" :key="line.id" class="text-sm rounded-md border border-gray-200 dark:border-gray-800 px-3 py-1.5">
               <div class="flex items-center justify-between">
                 <span>{{ line.productName }} ({{ line.productSku }})</span>
-                <span class="text-gray-500 dark:text-gray-400">{{ line.quantity }} × {{ formatCurrency(line.unitPrice) }} = {{ formatCurrency(line.lineTotal) }}</span>
+                <span class="text-gray-500 dark:text-gray-400"
+                  >{{ line.quantity }} × {{ formatCurrency(line.unitPrice) }} = {{ formatCurrency(line.lineTotal) }}</span
+                >
               </div>
               <p v-if="line.discountPercent > 0 || line.taxRate > 0" class="text-xs text-gray-400 mt-0.5">
                 <span v-if="line.discountPercent > 0">Discount {{ line.discountPercent }}%</span>
@@ -143,10 +182,22 @@
           </ul>
 
           <div class="flex justify-end text-sm text-gray-600 dark:text-gray-300 mb-1">Subtotal: {{ formatCurrency(viewingInvoice.subtotal) }}</div>
-          <div v-if="viewingInvoice.discountAmount > 0" class="flex justify-end text-sm text-gray-600 dark:text-gray-300 mb-1">Discount: -{{ formatCurrency(viewingInvoice.discountAmount) }}</div>
-          <div v-if="viewingInvoice.taxAmount > 0" class="flex justify-end text-sm text-gray-600 dark:text-gray-300 mb-1">Tax: {{ formatCurrency(viewingInvoice.taxAmount) }}</div>
+          <div v-if="viewingInvoice.discountAmount > 0" class="flex justify-end text-sm text-gray-600 dark:text-gray-300 mb-1">
+            Discount: -{{ formatCurrency(viewingInvoice.discountAmount) }}
+          </div>
+          <div v-if="viewingInvoice.taxAmount > 0" class="flex justify-end text-sm text-gray-600 dark:text-gray-300 mb-1">
+            Tax: {{ formatCurrency(viewingInvoice.taxAmount) }}
+          </div>
           <div class="flex justify-end text-sm font-medium text-gray-900 dark:text-white mb-1">Total: {{ formatCurrency(viewingInvoice.totalAmount) }}</div>
-          <div v-if="viewingInvoice.creditedAmount > 0" class="flex justify-end text-sm text-error mb-4">Credited: -{{ formatCurrency(viewingInvoice.creditedAmount) }}</div>
+          <div v-if="viewingInvoice.creditedAmount > 0" class="flex justify-end text-sm text-error mb-1">
+            Credited: -{{ formatCurrency(viewingInvoice.creditedAmount) }}
+          </div>
+          <div v-if="viewingInvoice.paidAmount > 0" class="flex justify-end text-sm text-success mb-1">
+            Paid: -{{ formatCurrency(viewingInvoice.paidAmount) }}
+          </div>
+          <div class="flex justify-end text-sm font-medium text-gray-900 dark:text-white mb-4">
+            Outstanding ({{ viewingInvoice.paymentStatus }}): {{ formatCurrency(viewingInvoice.outstandingAmount) }}
+          </div>
 
           <template v-if="viewingInvoice.status === 'APPROVED'">
             <div class="flex items-center justify-between mb-2">
@@ -155,15 +206,21 @@
             </div>
             <div v-if="loadingCreditNotes" class="text-sm text-gray-400">Loading…</div>
             <EmptyState v-else-if="creditNotes.length === 0" icon="i-lucide-file-minus" title="No credit notes yet" />
-            <ul v-else class="space-y-1.5">
+            <ul v-else class="space-y-1.5 mb-4">
               <li v-for="cn in creditNotes" :key="cn.id" class="text-sm rounded-md border border-gray-200 dark:border-gray-800 px-3 py-1.5">
                 <div class="flex items-center justify-between">
                   <span>{{ cn.creditNoteNumber }}</span>
                   <span class="text-error">-{{ formatCurrency(cn.amount) }}</span>
                 </div>
-                <p class="text-xs text-gray-400 mt-0.5">{{ formatDate(cn.creditNoteDate) }}<span v-if="cn.reason"> — {{ cn.reason }}</span></p>
+                <p class="text-xs text-gray-400 mt-0.5">
+                  {{ formatDate(cn.creditNoteDate) }}<span v-if="cn.reason"> — {{ cn.reason }}</span>
+                </p>
               </li>
             </ul>
+
+            <NuxtLink v-if="viewingInvoice.paymentStatus !== 'PAID'" :to="`/payments?fromInvoice=${viewingInvoice.id}`">
+              <UButton size="sm" color="success" variant="soft" icon="i-lucide-banknote">Record payment</UButton>
+            </NuxtLink>
           </template>
         </template>
       </template>
@@ -198,7 +255,11 @@
       confirm-label="Delete"
       color="error"
       :loading="deleting"
-      @update:model-value="(v: boolean) => { if (!v) confirmDelete = null }"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) confirmDelete = null
+        }
+      "
       @confirm="onDelete"
     />
   </div>
@@ -263,9 +324,7 @@ const invoiceableSoOptions = computed(() =>
     .map((s) => ({ label: s.soNumber, value: s.id }))
 )
 const invoiceableDeliveryOptions = computed(() =>
-  deliveries.value
-    .filter((d) => d.status === 'SHIPPED' || d.status === 'DELIVERED')
-    .map((d) => ({ label: d.deliveryNumber, value: d.id }))
+  deliveries.value.filter((d) => d.status === 'SHIPPED' || d.status === 'DELIVERED').map((d) => ({ label: d.deliveryNumber, value: d.id }))
 )
 
 const filter = reactive<{
@@ -283,7 +342,9 @@ const columns: ColumnDef<Invoice>[] = [
   { key: 'soNumber', label: 'Source', value: (row) => row.deliveryNumber ?? row.soNumber ?? '—' },
   { key: 'invoiceDate', label: 'Invoice date', type: 'date' },
   { key: 'totalAmount', label: 'Total', type: 'currency' },
+  { key: 'outstandingAmount', label: 'Outstanding', type: 'currency' },
   { key: 'status', type: 'status' },
+  { key: 'paymentStatus', label: 'Payment', type: 'status' },
   { key: 'actions', label: '' }
 ]
 

@@ -30,7 +30,5 @@ const props = withDefaults(defineProps<{ actions: RowAction[]; max?: number }>()
 
 const visible = computed(() => props.actions.slice(0, props.max))
 const overflow = computed(() => props.actions.slice(props.max))
-const overflowItems = computed(() =>
-  overflow.value.map((a) => ({ label: a.label, icon: a.icon, onSelect: a.onClick }))
-)
+const overflowItems = computed(() => overflow.value.map((a) => ({ label: a.label, icon: a.icon, onSelect: a.onClick })))
 </script>

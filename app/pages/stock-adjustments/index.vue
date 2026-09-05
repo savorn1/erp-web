@@ -2,9 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Stock adjustments</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate">
-        New adjustment
-      </UButton>
+      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New adjustment </UButton>
     </div>
 
     <UAlert
@@ -22,9 +20,7 @@
         <UInput v-model="search" placeholder="Search adjustment number" icon="i-lucide-search" class="w-56" />
         <USelect v-model="filter.warehouseId" :items="warehouseFilterOptions" placeholder="Warehouse" class="w-44" />
         <USelect v-model="filter.status" :items="statusFilterOptions" placeholder="Status" class="w-40" />
-        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters">
-          Clear filters
-        </UButton>
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
@@ -47,10 +43,26 @@
         <template #actions-data="{ row }">
           <div class="flex items-center gap-2">
             <UButton size="xs" color="primary" variant="soft" icon="i-lucide-eye" @click="openView(row)">View</UButton>
-            <UButton v-if="row.status === 'PENDING'" size="xs" color="success" variant="soft" icon="i-lucide-check" :loading="actingId === row.id" @click="onApprove(row)">
+            <UButton
+              v-if="row.status === 'PENDING'"
+              size="xs"
+              color="success"
+              variant="soft"
+              icon="i-lucide-check"
+              :loading="actingId === row.id"
+              @click="onApprove(row)"
+            >
               Approve
             </UButton>
-            <UButton v-if="row.status === 'PENDING'" size="xs" color="error" variant="soft" icon="i-lucide-x" :loading="actingId === row.id" @click="onReject(row)">
+            <UButton
+              v-if="row.status === 'PENDING'"
+              size="xs"
+              color="error"
+              variant="soft"
+              icon="i-lucide-x"
+              :loading="actingId === row.id"
+              @click="onReject(row)"
+            >
               Reject
             </UButton>
             <UButton v-if="row.status === 'PENDING'" size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="confirmDelete = row">
@@ -107,14 +119,13 @@
         </div>
 
         <div class="space-y-3 mb-4">
-          <div v-if="form.lines.length === 0" class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg">
+          <div
+            v-if="form.lines.length === 0"
+            class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
+          >
             No line items yet
           </div>
-          <div
-            v-for="(line, i) in form.lines"
-            :key="i"
-            class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 space-y-2"
-          >
+          <div v-for="(line, i) in form.lines" :key="i" class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 space-y-2">
             <div class="grid grid-cols-12 gap-2 items-center">
               <USelect
                 v-model="line.productId"
@@ -187,23 +198,38 @@
         <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingAdjustment">
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
-            <div><dt class="text-gray-400">Warehouse</dt><dd class="text-gray-900 dark:text-white">{{ viewingAdjustment.warehouseName }}</dd></div>
-            <div><dt class="text-gray-400">Status</dt><dd class="text-gray-900 dark:text-white">{{ viewingAdjustment.status }}</dd></div>
-            <div><dt class="text-gray-400">Requested</dt><dd class="text-gray-900 dark:text-white">{{ formatDate(viewingAdjustment.adjustmentDate) }} by {{ viewingAdjustment.requestedBy ?? '—' }}</dd></div>
-            <div v-if="viewingAdjustment.approvedBy"><dt class="text-gray-400">Resolved by</dt><dd class="text-gray-900 dark:text-white">{{ viewingAdjustment.approvedBy }}<span v-if="viewingAdjustment.approvalDate"> on {{ formatDate(viewingAdjustment.approvalDate) }}</span></dd></div>
-            <div v-if="viewingAdjustment.notes" class="col-span-2"><dt class="text-gray-400">Notes</dt><dd class="text-gray-900 dark:text-white">{{ viewingAdjustment.notes }}</dd></div>
+            <div>
+              <dt class="text-gray-400">Warehouse</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingAdjustment.warehouseName }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-400">Status</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingAdjustment.status }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-400">Requested</dt>
+              <dd class="text-gray-900 dark:text-white">{{ formatDate(viewingAdjustment.adjustmentDate) }} by {{ viewingAdjustment.requestedBy ?? '—' }}</dd>
+            </div>
+            <div v-if="viewingAdjustment.approvedBy">
+              <dt class="text-gray-400">Resolved by</dt>
+              <dd class="text-gray-900 dark:text-white">
+                {{ viewingAdjustment.approvedBy }}<span v-if="viewingAdjustment.approvalDate"> on {{ formatDate(viewingAdjustment.approvalDate) }}</span>
+              </dd>
+            </div>
+            <div v-if="viewingAdjustment.notes" class="col-span-2">
+              <dt class="text-gray-400">Notes</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingAdjustment.notes }}</dd>
+            </div>
           </dl>
           <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lines</p>
           <ul class="space-y-1.5">
-            <li
-              v-for="line in viewingAdjustment.lines"
-              :key="line.id"
-              class="text-sm rounded-md border border-gray-200 dark:border-gray-800 px-3 py-1.5"
-            >
+            <li v-for="line in viewingAdjustment.lines" :key="line.id" class="text-sm rounded-md border border-gray-200 dark:border-gray-800 px-3 py-1.5">
               <div class="flex items-center justify-between">
                 <span>{{ line.productName }} ({{ line.productSku }})</span>
                 <span class="text-gray-500 dark:text-gray-400">
-                  <span :class="line.reason === 'STOCK_INCREASE' ? 'text-success' : 'text-error'">{{ line.reason === 'STOCK_INCREASE' ? '+' : '-' }}{{ line.quantity }}</span>
+                  <span :class="line.reason === 'STOCK_INCREASE' ? 'text-success' : 'text-error'"
+                    >{{ line.reason === 'STOCK_INCREASE' ? '+' : '-' }}{{ line.quantity }}</span
+                  >
                   <span v-if="line.binName"> — {{ line.binName }}</span>
                 </span>
               </div>
@@ -227,7 +253,11 @@
       confirm-label="Delete"
       color="error"
       :loading="deleting"
-      @update:model-value="(v: boolean) => { if (!v) confirmDelete = null }"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) confirmDelete = null
+        }
+      "
       @confirm="onDelete"
     />
   </div>
@@ -261,12 +291,7 @@ const loadingLookups = ref(false)
 async function loadLookups() {
   loadingLookups.value = true
   try {
-    const [c, w, p, b] = await Promise.all([
-      listCompanies({ size: 200 }),
-      listWarehouses({ size: 200 }),
-      listProducts({ size: 200 }),
-      listBins({ size: 200 })
-    ])
+    const [c, w, p, b] = await Promise.all([listCompanies({ size: 200 }), listWarehouses({ size: 200 }), listProducts({ size: 200 }), listBins({ size: 200 })])
     companies.value = c.data
     warehouses.value = w.data
     products.value = p.data
@@ -296,11 +321,11 @@ function reasonLabel(reason: string) {
 }
 
 function warehouseOptionsFor(companyId: number | undefined) {
-  return warehouses.value.filter((w) => w.active && (companyId === undefined || w.companyId === companyId))
-    .map((w) => ({ label: w.name, value: w.id }))
+  return warehouses.value.filter((w) => w.active && (companyId === undefined || w.companyId === companyId)).map((w) => ({ label: w.name, value: w.id }))
 }
 function productOptionsFor(companyId: number | undefined) {
-  return products.value.filter((p) => p.status === 'ACTIVE' && (companyId === undefined || p.companyId === companyId))
+  return products.value
+    .filter((p) => p.status === 'ACTIVE' && (companyId === undefined || p.companyId === companyId))
     .map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
 }
 function trackingTypeFor(productId: number | undefined) {
@@ -393,7 +418,10 @@ function serialOptionsFor(line: LineForm) {
 
 function serialCountFor(line: LineForm): number {
   if (line.reason === 'STOCK_INCREASE') {
-    return line.serialNumbersText.split('\n').map((s) => s.trim()).filter((s) => s.length > 0).length
+    return line.serialNumbersText
+      .split('\n')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0).length
   }
   return line.selectedSerials.length
 }
@@ -425,15 +453,26 @@ async function onWarehouseChanged(warehouseId: number | undefined) {
   ])
   stockLevels.value = stockRes.data.map((s: any) => ({ productId: s.productId, binId: s.binId, quantityOnHand: s.quantityOnHand }))
   availableSerials.value = serialRes.data.map((s: any) => ({ productId: s.productId, binId: s.binId, serialNumber: s.serialNumber }))
-  productBatches.value = [...new Map(
-    serialRes.data
-      .filter((s: any) => s.batchNumber)
-      .map((s: any) => [`${s.productId}:${s.batchNumber}`, { productId: s.productId, batchNumber: s.batchNumber as string }])
-  ).values()]
+  productBatches.value = [
+    ...new Map(
+      serialRes.data
+        .filter((s: any) => s.batchNumber)
+        .map((s: any) => [`${s.productId}:${s.batchNumber}`, { productId: s.productId, batchNumber: s.batchNumber as string }])
+    ).values()
+  ]
 }
 
 function addLine() {
-  form.lines.push({ productId: undefined, reason: undefined, quantity: undefined, binId: undefined, batchNumber: '', expirationDate: '', serialNumbersText: '', selectedSerials: [] })
+  form.lines.push({
+    productId: undefined,
+    reason: undefined,
+    quantity: undefined,
+    binId: undefined,
+    batchNumber: '',
+    expirationDate: '',
+    serialNumbersText: '',
+    selectedSerials: []
+  })
 }
 
 function openCreate() {
@@ -488,9 +527,15 @@ async function onCreateSubmit() {
         quantity: l.quantity!,
         batchNumber: trackingType === 'BATCH' ? l.batchNumber : undefined,
         expirationDate: trackingType === 'BATCH' && l.reason === 'STOCK_INCREASE' && l.expirationDate ? l.expirationDate : undefined,
-        serialNumbers: trackingType === 'SERIAL'
-          ? (l.reason === 'STOCK_INCREASE' ? l.serialNumbersText.split('\n').map((s) => s.trim()).filter((s) => s.length > 0) : l.selectedSerials)
-          : undefined
+        serialNumbers:
+          trackingType === 'SERIAL'
+            ? l.reason === 'STOCK_INCREASE'
+              ? l.serialNumbersText
+                  .split('\n')
+                  .map((s) => s.trim())
+                  .filter((s) => s.length > 0)
+              : l.selectedSerials
+            : undefined
       }
     })
   }

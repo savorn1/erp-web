@@ -8,14 +8,10 @@
     <UDashboardSidebar collapsible :collapsed-size="4" class="dark bg-gray-950 border-gray-900">
       <template #header="{ collapsed }">
         <NuxtLink to="/" class="flex items-center gap-2.5" :class="collapsed ? 'justify-center w-full' : ''">
-          <span
-            class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary-500 text-white shrink-0"
-          >
+          <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary-500 text-white shrink-0">
             <UIcon name="i-lucide-boxes" class="w-4 h-4" />
           </span>
-          <span v-if="!collapsed" class="font-bold text-gray-900 dark:text-white tracking-tight">
-            ERP
-          </span>
+          <span v-if="!collapsed" class="font-bold text-gray-900 dark:text-white tracking-tight"> ERP </span>
         </NuxtLink>
       </template>
 
@@ -97,6 +93,9 @@ const items = computed<NavigationMenuItem[]>(() => [
         { label: 'Customers', to: '/customers', icon: 'i-lucide-contact' },
         { label: 'Customer types', to: '/customer-types', icon: 'i-lucide-shapes' },
         { label: 'Customer groups', to: '/customer-groups', icon: 'i-lucide-users-round' },
+        { label: 'Price groups', to: '/price-groups', icon: 'i-lucide-tags' },
+        { label: 'Product prices', to: '/product-prices', icon: 'i-lucide-tag' },
+        { label: 'Price lookup', to: '/pricing-lookup', icon: 'i-lucide-search' },
 
         { label: 'Warehouses', type: 'label' as const },
         { label: 'Warehouses', to: '/warehouses', icon: 'i-lucide-warehouse' },
@@ -114,6 +113,7 @@ const items = computed<NavigationMenuItem[]>(() => [
         { label: 'Sales orders', to: '/sales-orders', icon: 'i-lucide-file-text' },
         { label: 'Deliveries', to: '/deliveries', icon: 'i-lucide-truck' },
         { label: 'Invoices', to: '/invoices', icon: 'i-lucide-receipt' },
+        { label: 'Payments', to: '/payments', icon: 'i-lucide-banknote' },
 
         { label: 'Stock Transfer', type: 'label' as const },
         { label: 'Stock transfers', to: '/stock-transfers', icon: 'i-lucide-repeat' },

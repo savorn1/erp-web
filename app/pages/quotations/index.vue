@@ -2,9 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Quotations</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate">
-        New quotation
-      </UButton>
+      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New quotation </UButton>
     </div>
 
     <UAlert
@@ -22,9 +20,7 @@
         <UInput v-model="search" placeholder="Search quotation number" icon="i-lucide-search" class="w-56" />
         <USelect v-model="filter.companyId" :items="companyFilterOptions" placeholder="Company" class="w-44" />
         <USelect v-model="filter.status" :items="statusFilterOptions" placeholder="Status" class="w-40" />
-        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters">
-          Clear filters
-        </UButton>
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
@@ -49,13 +45,37 @@
             <UButton size="xs" color="primary" variant="soft" icon="i-lucide-eye" @click="openView(row)">
               {{ row.status === 'DRAFT' ? 'Edit' : 'View' }}
             </UButton>
-            <UButton v-if="row.status === 'DRAFT'" size="xs" color="info" variant="soft" icon="i-lucide-send" :loading="actingId === row.id" @click="onSend(row)">
+            <UButton
+              v-if="row.status === 'DRAFT'"
+              size="xs"
+              color="info"
+              variant="soft"
+              icon="i-lucide-send"
+              :loading="actingId === row.id"
+              @click="onSend(row)"
+            >
               Send
             </UButton>
-            <UButton v-if="row.status === 'SENT'" size="xs" color="success" variant="soft" icon="i-lucide-check" :loading="actingId === row.id" @click="onAccept(row)">
+            <UButton
+              v-if="row.status === 'SENT'"
+              size="xs"
+              color="success"
+              variant="soft"
+              icon="i-lucide-check"
+              :loading="actingId === row.id"
+              @click="onAccept(row)"
+            >
               Accept
             </UButton>
-            <UButton v-if="row.status === 'SENT'" size="xs" color="error" variant="soft" icon="i-lucide-x" :loading="actingId === row.id" @click="onReject(row)">
+            <UButton
+              v-if="row.status === 'SENT'"
+              size="xs"
+              color="error"
+              variant="soft"
+              icon="i-lucide-x"
+              :loading="actingId === row.id"
+              @click="onReject(row)"
+            >
               Reject
             </UButton>
             <UButton v-if="row.status === 'DRAFT'" size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="confirmDelete = row">
@@ -88,17 +108,19 @@
       </div>
     </UCard>
 
-    <UModal
-      v-model:open="showForm"
-      :title="formTitle"
-      :ui="{ content: 'sm:max-w-4xl' }"
-    >
+    <UModal v-model:open="showForm" :title="formTitle" :ui="{ content: 'sm:max-w-4xl' }">
       <template #body>
         <div v-if="loadingDetail" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
         <template v-else>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <UFormField label="Company" required>
-              <USelect v-model="form.companyId" :items="activeCompanyOptions" :disabled="!formEditable || editingId !== null" class="w-full" @update:model-value="onFormCompanyChanged" />
+              <USelect
+                v-model="form.companyId"
+                :items="activeCompanyOptions"
+                :disabled="!formEditable || editingId !== null"
+                class="w-full"
+                @update:model-value="onFormCompanyChanged"
+              />
             </UFormField>
             <UFormField label="Customer (optional)">
               <USelect v-model="form.customerId" :items="customerOptionsFor(form.companyId)" :disabled="!formEditable" class="w-full" />
@@ -120,21 +142,14 @@
           </div>
 
           <div class="space-y-2 mb-4">
-            <div v-if="form.lines.length === 0" class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg">
+            <div
+              v-if="form.lines.length === 0"
+              class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
+            >
               No line items yet
             </div>
-            <div
-              v-for="(line, i) in form.lines"
-              :key="i"
-              class="grid grid-cols-12 gap-2 items-center"
-            >
-              <USelect
-                v-model="line.productId"
-                :items="productOptionsFor(form.companyId)"
-                placeholder="Product"
-                :disabled="!formEditable"
-                class="col-span-5"
-              />
+            <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center">
+              <USelect v-model="line.productId" :items="productOptionsFor(form.companyId)" placeholder="Product" :disabled="!formEditable" class="col-span-5" />
               <UInput v-model.number="line.quantity" type="number" min="0.0001" step="0.0001" placeholder="Qty" :disabled="!formEditable" class="col-span-2" />
               <UInput v-model.number="line.unitPrice" type="number" min="0" step="0.01" placeholder="Unit price" :disabled="!formEditable" class="col-span-2" />
               <div class="col-span-2 text-sm text-gray-500 dark:text-gray-400 text-right">
@@ -144,9 +159,7 @@
             </div>
           </div>
 
-          <div class="flex justify-end text-sm font-medium text-gray-900 dark:text-white mb-4">
-            Total: {{ formatCurrency(formTotal) }}
-          </div>
+          <div class="flex justify-end text-sm font-medium text-gray-900 dark:text-white mb-4">Total: {{ formatCurrency(formTotal) }}</div>
 
           <UAlert v-if="formError" color="error" variant="subtle" class="mb-3" :title="formError" />
 
@@ -165,7 +178,11 @@
       confirm-label="Delete"
       color="error"
       :loading="deleting"
-      @update:model-value="(v: boolean) => { if (!v) confirmDelete = null }"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) confirmDelete = null
+        }
+      "
       @confirm="onDelete"
     />
   </div>
@@ -195,11 +212,7 @@ const loadingLookups = ref(false)
 async function loadLookups() {
   loadingLookups.value = true
   try {
-    const [c, cu, p] = await Promise.all([
-      listCompanies({ size: 200 }),
-      listCustomers({ size: 200 }),
-      listProducts({ size: 200 })
-    ])
+    const [c, cu, p] = await Promise.all([listCompanies({ size: 200 }), listCustomers({ size: 200 }), listProducts({ size: 200 })])
     companies.value = c.data
     customers.value = cu.data
     products.value = p.data
@@ -221,12 +234,14 @@ const statusFilterOptions = [
 function customerOptionsFor(companyId: number | undefined) {
   return [
     { label: 'No customer', value: undefined },
-    ...customers.value.filter((c) => c.status === 'ACTIVE' && (companyId === undefined || c.companyId === companyId))
+    ...customers.value
+      .filter((c) => c.status === 'ACTIVE' && (companyId === undefined || c.companyId === companyId))
       .map((c) => ({ label: c.name, value: c.id }))
   ]
 }
 function productOptionsFor(companyId: number | undefined) {
-  return products.value.filter((p) => p.status === 'ACTIVE' && (companyId === undefined || p.companyId === companyId))
+  return products.value
+    .filter((p) => p.status === 'ACTIVE' && (companyId === undefined || p.companyId === companyId))
     .map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
 }
 function onFormCompanyChanged() {

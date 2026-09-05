@@ -2,9 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Stock transfers</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate">
-        New transfer
-      </UButton>
+      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New transfer </UButton>
     </div>
 
     <UAlert
@@ -23,9 +21,7 @@
         <USelect v-model="filter.sourceWarehouseId" :items="warehouseFilterOptions" placeholder="Source warehouse" class="w-48" />
         <USelect v-model="filter.destinationWarehouseId" :items="warehouseFilterOptions" placeholder="Destination warehouse" class="w-48" />
         <USelect v-model="filter.status" :items="statusFilterOptions" placeholder="Status" class="w-40" />
-        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters">
-          Clear filters
-        </UButton>
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
@@ -48,19 +44,49 @@
         <template #actions-data="{ row }">
           <div class="flex items-center gap-2 flex-wrap">
             <UButton size="xs" color="primary" variant="soft" icon="i-lucide-eye" @click="openView(row)">View</UButton>
-            <UButton v-if="row.status === 'REQUESTED'" size="xs" color="success" variant="soft" icon="i-lucide-check" :loading="actingId === row.id" @click="onApprove(row)">
+            <UButton
+              v-if="row.status === 'REQUESTED'"
+              size="xs"
+              color="success"
+              variant="soft"
+              icon="i-lucide-check"
+              :loading="actingId === row.id"
+              @click="onApprove(row)"
+            >
               Approve
             </UButton>
-            <UButton v-if="row.status === 'REQUESTED' || row.status === 'APPROVED'" size="xs" color="error" variant="soft" icon="i-lucide-x" :loading="actingId === row.id" @click="onReject(row)">
+            <UButton
+              v-if="row.status === 'REQUESTED' || row.status === 'APPROVED'"
+              size="xs"
+              color="error"
+              variant="soft"
+              icon="i-lucide-x"
+              :loading="actingId === row.id"
+              @click="onReject(row)"
+            >
               Reject
             </UButton>
-            <UButton v-if="row.status === 'APPROVED'" size="xs" color="info" variant="soft" icon="i-lucide-truck" @click="openShip(row)">
-              Ship
-            </UButton>
-            <UButton v-if="row.status === 'SHIPPED'" size="xs" color="success" variant="soft" icon="i-lucide-package-check" :loading="actingId === row.id" @click="onReceive(row)">
+            <UButton v-if="row.status === 'APPROVED'" size="xs" color="info" variant="soft" icon="i-lucide-truck" @click="openShip(row)"> Ship </UButton>
+            <UButton
+              v-if="row.status === 'SHIPPED'"
+              size="xs"
+              color="success"
+              variant="soft"
+              icon="i-lucide-package-check"
+              :loading="actingId === row.id"
+              @click="onReceive(row)"
+            >
               Receive
             </UButton>
-            <UButton v-if="row.status === 'REQUESTED' || row.status === 'APPROVED'" size="xs" color="warning" variant="soft" icon="i-lucide-ban" :loading="actingId === row.id" @click="onCancel(row)">
+            <UButton
+              v-if="row.status === 'REQUESTED' || row.status === 'APPROVED'"
+              size="xs"
+              color="warning"
+              variant="soft"
+              icon="i-lucide-ban"
+              :loading="actingId === row.id"
+              @click="onCancel(row)"
+            >
               Cancel
             </UButton>
             <UButton v-if="row.status === 'REQUESTED'" size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="confirmDelete = row">
@@ -104,7 +130,12 @@
             <UInput v-model="form.requestDate" type="date" class="w-full" />
           </UFormField>
           <UFormField label="Source warehouse" required>
-            <USelect v-model="form.sourceWarehouseId" :items="warehouseOptionsFor(form.companyId)" class="w-full" @update:model-value="onSourceWarehouseChanged" />
+            <USelect
+              v-model="form.sourceWarehouseId"
+              :items="warehouseOptionsFor(form.companyId)"
+              class="w-full"
+              @update:model-value="onSourceWarehouseChanged"
+            />
           </UFormField>
           <UFormField label="Destination warehouse" required>
             <USelect v-model="form.destinationWarehouseId" :items="destinationWarehouseOptions" class="w-full" />
@@ -120,14 +151,13 @@
         </div>
 
         <div class="space-y-3 mb-4">
-          <div v-if="form.lines.length === 0" class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg">
+          <div
+            v-if="form.lines.length === 0"
+            class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
+          >
             No line items yet
           </div>
-          <div
-            v-for="(line, i) in form.lines"
-            :key="i"
-            class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 space-y-2"
-          >
+          <div v-for="(line, i) in form.lines" :key="i" class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 space-y-2">
             <div class="grid grid-cols-12 gap-2 items-center">
               <USelect
                 v-model="line.productId"
@@ -175,11 +205,7 @@
             {{ shippingTransfer.transferNumber }} — {{ shippingTransfer.sourceWarehouseName }} → {{ shippingTransfer.destinationWarehouseName }}
           </p>
           <div class="space-y-3 mb-4">
-            <div
-              v-for="line in shipLines"
-              :key="line.id"
-              class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 space-y-2"
-            >
+            <div v-for="line in shipLines" :key="line.id" class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 space-y-2">
               <div class="flex items-center justify-between gap-2">
                 <span class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ line.productName }} ({{ line.productSku }})</span>
                 <span class="text-xs text-gray-400 shrink-0">Qty: {{ line.quantityRequested }}</span>
@@ -217,26 +243,47 @@
         <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingTransfer">
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
-            <div><dt class="text-gray-400">Source</dt><dd class="text-gray-900 dark:text-white">{{ viewingTransfer.sourceWarehouseName }}</dd></div>
-            <div><dt class="text-gray-400">Destination</dt><dd class="text-gray-900 dark:text-white">{{ viewingTransfer.destinationWarehouseName }}</dd></div>
-            <div><dt class="text-gray-400">Status</dt><dd class="text-gray-900 dark:text-white">{{ viewingTransfer.status }}</dd></div>
-            <div><dt class="text-gray-400">Requested</dt><dd class="text-gray-900 dark:text-white">{{ formatDate(viewingTransfer.requestDate) }} by {{ viewingTransfer.requestedBy ?? '—' }}</dd></div>
-            <div v-if="viewingTransfer.approvedBy"><dt class="text-gray-400">Approved by</dt><dd class="text-gray-900 dark:text-white">{{ viewingTransfer.approvedBy }}</dd></div>
-            <div v-if="viewingTransfer.shipDate"><dt class="text-gray-400">Shipped</dt><dd class="text-gray-900 dark:text-white">{{ formatDate(viewingTransfer.shipDate) }} by {{ viewingTransfer.shippedBy ?? '—' }}</dd></div>
-            <div v-if="viewingTransfer.receiveDate"><dt class="text-gray-400">Received</dt><dd class="text-gray-900 dark:text-white">{{ formatDate(viewingTransfer.receiveDate) }} by {{ viewingTransfer.receivedBy ?? '—' }}</dd></div>
-            <div v-if="viewingTransfer.notes" class="col-span-2"><dt class="text-gray-400">Notes</dt><dd class="text-gray-900 dark:text-white">{{ viewingTransfer.notes }}</dd></div>
+            <div>
+              <dt class="text-gray-400">Source</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingTransfer.sourceWarehouseName }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-400">Destination</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingTransfer.destinationWarehouseName }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-400">Status</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingTransfer.status }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-400">Requested</dt>
+              <dd class="text-gray-900 dark:text-white">{{ formatDate(viewingTransfer.requestDate) }} by {{ viewingTransfer.requestedBy ?? '—' }}</dd>
+            </div>
+            <div v-if="viewingTransfer.approvedBy">
+              <dt class="text-gray-400">Approved by</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingTransfer.approvedBy }}</dd>
+            </div>
+            <div v-if="viewingTransfer.shipDate">
+              <dt class="text-gray-400">Shipped</dt>
+              <dd class="text-gray-900 dark:text-white">{{ formatDate(viewingTransfer.shipDate) }} by {{ viewingTransfer.shippedBy ?? '—' }}</dd>
+            </div>
+            <div v-if="viewingTransfer.receiveDate">
+              <dt class="text-gray-400">Received</dt>
+              <dd class="text-gray-900 dark:text-white">{{ formatDate(viewingTransfer.receiveDate) }} by {{ viewingTransfer.receivedBy ?? '—' }}</dd>
+            </div>
+            <div v-if="viewingTransfer.notes" class="col-span-2">
+              <dt class="text-gray-400">Notes</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingTransfer.notes }}</dd>
+            </div>
           </dl>
           <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lines</p>
           <ul class="space-y-1.5">
-            <li
-              v-for="line in viewingTransfer.lines"
-              :key="line.id"
-              class="text-sm rounded-md border border-gray-200 dark:border-gray-800 px-3 py-1.5"
-            >
+            <li v-for="line in viewingTransfer.lines" :key="line.id" class="text-sm rounded-md border border-gray-200 dark:border-gray-800 px-3 py-1.5">
               <div class="flex items-center justify-between">
                 <span>{{ line.productName }} ({{ line.productSku }})</span>
                 <span class="text-gray-500 dark:text-gray-400">
-                  requested {{ line.quantityRequested }}<span v-if="line.quantityShipped !== null"> · shipped {{ line.quantityShipped }}</span><span v-if="line.quantityReceived !== null"> · received {{ line.quantityReceived }}</span>
+                  requested {{ line.quantityRequested }}<span v-if="line.quantityShipped !== null"> · shipped {{ line.quantityShipped }}</span
+                  ><span v-if="line.quantityReceived !== null"> · received {{ line.quantityReceived }}</span>
                 </span>
               </div>
               <p v-if="line.sourceBinName || line.destinationBinName" class="text-xs text-gray-400 mt-0.5">
@@ -259,7 +306,11 @@
       confirm-label="Delete"
       color="error"
       :loading="deleting"
-      @update:model-value="(v: boolean) => { if (!v) confirmDelete = null }"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) confirmDelete = null
+        }
+      "
       @confirm="onDelete"
     />
   </div>
@@ -293,12 +344,7 @@ const loadingLookups = ref(false)
 async function loadLookups() {
   loadingLookups.value = true
   try {
-    const [c, w, p, b] = await Promise.all([
-      listCompanies({ size: 200 }),
-      listWarehouses({ size: 200 }),
-      listProducts({ size: 200 }),
-      listBins({ size: 200 })
-    ])
+    const [c, w, p, b] = await Promise.all([listCompanies({ size: 200 }), listWarehouses({ size: 200 }), listProducts({ size: 200 }), listBins({ size: 200 })])
     companies.value = c.data
     warehouses.value = w.data
     products.value = p.data
@@ -321,11 +367,11 @@ const statusFilterOptions = [
 ]
 
 function warehouseOptionsFor(companyId: number | undefined) {
-  return warehouses.value.filter((w) => w.active && (companyId === undefined || w.companyId === companyId))
-    .map((w) => ({ label: w.name, value: w.id }))
+  return warehouses.value.filter((w) => w.active && (companyId === undefined || w.companyId === companyId)).map((w) => ({ label: w.name, value: w.id }))
 }
 function productOptionsFor(companyId: number | undefined) {
-  return products.value.filter((p) => p.status === 'ACTIVE' && (companyId === undefined || p.companyId === companyId))
+  return products.value
+    .filter((p) => p.status === 'ACTIVE' && (companyId === undefined || p.companyId === companyId))
     .map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
 }
 function trackingTypeFor(productId: number | undefined) {
@@ -402,9 +448,7 @@ const form = reactive<{
   lines: []
 })
 
-const destinationWarehouseOptions = computed(() =>
-  warehouseOptionsFor(form.companyId).filter((w) => w.value !== form.sourceWarehouseId)
-)
+const destinationWarehouseOptions = computed(() => warehouseOptionsFor(form.companyId).filter((w) => w.value !== form.sourceWarehouseId))
 const sourceBinOptions = computed(() => [
   { label: 'No bin', value: undefined },
   ...bins.value.filter((b) => b.active && b.warehouseId === form.sourceWarehouseId).map((b) => ({ label: b.name, value: b.id }))
@@ -444,11 +488,13 @@ async function onSourceWarehouseChanged(warehouseId: number | undefined) {
     listSerialNumbers({ warehouseId, status: 'IN_STOCK', size: 500 })
   ])
   stockLevels.value = stockRes.data.map((s: any) => ({ productId: s.productId, binId: s.binId, quantityOnHand: s.quantityOnHand }))
-  productBatches.value = [...new Map(
-    serialRes.data
-      .filter((s: any) => s.batchNumber)
-      .map((s: any) => [`${s.productId}:${s.batchNumber}`, { productId: s.productId, batchNumber: s.batchNumber as string }])
-  ).values()]
+  productBatches.value = [
+    ...new Map(
+      serialRes.data
+        .filter((s: any) => s.batchNumber)
+        .map((s: any) => [`${s.productId}:${s.batchNumber}`, { productId: s.productId, batchNumber: s.batchNumber as string }])
+    ).values()
+  ]
 }
 
 function addLine() {
@@ -684,7 +730,9 @@ onMounted(async () => {
 watch(sort, load)
 watch(() => [filter.sourceWarehouseId, filter.destinationWarehouseId, filter.status], load)
 
-const hasActiveFilter = computed(() => search.value !== '' || filter.sourceWarehouseId !== undefined || filter.destinationWarehouseId !== undefined || filter.status !== undefined)
+const hasActiveFilter = computed(
+  () => search.value !== '' || filter.sourceWarehouseId !== undefined || filter.destinationWarehouseId !== undefined || filter.status !== undefined
+)
 function clearFilters() {
   search.value = ''
   filter.sourceWarehouseId = undefined

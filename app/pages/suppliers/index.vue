@@ -2,9 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Suppliers</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate">
-        New supplier
-      </UButton>
+      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New supplier </UButton>
     </div>
 
     <UAlert
@@ -23,9 +21,7 @@
         <USelect v-model="filter.companyId" :items="companyFilterOptions" placeholder="Company" class="w-44" />
         <USelect v-model="filter.supplierTypeId" :items="typeFilterOptions" placeholder="Type" class="w-40" />
         <USelect v-model="filter.status" :items="statusFilterOptions" placeholder="Status" class="w-36" />
-        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters">
-          Clear filters
-        </UButton>
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
@@ -141,11 +137,7 @@
           <div v-if="loadingActivities" class="text-sm text-gray-400">Loading…</div>
           <EmptyState v-else-if="activities.length === 0" icon="i-lucide-history" title="No history yet" />
           <ul v-else class="space-y-2 max-h-96 overflow-y-auto">
-            <li
-              v-for="a in activities"
-              :key="a.id"
-              class="rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm"
-            >
+            <li v-for="a in activities" :key="a.id" class="rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm">
               <div class="flex items-center justify-between gap-2">
                 <span class="font-medium text-gray-900 dark:text-white">{{ a.description }}</span>
                 <span v-if="a.amount != null" :class="Number(a.amount) >= 0 ? 'text-error' : 'text-success'" class="font-semibold shrink-0">
@@ -168,7 +160,11 @@
       confirm-label="Delete"
       color="error"
       :loading="deleting"
-      @update:model-value="(v: boolean) => { if (!v) confirmDelete = null }"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) confirmDelete = null
+        }
+      "
       @confirm="onDelete"
     />
   </div>
@@ -196,10 +192,7 @@ const loadingLookups = ref(false)
 async function loadLookups() {
   loadingLookups.value = true
   try {
-    const [c, t] = await Promise.all([
-      listCompanies({ size: 200 }),
-      listTypes({ size: 200 })
-    ])
+    const [c, t] = await Promise.all([listCompanies({ size: 200 }), listTypes({ size: 200 })])
     companies.value = c.data
     types.value = t.data
   } finally {
@@ -226,8 +219,7 @@ const paymentTermsOptions = [
 ]
 
 function optionsFor(list: { id: number; name: string; companyId: number; active: boolean }[], companyId: number | undefined) {
-  return list.filter((item) => item.active && (companyId === undefined || item.companyId === companyId))
-    .map((item) => ({ label: item.name, value: item.id }))
+  return list.filter((item) => item.active && (companyId === undefined || item.companyId === companyId)).map((item) => ({ label: item.name, value: item.id }))
 }
 
 const filter = reactive<{
@@ -271,9 +263,7 @@ async function load() {
 }
 
 const activeFormTarget = ref<'create' | 'edit'>('create')
-const currentFormCompanyId = computed(() =>
-  activeFormTarget.value === 'create' ? createForm.value?.companyId : editForm.value?.companyId
-)
+const currentFormCompanyId = computed(() => (activeFormTarget.value === 'create' ? createForm.value?.companyId : editForm.value?.companyId))
 
 const supplierFields = computed<FieldDef[]>(() => [
   { name: 'companyId', label: 'Company', type: 'select', required: true, options: activeCompanyOptions.value },
@@ -294,9 +284,22 @@ const supplierFields = computed<FieldDef[]>(() => [
 ])
 
 const {
-  showCreate, creating, error: createError, createForm, openCreate: openCreateModal, onCreate,
-  showEdit, editing, editError, editingRow: editingSupplier, editForm, openEdit: openEditModal, onEdit,
-  deleting, confirmDelete, onDelete
+  showCreate,
+  creating,
+  error: createError,
+  createForm,
+  openCreate: openCreateModal,
+  onCreate,
+  showEdit,
+  editing,
+  editError,
+  editingRow: editingSupplier,
+  editForm,
+  openEdit: openEditModal,
+  onEdit,
+  deleting,
+  confirmDelete,
+  onDelete
 } = useCrudModals<Supplier, SupplierPayload>(
   {
     create: (payload) => create(payload),
@@ -357,10 +360,14 @@ function statusMenuItems(row: Supplier) {
     { label: 'Inactive', status: 'INACTIVE' },
     { label: 'Blocked', status: 'BLOCKED' }
   ]
-  return [options.filter((o) => o.status !== row.status).map((o) => ({
-    label: o.label,
-    onSelect: () => onStatusChange(row, o.status)
-  }))]
+  return [
+    options
+      .filter((o) => o.status !== row.status)
+      .map((o) => ({
+        label: o.label,
+        onSelect: () => onStatusChange(row, o.status)
+      }))
+  ]
 }
 async function onStatusChange(row: Supplier, status: SupplierStatus) {
   try {
@@ -372,15 +379,20 @@ async function onStatusChange(row: Supplier, status: SupplierStatus) {
   }
 }
 
-const {
-  open: showBalance,
-  target: balanceTarget,
-  openWith: openBalanceWith
-} = useTargetModal<Supplier>()
+const { open: showBalance, target: balanceTarget, openWith: openBalanceWith } = useTargetModal<Supplier>()
 
 const balanceForm = ref<{ type: SupplierBalanceAdjustmentType; amount: number | undefined; note: string }>({ type: 'CHARGE', amount: undefined, note: '' })
 const balanceFields: FieldDef[] = [
-  { name: 'type', label: 'Adjustment type', type: 'select', required: true, options: [{ label: 'Charge (increases balance owed)', value: 'CHARGE' }, { label: 'Payment (reduces balance owed)', value: 'PAYMENT' }] },
+  {
+    name: 'type',
+    label: 'Adjustment type',
+    type: 'select',
+    required: true,
+    options: [
+      { label: 'Charge (increases balance owed)', value: 'CHARGE' },
+      { label: 'Payment (reduces balance owed)', value: 'PAYMENT' }
+    ]
+  },
   { name: 'amount', type: 'currency', required: true },
   { name: 'note' }
 ]
@@ -410,11 +422,7 @@ async function onBalanceSubmit(values: Record<string, any>) {
   }
 }
 
-const {
-  open: showHistory,
-  target: historyTarget,
-  openWith: openHistoryWith
-} = useTargetModal<Supplier>()
+const { open: showHistory, target: historyTarget, openWith: openHistoryWith } = useTargetModal<Supplier>()
 
 const activities = ref<SupplierActivity[]>([])
 const loadingActivities = ref(false)
@@ -456,8 +464,8 @@ onMounted(async () => {
 watch(sort, load)
 watch(() => [filter.companyId, filter.supplierTypeId, filter.status], load)
 
-const hasActiveFilter = computed(() =>
-  search.value !== '' || filter.companyId !== undefined || filter.supplierTypeId !== undefined || filter.status !== undefined
+const hasActiveFilter = computed(
+  () => search.value !== '' || filter.companyId !== undefined || filter.supplierTypeId !== undefined || filter.status !== undefined
 )
 function clearFilters() {
   search.value = ''

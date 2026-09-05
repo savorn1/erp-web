@@ -7,39 +7,13 @@
 
     <UCard class="mb-4">
       <div class="flex flex-wrap gap-3">
-        <UInput
-          v-model="search"
-          placeholder="Search name"
-          icon="i-lucide-search"
-          class="w-56"
-        />
-        <USelect
-          v-model="filter.active"
-          :items="statusFilterOptions"
-          placeholder="Status"
-          class="w-36"
-        />
-        <UButton
-          v-if="hasActiveFilter"
-          size="sm"
-          color="neutral"
-          variant="ghost"
-          icon="i-lucide-x"
-          @click="clearFilters"
-        >
-          Clear filters
-        </UButton>
+        <UInput v-model="search" placeholder="Search name" icon="i-lucide-search" class="w-56" />
+        <USelect v-model="filter.active" :items="statusFilterOptions" placeholder="Status" class="w-36" />
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
-    <UAlert
-      v-if="error"
-      color="error"
-      variant="subtle"
-      class="mb-4"
-      :title="error"
-      icon="i-lucide-triangle-alert"
-    />
+    <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
     <TruncatedResultsAlert v-if="truncated" />
 
     <UCard>
@@ -61,23 +35,16 @@
             :src="row.logoUrl"
             :alt="`${row.name} logo`"
             class="w-8 h-8 rounded object-cover border border-gray-200 dark:border-gray-800"
-          >
-          <span
-            v-else
-            class="flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-800 text-gray-400"
-          >
+          />
+          <span v-else class="flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-800 text-gray-400">
             <UIcon name="i-lucide-building-2" class="w-4 h-4" />
           </span>
         </template>
 
         <template #actions-data="{ row }">
           <div class="flex items-center gap-2">
-            <UButton size="xs" color="primary" variant="soft" icon="i-lucide-pencil" @click="openEdit(row)">
-              Edit
-            </UButton>
-            <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-image" @click="openLogoWith(row)">
-              Logo
-            </UButton>
+            <UButton size="xs" color="primary" variant="soft" icon="i-lucide-pencil" @click="openEdit(row)"> Edit </UButton>
+            <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-image" @click="openLogoWith(row)"> Logo </UButton>
             <UButton
               size="xs"
               :color="row.active ? 'neutral' : 'success'"
@@ -88,9 +55,7 @@
             >
               {{ row.active ? 'Deactivate' : 'Activate' }}
             </UButton>
-            <UButton size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="confirmDelete = row">
-              Delete
-            </UButton>
+            <UButton size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="confirmDelete = row"> Delete </UButton>
           </div>
         </template>
 
@@ -161,7 +126,11 @@
       confirm-label="Delete"
       color="error"
       :loading="deleting"
-      @update:model-value="(v: boolean) => { if (!v) confirmDelete = null }"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) confirmDelete = null
+        }
+      "
       @confirm="onDelete"
     />
   </div>
@@ -192,15 +161,19 @@ const sort = ref<{ column: string; direction: 'asc' | 'desc' } | undefined>({
   direction: 'desc'
 })
 
-const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientTable(rows, {
+const {
+  page,
+  pageSize,
+  total,
+  rows: pagedRows,
+  truncated,
+  search
+} = useClientTable(rows, {
   pageSize: 10,
   searchFields: ['name']
 })
 
-const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
-]
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const monthOptions = MONTHS.map((label, i) => ({ label, value: i + 1 }))
 
 // A working set of common ISO 4217 codes — not exhaustive, extend as needed.
@@ -334,11 +307,7 @@ async function toggleStatus(row: Company) {
   }
 }
 
-const {
-  open: showLogo,
-  target: logoTarget,
-  openWith: openLogoWith
-} = useTargetModal<Company>()
+const { open: showLogo, target: logoTarget, openWith: openLogoWith } = useTargetModal<Company>()
 
 async function onUploadLogo(file: File) {
   if (!logoTarget.value) return

@@ -1,8 +1,8 @@
 <template>
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Product categories</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New category </UButton>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Price groups</h1>
+      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New price group </UButton>
     </div>
 
     <UAlert
@@ -11,7 +11,7 @@
       variant="subtle"
       class="mb-4"
       title="No active companies yet"
-      description="Create a company first — every category belongs to one."
+      description="Create a company first — every price group belongs to one."
       icon="i-lucide-triangle-alert"
     />
 
@@ -36,7 +36,7 @@
         refreshable
         numbered
         exportable
-        export-filename="product-categories"
+        export-filename="price-groups"
         :row-number-start="(page - 1) * pageSize"
         @refresh="load"
       >
@@ -50,16 +50,16 @@
           <EmptyState
             v-if="hasActiveFilter"
             icon="i-lucide-search-x"
-            title="No categories match your filters"
+            title="No price groups match your filters"
             description="Try a different search or clear your filters."
           >
             <template #action>
               <UButton color="neutral" variant="soft" icon="i-lucide-x" @click="clearFilters">Clear filters</UButton>
             </template>
           </EmptyState>
-          <EmptyState v-else icon="i-lucide-tags" title="No categories yet" description="Create the first category to get started.">
+          <EmptyState v-else icon="i-lucide-tags" title="No price groups yet" description="Create the first price group to get started.">
             <template #action>
-              <UButton :disabled="activeCompanyOptions.length === 0" icon="i-lucide-plus" @click="openCreate">New category</UButton>
+              <UButton :disabled="activeCompanyOptions.length === 0" icon="i-lucide-plus" @click="openCreate">New price group</UButton>
             </template>
           </EmptyState>
         </template>
@@ -70,7 +70,7 @@
       </div>
     </UCard>
 
-    <UModal v-model:open="showCreate" title="New category">
+    <UModal v-model:open="showCreate" title="New price group">
       <template #body>
         <DynamicForm
           v-model="createForm"
@@ -85,7 +85,7 @@
       </template>
     </UModal>
 
-    <UModal v-model:open="showEdit" :title="`Edit category '${editingCategory?.name ?? ''}'`">
+    <UModal v-model:open="showEdit" :title="`Edit price group '${editingGroup?.name ?? ''}'`">
       <template #body>
         <DynamicForm
           v-model="editForm"
@@ -102,8 +102,8 @@
 
     <ConfirmModal
       :model-value="confirmDelete !== null"
-      title="Delete category"
-      :description="`Delete category '${confirmDelete?.name ?? ''}'? This cannot be undone.`"
+      title="Delete price group"
+      :description="`Delete price group '${confirmDelete?.name ?? ''}'? This cannot be undone.`"
       confirm-label="Delete"
       color="error"
       :loading="deleting"
@@ -119,14 +119,14 @@
 
 <script setup lang="ts">
 import type { ColumnDef, FieldDef } from '#shared/types'
-import type { ProductCategory, ProductCategoryPayload } from '~/composables/useProductCategories'
+import type { PriceGroup, PriceGroupPayload } from '~/composables/usePriceGroups'
 
 definePageMeta({ middleware: 'admin' })
 
-const { list, create, update, remove } = useProductCategories()
+const { list, create, update, remove } = usePriceGroups()
 const { list: listCompanies } = useCompanies()
 
-const rows = ref<ProductCategory[]>([])
+const rows = ref<PriceGroup[]>([])
 const loading = ref(false)
 const error = ref('')
 
@@ -153,9 +153,10 @@ const statusFilterOptions = [
 const sort = ref<{ column: string; direction: 'asc' | 'desc' } | undefined>({ column: 'id', direction: 'desc' })
 const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientTable(rows, { pageSize: 10, searchFields: ['name'] })
 
-const columns: ColumnDef<ProductCategory>[] = [
+const columns: ColumnDef<PriceGroup>[] = [
   { key: 'name', sortable: true },
   { key: 'companyName', label: 'Company', value: (row) => row.companyName ?? '—' },
+  { key: 'discountPercent', label: 'Default discount', value: (row) => (row.discountPercent != null ? `${row.discountPercent}%` : '—') },
   { key: 'active', type: 'boolean', trueLabel: 'Active', trueColor: 'success', falseLabel: 'Inactive', falseColor: 'neutral' },
   { key: 'actions', label: '' }
 ]
@@ -176,6 +177,16 @@ async function load() {
 const formFields = computed<FieldDef[]>(() => [
   { name: 'companyId', label: 'Company', type: 'select', required: true, options: activeCompanyOptions.value },
   { name: 'name', required: true },
+  {
+    name: 'discountPercent',
+    label: 'Default discount',
+    type: 'number',
+    suffix: '%',
+    min: 0,
+    max: 100,
+    step: 0.01,
+    hint: 'Applied off a product’s selling price when no per-product price override exists. Leave blank for no automatic discount.'
+  },
   { name: 'active', type: 'switch', onLabel: 'Active', offLabel: 'Inactive', default: true }
 ])
 
@@ -189,14 +200,14 @@ const {
   showEdit,
   editing,
   editError,
-  editingRow: editingCategory,
+  editingRow: editingGroup,
   editForm,
   openEdit,
   onEdit,
   deleting,
   confirmDelete,
   onDelete
-} = useCrudModals<ProductCategory, ProductCategoryPayload>(
+} = useCrudModals<PriceGroup, PriceGroupPayload>(
   {
     create: (payload) => create(payload),
     update: (row, payload) => update(row.id, payload),
@@ -204,10 +215,15 @@ const {
   },
   load,
   {
-    entityName: 'Category',
+    entityName: 'Price group',
     createDefaults: () => ({ active: true }),
-    toForm: (row) => ({ companyId: row.companyId, name: row.name, active: row.active }),
-    toPayload: (values) => ({ companyId: values.companyId, name: values.name, active: values.active ?? true })
+    toForm: (row) => ({ companyId: row.companyId, name: row.name, discountPercent: row.discountPercent ?? undefined, active: row.active }),
+    toPayload: (values) => ({
+      companyId: values.companyId,
+      name: values.name,
+      discountPercent: values.discountPercent || undefined,
+      active: values.active ?? true
+    })
   }
 )
 

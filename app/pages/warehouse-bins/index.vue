@@ -2,9 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Shelves / bins</h1>
-      <UButton icon="i-lucide-plus" :disabled="zoneOptions.length === 0" @click="openCreate">
-        New bin
-      </UButton>
+      <UButton icon="i-lucide-plus" :disabled="zoneOptions.length === 0" @click="openCreate"> New bin </UButton>
     </div>
 
     <UAlert
@@ -20,12 +18,16 @@
     <UCard class="mb-4">
       <div class="flex flex-wrap gap-3">
         <UInput v-model="search" placeholder="Search name" icon="i-lucide-search" class="w-56" />
-        <USelect v-model="filter.warehouseId" :items="warehouseFilterOptions" placeholder="Warehouse" class="w-44" @update:model-value="filter.zoneId = undefined" />
+        <USelect
+          v-model="filter.warehouseId"
+          :items="warehouseFilterOptions"
+          placeholder="Warehouse"
+          class="w-44"
+          @update:model-value="filter.zoneId = undefined"
+        />
         <USelect v-model="filter.zoneId" :items="zoneFilterOptions" placeholder="Zone" class="w-40" />
         <USelect v-model="filter.active" :items="statusFilterOptions" placeholder="Status" class="w-36" />
-        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters">
-          Clear filters
-        </UButton>
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
@@ -112,7 +114,11 @@
       confirm-label="Delete"
       color="error"
       :loading="deleting"
-      @update:model-value="(v: boolean) => { if (!v) confirmDelete = null }"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) confirmDelete = null
+        }
+      "
       @confirm="onDelete"
     />
   </div>
@@ -147,14 +153,10 @@ async function loadLookups() {
 }
 const zoneOptions = computed(() => zones.value.filter((z) => z.active).map((z) => ({ label: z.name, value: z.id })))
 function zoneOptionsFor(warehouseId: number | undefined) {
-  return zones.value.filter((z) => z.active && (warehouseId === undefined || z.warehouseId === warehouseId))
-    .map((z) => ({ label: z.name, value: z.id }))
+  return zones.value.filter((z) => z.active && (warehouseId === undefined || z.warehouseId === warehouseId)).map((z) => ({ label: z.name, value: z.id }))
 }
 const warehouseFilterOptions = computed(() => [{ label: 'All warehouses', value: undefined }, ...warehouses.value.map((w) => ({ label: w.name, value: w.id }))])
-const zoneFilterOptions = computed(() => [
-  { label: 'All zones', value: undefined },
-  ...zoneOptionsFor(filter.warehouseId)
-])
+const zoneFilterOptions = computed(() => [{ label: 'All zones', value: undefined }, ...zoneOptionsFor(filter.warehouseId)])
 
 const filter = reactive<{ warehouseId: number | undefined; zoneId: number | undefined; active: boolean | undefined }>({
   warehouseId: undefined,
@@ -186,9 +188,7 @@ async function load() {
     // Bins only store zoneId server-side — a warehouse-only filter (no
     // specific zone chosen) is applied client-side using warehouseId, which
     // the response already resolves through the zone.
-    rows.value = filter.warehouseId !== undefined
-      ? res.data.filter((b) => b.warehouseId === filter.warehouseId)
-      : res.data
+    rows.value = filter.warehouseId !== undefined ? res.data.filter((b) => b.warehouseId === filter.warehouseId) : res.data
   } catch (err) {
     error.value = apiErrorMessage(err)
   } finally {
@@ -197,22 +197,47 @@ async function load() {
 }
 
 const createBinFields = computed<FieldDef[]>(() => [
-  { name: 'warehouseId', label: 'Warehouse', type: 'select', required: true, options: warehouses.value.filter((w) => w.active).map((w) => ({ label: w.name, value: w.id })) },
+  {
+    name: 'warehouseId',
+    label: 'Warehouse',
+    type: 'select',
+    required: true,
+    options: warehouses.value.filter((w) => w.active).map((w) => ({ label: w.name, value: w.id }))
+  },
   { name: 'zoneId', label: 'Zone', type: 'select', required: true, options: zoneOptionsFor(createForm.value?.warehouseId) },
   { name: 'name', hint: 'e.g. A-01-03, or a plain label like "Bin 12".', required: true },
   { name: 'active', type: 'switch', onLabel: 'Active', offLabel: 'Inactive', default: true }
 ])
 const editBinFields = computed<FieldDef[]>(() => [
-  { name: 'warehouseId', label: 'Warehouse', type: 'select', required: true, options: warehouses.value.filter((w) => w.active).map((w) => ({ label: w.name, value: w.id })) },
+  {
+    name: 'warehouseId',
+    label: 'Warehouse',
+    type: 'select',
+    required: true,
+    options: warehouses.value.filter((w) => w.active).map((w) => ({ label: w.name, value: w.id }))
+  },
   { name: 'zoneId', label: 'Zone', type: 'select', required: true, options: zoneOptionsFor(editForm.value?.warehouseId) },
   { name: 'name', required: true },
   { name: 'active', type: 'switch', onLabel: 'Active', offLabel: 'Inactive' }
 ])
 
 const {
-  showCreate, creating, error: createError, createForm, openCreate, onCreate,
-  showEdit, editing, editError, editingRow: editingBin, editForm, openEdit, onEdit,
-  deleting, confirmDelete, onDelete
+  showCreate,
+  creating,
+  error: createError,
+  createForm,
+  openCreate,
+  onCreate,
+  showEdit,
+  editing,
+  editError,
+  editingRow: editingBin,
+  editForm,
+  openEdit,
+  onEdit,
+  deleting,
+  confirmDelete,
+  onDelete
 } = useCrudModals<WarehouseBin, WarehouseBinPayload>(
   {
     create: (payload) => create(payload),

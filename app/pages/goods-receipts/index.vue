@@ -2,9 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Goods receipts</h1>
-      <UButton icon="i-lucide-plus" :disabled="receivablePoOptions.length === 0" @click="openCreate()">
-        New receipt
-      </UButton>
+      <UButton icon="i-lucide-plus" :disabled="receivablePoOptions.length === 0" @click="openCreate()"> New receipt </UButton>
     </div>
 
     <UAlert
@@ -21,9 +19,7 @@
       <div class="flex flex-wrap gap-3">
         <UInput v-model="search" placeholder="Search receipt number" icon="i-lucide-search" class="w-56" />
         <USelect v-model="filter.warehouseId" :items="warehouseFilterOptions" placeholder="Warehouse" class="w-44" />
-        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters">
-          Clear filters
-        </UButton>
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
@@ -74,7 +70,13 @@
       <template #body>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <UFormField label="Purchase order" required class="sm:col-span-2">
-            <USelect v-model="createPoId" :items="receivablePoOptions" placeholder="Select a submitted purchase order" class="w-full" @update:model-value="onPoSelected" />
+            <USelect
+              v-model="createPoId"
+              :items="receivablePoOptions"
+              placeholder="Select a submitted purchase order"
+              class="w-full"
+              @update:model-value="onPoSelected"
+            />
           </UFormField>
           <UFormField label="Receipt date" required>
             <UInput v-model="createReceiptDate" type="date" class="w-full" />
@@ -88,13 +90,14 @@
           <div v-if="loadingPoDetail" class="text-sm text-gray-400 py-6 text-center">Loading order lines…</div>
           <template v-else>
             <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lines to receive</p>
-            <EmptyState v-if="createLines.length === 0" icon="i-lucide-check-circle" title="Nothing outstanding" description="Every line on this order has already been fully received." />
+            <EmptyState
+              v-if="createLines.length === 0"
+              icon="i-lucide-check-circle"
+              title="Nothing outstanding"
+              description="Every line on this order has already been fully received."
+            />
             <div v-else class="space-y-3 mb-4">
-              <div
-                v-for="line in createLines"
-                :key="line.purchaseOrderLineId"
-                class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 space-y-2"
-              >
+              <div v-for="line in createLines" :key="line.purchaseOrderLineId" class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 space-y-2">
                 <div class="flex items-center justify-between gap-2">
                   <span class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ line.productName }} ({{ line.productSku }})</span>
                   <span class="text-xs text-gray-400 shrink-0">Remaining: {{ line.remaining }}</span>
@@ -134,22 +137,35 @@
         <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingReceipt">
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
-            <div><dt class="text-gray-400">Purchase order</dt><dd class="text-gray-900 dark:text-white">{{ viewingReceipt.poNumber }}</dd></div>
-            <div><dt class="text-gray-400">Warehouse</dt><dd class="text-gray-900 dark:text-white">{{ viewingReceipt.warehouseName }}</dd></div>
-            <div><dt class="text-gray-400">Receipt date</dt><dd class="text-gray-900 dark:text-white">{{ formatDate(viewingReceipt.receiptDate) }}</dd></div>
-            <div><dt class="text-gray-400">Posted by</dt><dd class="text-gray-900 dark:text-white">{{ viewingReceipt.createdBy ?? '—' }}</dd></div>
-            <div v-if="viewingReceipt.notes" class="col-span-2"><dt class="text-gray-400">Notes</dt><dd class="text-gray-900 dark:text-white">{{ viewingReceipt.notes }}</dd></div>
+            <div>
+              <dt class="text-gray-400">Purchase order</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingReceipt.poNumber }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-400">Warehouse</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingReceipt.warehouseName }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-400">Receipt date</dt>
+              <dd class="text-gray-900 dark:text-white">{{ formatDate(viewingReceipt.receiptDate) }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-400">Posted by</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingReceipt.createdBy ?? '—' }}</dd>
+            </div>
+            <div v-if="viewingReceipt.notes" class="col-span-2">
+              <dt class="text-gray-400">Notes</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingReceipt.notes }}</dd>
+            </div>
           </dl>
           <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lines received</p>
           <ul class="space-y-1.5">
-            <li
-              v-for="line in viewingReceipt.lines"
-              :key="line.id"
-              class="text-sm rounded-md border border-gray-200 dark:border-gray-800 px-3 py-1.5"
-            >
+            <li v-for="line in viewingReceipt.lines" :key="line.id" class="text-sm rounded-md border border-gray-200 dark:border-gray-800 px-3 py-1.5">
               <div class="flex items-center justify-between">
                 <span>{{ line.productName }} ({{ line.productSku }})</span>
-                <span class="text-gray-500 dark:text-gray-400">{{ line.quantityReceived }}<span v-if="line.binName"> — {{ line.binName }}</span></span>
+                <span class="text-gray-500 dark:text-gray-400"
+                  >{{ line.quantityReceived }}<span v-if="line.binName"> — {{ line.binName }}</span></span
+                >
               </div>
               <p v-if="line.batchNumber" class="text-xs text-gray-400 mt-0.5">
                 Batch {{ line.batchNumber }}<span v-if="line.expirationDate"> · expires {{ formatDate(line.expirationDate) }}</span>
@@ -212,9 +228,7 @@ async function loadLookups() {
 }
 
 const receivablePoOptions = computed(() =>
-  purchaseOrders.value
-    .filter((p) => p.status === 'SUBMITTED' || p.status === 'PARTIALLY_RECEIVED')
-    .map((p) => ({ label: p.poNumber, value: p.id }))
+  purchaseOrders.value.filter((p) => p.status === 'SUBMITTED' || p.status === 'PARTIALLY_RECEIVED').map((p) => ({ label: p.poNumber, value: p.id }))
 )
 const warehouseFilterOptions = computed(() => [{ label: 'All warehouses', value: undefined }, ...warehouses.value.map((w) => ({ label: w.name, value: w.id }))])
 
@@ -260,7 +274,10 @@ interface ReceiveLine {
 }
 
 function parsedSerials(line: ReceiveLine): string[] {
-  return line.serialNumbersText.split('\n').map((s) => s.trim()).filter((s) => s.length > 0)
+  return line.serialNumbersText
+    .split('\n')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
 }
 
 const showCreate = ref(false)

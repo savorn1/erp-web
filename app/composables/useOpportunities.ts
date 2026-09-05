@@ -125,12 +125,15 @@ export function useOpportunities() {
     return res.data
   }
 
-  async function convertToQuotation(id: number, payload: {
-    quotationDate: string
-    validUntil?: string
-    notes?: string
-    lines: { productId: number; quantity: number; unitPrice: number }[]
-  }) {
+  async function convertToQuotation(
+    id: number,
+    payload: {
+      quotationDate: string
+      validUntil?: string
+      notes?: string
+      lines: { productId: number; quantity: number; unitPrice: number }[]
+    }
+  ) {
     const res = await api<ApiEnvelope<import('./useQuotations').Quotation>>(`/api/admin/opportunities/${id}/convert-to-quotation`, {
       method: 'POST',
       body: payload

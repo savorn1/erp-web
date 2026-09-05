@@ -2,9 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Deliveries</h1>
-      <UButton icon="i-lucide-plus" :disabled="deliverableSoOptions.length === 0" @click="openCreate()">
-        New delivery
-      </UButton>
+      <UButton icon="i-lucide-plus" :disabled="deliverableSoOptions.length === 0" @click="openCreate()"> New delivery </UButton>
     </div>
 
     <UAlert
@@ -22,9 +20,7 @@
         <UInput v-model="search" placeholder="Search delivery number" icon="i-lucide-search" class="w-56" />
         <USelect v-model="filter.warehouseId" :items="warehouseFilterOptions" placeholder="Warehouse" class="w-44" />
         <USelect v-model="filter.status" :items="statusFilterOptions" placeholder="Status" class="w-40" />
-        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters">
-          Clear filters
-        </UButton>
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
@@ -47,22 +43,62 @@
         <template #actions-data="{ row }">
           <div class="flex items-center gap-2 flex-wrap">
             <UButton size="xs" color="primary" variant="soft" icon="i-lucide-eye" @click="openView(row)">View</UButton>
-            <UButton v-if="row.status === 'PENDING'" size="xs" color="info" variant="soft" icon="i-lucide-package-search" :loading="actingId === row.id" @click="onPick(row)">
+            <UButton
+              v-if="row.status === 'PENDING'"
+              size="xs"
+              color="info"
+              variant="soft"
+              icon="i-lucide-package-search"
+              :loading="actingId === row.id"
+              @click="onPick(row)"
+            >
               Pick
             </UButton>
-            <UButton v-if="row.status === 'PICKED'" size="xs" color="info" variant="soft" icon="i-lucide-box" :loading="actingId === row.id" @click="onPack(row)">
+            <UButton
+              v-if="row.status === 'PICKED'"
+              size="xs"
+              color="info"
+              variant="soft"
+              icon="i-lucide-box"
+              :loading="actingId === row.id"
+              @click="onPack(row)"
+            >
               Pack
             </UButton>
-            <UButton v-if="row.status === 'PACKED'" size="xs" color="info" variant="soft" icon="i-lucide-truck" :loading="actingId === row.id" @click="onShip(row)">
+            <UButton
+              v-if="row.status === 'PACKED'"
+              size="xs"
+              color="info"
+              variant="soft"
+              icon="i-lucide-truck"
+              :loading="actingId === row.id"
+              @click="onShip(row)"
+            >
               Ship
             </UButton>
-            <UButton v-if="row.status === 'SHIPPED'" size="xs" color="success" variant="soft" icon="i-lucide-check-check" :loading="actingId === row.id" @click="onComplete(row)">
+            <UButton
+              v-if="row.status === 'SHIPPED'"
+              size="xs"
+              color="success"
+              variant="soft"
+              icon="i-lucide-check-check"
+              :loading="actingId === row.id"
+              @click="onComplete(row)"
+            >
               Confirm delivery
             </UButton>
             <NuxtLink v-if="row.status === 'SHIPPED' || row.status === 'DELIVERED'" :to="`/invoices?fromDelivery=${row.id}`">
               <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-receipt">Invoice</UButton>
             </NuxtLink>
-            <UButton v-if="row.status === 'PENDING' || row.status === 'PICKED' || row.status === 'PACKED'" size="xs" color="warning" variant="soft" icon="i-lucide-ban" :loading="actingId === row.id" @click="onCancel(row)">
+            <UButton
+              v-if="row.status === 'PENDING' || row.status === 'PICKED' || row.status === 'PACKED'"
+              size="xs"
+              color="warning"
+              variant="soft"
+              icon="i-lucide-ban"
+              :loading="actingId === row.id"
+              @click="onCancel(row)"
+            >
               Cancel
             </UButton>
           </div>
@@ -95,7 +131,13 @@
       <template #body>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <UFormField label="Sales order" required class="sm:col-span-2">
-            <USelect v-model="createSoId" :items="deliverableSoOptions" placeholder="Select a submitted sales order" class="w-full" @update:model-value="onSoSelected" />
+            <USelect
+              v-model="createSoId"
+              :items="deliverableSoOptions"
+              placeholder="Select a submitted sales order"
+              class="w-full"
+              @update:model-value="onSoSelected"
+            />
           </UFormField>
           <UFormField label="Delivery date" required>
             <UInput v-model="createDeliveryDate" type="date" class="w-full" />
@@ -109,19 +151,27 @@
           <div v-if="loadingSoDetail" class="text-sm text-gray-400 py-6 text-center">Loading order lines…</div>
           <template v-else>
             <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lines to deliver</p>
-            <EmptyState v-if="createLines.length === 0" icon="i-lucide-check-circle" title="Nothing outstanding" description="Every line on this order has already been fully delivered." />
+            <EmptyState
+              v-if="createLines.length === 0"
+              icon="i-lucide-check-circle"
+              title="Nothing outstanding"
+              description="Every line on this order has already been fully delivered."
+            />
             <div v-else class="space-y-3 mb-4">
-              <div
-                v-for="line in createLines"
-                :key="line.salesOrderLineId"
-                class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 space-y-2"
-              >
+              <div v-for="line in createLines" :key="line.salesOrderLineId" class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 space-y-2">
                 <div class="flex items-center justify-between gap-2">
                   <span class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ line.productName }} ({{ line.productSku }})</span>
                   <span class="text-xs text-gray-400 shrink-0">Ordered remaining: {{ line.remaining }} · Available: {{ availableFor(line) }}</span>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                  <UInput v-model.number="line.quantityDelivered" type="number" min="0" :max="Math.min(line.remaining, availableFor(line))" step="0.0001" placeholder="Quantity to deliver" />
+                  <UInput
+                    v-model.number="line.quantityDelivered"
+                    type="number"
+                    min="0"
+                    :max="Math.min(line.remaining, availableFor(line))"
+                    step="0.0001"
+                    placeholder="Quantity to deliver"
+                  />
                   <USelect v-model="line.binId" :items="binOptionsForWarehouse" placeholder="No bin" @update:model-value="onLineBinChanged(line)" />
                 </div>
                 <p v-if="line.quantityDelivered > availableFor(line)" class="text-xs text-error">
@@ -164,25 +214,47 @@
         <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingDelivery">
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
-            <div><dt class="text-gray-400">Sales order</dt><dd class="text-gray-900 dark:text-white">{{ viewingDelivery.soNumber }}</dd></div>
-            <div><dt class="text-gray-400">Warehouse</dt><dd class="text-gray-900 dark:text-white">{{ viewingDelivery.warehouseName }}</dd></div>
-            <div><dt class="text-gray-400">Delivery date</dt><dd class="text-gray-900 dark:text-white">{{ formatDate(viewingDelivery.deliveryDate) }}</dd></div>
-            <div><dt class="text-gray-400">Status</dt><dd class="text-gray-900 dark:text-white">{{ viewingDelivery.status }}</dd></div>
-            <div><dt class="text-gray-400">Created by</dt><dd class="text-gray-900 dark:text-white">{{ viewingDelivery.createdBy ?? '—' }}</dd></div>
-            <div v-if="viewingDelivery.shippedAt"><dt class="text-gray-400">Shipped</dt><dd class="text-gray-900 dark:text-white">{{ formatDateTime(viewingDelivery.shippedAt) }} by {{ viewingDelivery.shippedBy }}</dd></div>
-            <div v-if="viewingDelivery.deliveredAt"><dt class="text-gray-400">Delivered</dt><dd class="text-gray-900 dark:text-white">{{ formatDateTime(viewingDelivery.deliveredAt) }} by {{ viewingDelivery.deliveredBy }}</dd></div>
-            <div v-if="viewingDelivery.notes" class="col-span-2"><dt class="text-gray-400">Notes</dt><dd class="text-gray-900 dark:text-white">{{ viewingDelivery.notes }}</dd></div>
+            <div>
+              <dt class="text-gray-400">Sales order</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingDelivery.soNumber }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-400">Warehouse</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingDelivery.warehouseName }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-400">Delivery date</dt>
+              <dd class="text-gray-900 dark:text-white">{{ formatDate(viewingDelivery.deliveryDate) }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-400">Status</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingDelivery.status }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-400">Created by</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingDelivery.createdBy ?? '—' }}</dd>
+            </div>
+            <div v-if="viewingDelivery.shippedAt">
+              <dt class="text-gray-400">Shipped</dt>
+              <dd class="text-gray-900 dark:text-white">{{ formatDateTime(viewingDelivery.shippedAt) }} by {{ viewingDelivery.shippedBy }}</dd>
+            </div>
+            <div v-if="viewingDelivery.deliveredAt">
+              <dt class="text-gray-400">Delivered</dt>
+              <dd class="text-gray-900 dark:text-white">{{ formatDateTime(viewingDelivery.deliveredAt) }} by {{ viewingDelivery.deliveredBy }}</dd>
+            </div>
+            <div v-if="viewingDelivery.notes" class="col-span-2">
+              <dt class="text-gray-400">Notes</dt>
+              <dd class="text-gray-900 dark:text-white">{{ viewingDelivery.notes }}</dd>
+            </div>
           </dl>
           <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lines delivered</p>
           <ul class="space-y-1.5">
-            <li
-              v-for="line in viewingDelivery.lines"
-              :key="line.id"
-              class="text-sm rounded-md border border-gray-200 dark:border-gray-800 px-3 py-1.5"
-            >
+            <li v-for="line in viewingDelivery.lines" :key="line.id" class="text-sm rounded-md border border-gray-200 dark:border-gray-800 px-3 py-1.5">
               <div class="flex items-center justify-between">
                 <span>{{ line.productName }} ({{ line.productSku }})</span>
-                <span class="text-gray-500 dark:text-gray-400">{{ line.quantityDelivered }}<span v-if="line.binName"> — {{ line.binName }}</span></span>
+                <span class="text-gray-500 dark:text-gray-400"
+                  >{{ line.quantityDelivered }}<span v-if="line.binName"> — {{ line.binName }}</span></span
+                >
               </div>
               <p v-if="line.batchNumber" class="text-xs text-gray-400 mt-0.5">Batch {{ line.batchNumber }}</p>
               <p v-if="line.serialNumbers && line.serialNumbers.length > 0" class="text-xs text-gray-400 mt-0.5">
@@ -245,9 +317,7 @@ async function loadLookups() {
 }
 
 const deliverableSoOptions = computed(() =>
-  salesOrders.value
-    .filter((s) => s.status === 'CONFIRMED' || s.status === 'PARTIALLY_DELIVERED')
-    .map((s) => ({ label: s.soNumber, value: s.id }))
+  salesOrders.value.filter((s) => s.status === 'CONFIRMED' || s.status === 'PARTIALLY_DELIVERED').map((s) => ({ label: s.soNumber, value: s.id }))
 )
 const warehouseFilterOptions = computed(() => [{ label: 'All warehouses', value: undefined }, ...warehouses.value.map((w) => ({ label: w.name, value: w.id }))])
 const statusFilterOptions = [
@@ -368,13 +438,20 @@ async function onSoSelected(soId: number | undefined) {
       so ? listStockLevels({ warehouseId: so.warehouseId, size: 500 }) : Promise.resolve({ data: [] }),
       so ? listSerialNumbers({ warehouseId: so.warehouseId, status: 'IN_STOCK', size: 500 }) : Promise.resolve({ data: [] })
     ])
-    stockLevels.value = stockRes.data.map((s: any) => ({ productId: s.productId, warehouseId: s.warehouseId, binId: s.binId, quantityOnHand: s.quantityOnHand }))
+    stockLevels.value = stockRes.data.map((s: any) => ({
+      productId: s.productId,
+      warehouseId: s.warehouseId,
+      binId: s.binId,
+      quantityOnHand: s.quantityOnHand
+    }))
     availableSerials.value = serialRes.data.map((s: any) => ({ productId: s.productId, binId: s.binId, serialNumber: s.serialNumber }))
-    productBatches.value = [...new Map(
-      serialRes.data
-        .filter((s: any) => s.batchNumber)
-        .map((s: any) => [`${s.productId}:${s.batchNumber}`, { productId: s.productId, batchNumber: s.batchNumber as string }])
-    ).values()]
+    productBatches.value = [
+      ...new Map(
+        serialRes.data
+          .filter((s: any) => s.batchNumber)
+          .map((s: any) => [`${s.productId}:${s.batchNumber}`, { productId: s.productId, batchNumber: s.batchNumber as string }])
+      ).values()
+    ]
     createLines.value = (detail.lines ?? [])
       .map((l) => ({
         salesOrderLineId: l.id,

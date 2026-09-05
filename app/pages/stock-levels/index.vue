@@ -10,9 +10,7 @@
         <USelect v-model="filter.companyId" :items="companyFilterOptions" placeholder="Company" class="w-44" />
         <USelect v-model="filter.warehouseId" :items="warehouseFilterOptions" placeholder="Warehouse" class="w-44" />
         <USelect v-model="filter.productId" :items="productFilterOptions" placeholder="Product" class="w-48" />
-        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters">
-          Clear filters
-        </UButton>
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
@@ -74,11 +72,7 @@ const warehouses = ref<{ id: number; name: string }[]>([])
 const products = ref<{ id: number; name: string; sku: string }[]>([])
 
 async function loadLookups() {
-  const [c, w, p] = await Promise.all([
-    listCompanies({ size: 200 }),
-    listWarehouses({ size: 200 }),
-    listProducts({ size: 200 })
-  ])
+  const [c, w, p] = await Promise.all([listCompanies({ size: 200 }), listWarehouses({ size: 200 }), listProducts({ size: 200 })])
   companies.value = c.data
   warehouses.value = w.data
   products.value = p.data
@@ -86,7 +80,10 @@ async function loadLookups() {
 
 const companyFilterOptions = computed(() => [{ label: 'All companies', value: undefined }, ...companies.value.map((c) => ({ label: c.name, value: c.id }))])
 const warehouseFilterOptions = computed(() => [{ label: 'All warehouses', value: undefined }, ...warehouses.value.map((w) => ({ label: w.name, value: w.id }))])
-const productFilterOptions = computed(() => [{ label: 'All products', value: undefined }, ...products.value.map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))])
+const productFilterOptions = computed(() => [
+  { label: 'All products', value: undefined },
+  ...products.value.map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
+])
 
 const filter = reactive<{ companyId: number | undefined; warehouseId: number | undefined; productId: number | undefined }>({
   companyId: undefined,

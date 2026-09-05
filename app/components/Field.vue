@@ -1,11 +1,6 @@
 <template>
   <!-- hidden fields render nothing; their value just rides along in the model -->
-  <UFormField
-    v-if="field.type !== 'hidden'"
-    :label="label"
-    :name="field.name"
-    :required="field.required"
-  >
+  <UFormField v-if="field.type !== 'hidden'" :label="label" :name="field.name" :required="field.required">
     <template v-if="field.hint" #label="{ label: labelText }">
       <span class="inline-flex items-center gap-1">
         {{ labelText }}
@@ -55,8 +50,6 @@ const CONTROLS: Record<Exclude<FieldType, 'hidden'>, Component> = {
   datetime: FieldDateTime
 }
 
-const control = computed(
-  () => CONTROLS[(props.field.type ?? 'text') as Exclude<FieldType, 'hidden'>]
-)
+const control = computed(() => CONTROLS[(props.field.type ?? 'text') as Exclude<FieldType, 'hidden'>])
 const label = computed(() => props.field.label ?? humanize(props.field.name))
 </script>

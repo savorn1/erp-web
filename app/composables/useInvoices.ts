@@ -8,6 +8,7 @@
 import type { ApiEnvelope, PageEnvelope } from '#shared/types'
 
 export type InvoiceStatus = 'DRAFT' | 'APPROVED' | 'CANCELLED'
+export type InvoicePaymentStatus = 'UNPAID' | 'PARTIALLY_PAID' | 'PAID'
 
 export interface InvoiceLine {
   id: number
@@ -44,6 +45,9 @@ export interface Invoice {
   taxAmount: number
   totalAmount: number
   creditedAmount: number
+  paidAmount: number
+  outstandingAmount: number
+  paymentStatus: InvoicePaymentStatus
   lines: InvoiceLine[] | null
 }
 

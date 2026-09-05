@@ -2,9 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Departments</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate">
-        New department
-      </UButton>
+      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New department </UButton>
     </div>
 
     <UAlert
@@ -19,45 +17,14 @@
 
     <UCard class="mb-4">
       <div class="flex flex-wrap gap-3">
-        <UInput
-          v-model="search"
-          placeholder="Search name"
-          icon="i-lucide-search"
-          class="w-56"
-        />
-        <USelect
-          v-model="filter.companyId"
-          :items="companyFilterOptions"
-          placeholder="Company"
-          class="w-48"
-        />
-        <USelect
-          v-model="filter.active"
-          :items="statusFilterOptions"
-          placeholder="Status"
-          class="w-36"
-        />
-        <UButton
-          v-if="hasActiveFilter"
-          size="sm"
-          color="neutral"
-          variant="ghost"
-          icon="i-lucide-x"
-          @click="clearFilters"
-        >
-          Clear filters
-        </UButton>
+        <UInput v-model="search" placeholder="Search name" icon="i-lucide-search" class="w-56" />
+        <USelect v-model="filter.companyId" :items="companyFilterOptions" placeholder="Company" class="w-48" />
+        <USelect v-model="filter.active" :items="statusFilterOptions" placeholder="Status" class="w-36" />
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
-    <UAlert
-      v-if="error"
-      color="error"
-      variant="subtle"
-      class="mb-4"
-      :title="error"
-      icon="i-lucide-triangle-alert"
-    />
+    <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
     <TruncatedResultsAlert v-if="truncated" />
 
     <UCard>
@@ -82,12 +49,8 @@
 
         <template #actions-data="{ row }">
           <div class="flex items-center gap-2">
-            <UButton size="xs" color="primary" variant="soft" icon="i-lucide-pencil" @click="openEdit(row)">
-              Edit
-            </UButton>
-            <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-users" @click="openEmployees(row)">
-              Employees
-            </UButton>
+            <UButton size="xs" color="primary" variant="soft" icon="i-lucide-pencil" @click="openEdit(row)"> Edit </UButton>
+            <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-users" @click="openEmployees(row)"> Employees </UButton>
             <UButton
               size="xs"
               :color="row.active ? 'neutral' : 'success'"
@@ -98,9 +61,7 @@
             >
               {{ row.active ? 'Deactivate' : 'Activate' }}
             </UButton>
-            <UButton size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="confirmDelete = row">
-              Delete
-            </UButton>
+            <UButton size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="confirmDelete = row"> Delete </UButton>
           </div>
         </template>
 
@@ -172,16 +133,7 @@
                 class="flex items-center justify-between gap-2 rounded-md border border-gray-200 dark:border-gray-800 px-3 py-1.5 text-sm"
               >
                 <span class="text-gray-700 dark:text-gray-300">{{ u.username }}</span>
-                <UButton
-                  size="xs"
-                  color="error"
-                  variant="ghost"
-                  icon="i-lucide-x"
-                  :loading="unassigningId === u.id"
-                  @click="onUnassign(u)"
-                >
-                  Remove
-                </UButton>
+                <UButton size="xs" color="error" variant="ghost" icon="i-lucide-x" :loading="unassigningId === u.id" @click="onUnassign(u)"> Remove </UButton>
               </li>
             </ul>
           </div>
@@ -197,12 +149,7 @@
                 placeholder="Select users"
                 class="flex-1"
               />
-              <UButton
-                :disabled="selectedUserIdsToAssign.length === 0"
-                :loading="assigningEmployees"
-                icon="i-lucide-user-plus"
-                @click="onAssignSelected"
-              >
+              <UButton :disabled="selectedUserIdsToAssign.length === 0" :loading="assigningEmployees" icon="i-lucide-user-plus" @click="onAssignSelected">
                 Assign
               </UButton>
             </div>
@@ -218,7 +165,11 @@
       confirm-label="Delete"
       color="error"
       :loading="deleting"
-      @update:model-value="(v: boolean) => { if (!v) confirmDelete = null }"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) confirmDelete = null
+        }
+      "
       @confirm="onDelete"
     />
   </div>
@@ -248,10 +199,7 @@ const loadingLookups = ref(false)
 async function loadLookups() {
   loadingLookups.value = true
   try {
-    const [companiesRes, usersRes] = await Promise.all([
-      listCompanies({ size: 200 }),
-      listUsers({ size: 200 })
-    ])
+    const [companiesRes, usersRes] = await Promise.all([listCompanies({ size: 200 }), listUsers({ size: 200 })])
     companies.value = companiesRes.data
     users.value = usersRes.data
   } finally {
@@ -259,19 +207,12 @@ async function loadLookups() {
   }
 }
 
-const activeCompanyOptions = computed(() =>
-  companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id }))
-)
-const companyFilterOptions = computed(() => [
-  { label: 'All companies', value: undefined },
-  ...companies.value.map((c) => ({ label: c.name, value: c.id }))
-])
+const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
+const companyFilterOptions = computed(() => [{ label: 'All companies', value: undefined }, ...companies.value.map((c) => ({ label: c.name, value: c.id }))])
 const managerOptions = computed(() => users.value.map((u) => ({ label: u.username, value: u.id })))
 
 function parentOptionsFor(companyId: number | undefined, excludeId?: number) {
-  return allDepartments.value
-    .filter((d) => d.companyId === companyId && d.active && d.id !== excludeId)
-    .map((d) => ({ label: d.name, value: d.id }))
+  return allDepartments.value.filter((d) => d.companyId === companyId && d.active && d.id !== excludeId).map((d) => ({ label: d.name, value: d.id }))
 }
 
 const departmentById = computed(() => new Map(allDepartments.value.map((d) => [d.id, d])))
@@ -304,7 +245,14 @@ const sort = ref<{ column: string; direction: 'asc' | 'desc' } | undefined>({
   direction: 'desc'
 })
 
-const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientTable(rows, {
+const {
+  page,
+  pageSize,
+  total,
+  rows: pagedRows,
+  truncated,
+  search
+} = useClientTable(rows, {
   pageSize: 10,
   searchFields: ['name']
 })
@@ -359,7 +307,7 @@ const createDepartmentFields = computed<FieldDef[]>(() => [
     label: 'Department manager',
     type: 'select',
     options: managerOptions.value,
-    hint: 'Optional — assign a user as this department\'s manager.'
+    hint: "Optional — assign a user as this department's manager."
   }
 ])
 
@@ -378,7 +326,7 @@ const editDepartmentFields = computed<FieldDef[]>(() => [
     label: 'Department manager',
     type: 'select',
     options: managerOptions.value,
-    hint: 'Optional — assign a user as this department\'s manager.'
+    hint: "Optional — assign a user as this department's manager."
   }
 ])
 
@@ -438,11 +386,7 @@ async function toggleStatus(row: Department) {
   }
 }
 
-const {
-  open: showEmployees,
-  target: employeesTarget,
-  openWith: openEmployeesWith
-} = useTargetModal<Department>()
+const { open: showEmployees, target: employeesTarget, openWith: openEmployeesWith } = useTargetModal<Department>()
 
 const departmentUsers = ref<AdminUser[]>([])
 const loadingDepartmentUsers = ref(false)

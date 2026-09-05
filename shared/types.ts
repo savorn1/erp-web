@@ -37,20 +37,7 @@ export interface PageEnvelope<T> {
 // Lean subset of loan-frontend's FieldType — add more `fields/Field*.vue`
 // components and wire them into Field.vue's CONTROLS map to extend this.
 export type FieldType =
-  | 'text'
-  | 'textarea'
-  | 'number'
-  | 'currency'
-  | 'email'
-  | 'password'
-  | 'url'
-  | 'select'
-  | 'radio'
-  | 'checkbox'
-  | 'switch'
-  | 'date'
-  | 'datetime'
-  | 'hidden'
+  'text' | 'textarea' | 'number' | 'currency' | 'email' | 'password' | 'url' | 'select' | 'radio' | 'checkbox' | 'switch' | 'date' | 'datetime' | 'hidden'
 
 export interface FieldOption {
   label: string
@@ -102,18 +89,7 @@ export interface FieldDef {
 // omitted, `type` defaults to 'text'. Rendered by <ColumnValue> (one cell)
 // and <DataTable> (a whole table, wrapping Nuxt UI's <UTable>).
 
-export type ColumnType =
-  | 'text'
-  | 'number'
-  | 'currency'
-  | 'percent'
-  | 'date'
-  | 'datetime'
-  | 'enum'
-  | 'status'
-  | 'boolean'
-  | 'badge'
-  | 'link'
+export type ColumnType = 'text' | 'number' | 'currency' | 'percent' | 'date' | 'datetime' | 'enum' | 'status' | 'boolean' | 'badge' | 'link'
 
 // `any` here (not `unknown`) is deliberate: it's the default used only when a
 // caller doesn't parameterize ColumnDef (e.g. <ColumnValue>'s untyped prop).

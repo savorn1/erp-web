@@ -7,57 +7,16 @@
 
     <UCard class="mb-4">
       <div class="flex flex-wrap gap-3">
-        <UInput
-          v-model="search"
-          placeholder="Search username"
-          icon="i-lucide-search"
-          class="w-56"
-        />
-        <USelect
-          v-model="filter.role"
-          :items="roleFilterOptions"
-          placeholder="Role"
-          class="w-32"
-        />
-        <USelect
-          v-model="filter.enabled"
-          :items="statusFilterOptions"
-          placeholder="Status"
-          class="w-32"
-        />
-        <USelect
-          v-model="filter.companyId"
-          :items="companyFilterOptions"
-          placeholder="Company"
-          class="w-40"
-        />
-        <USelect
-          v-model="filter.branchId"
-          :items="branchFilterOptions"
-          placeholder="Branch"
-          class="w-40"
-        />
-        <UButton
-          v-if="hasActiveFilter"
-          size="sm"
-          color="neutral"
-          variant="ghost"
-          icon="i-lucide-x"
-          @click="clearFilters"
-        >
-          Clear filters
-        </UButton>
+        <UInput v-model="search" placeholder="Search username" icon="i-lucide-search" class="w-56" />
+        <USelect v-model="filter.role" :items="roleFilterOptions" placeholder="Role" class="w-32" />
+        <USelect v-model="filter.enabled" :items="statusFilterOptions" placeholder="Status" class="w-32" />
+        <USelect v-model="filter.companyId" :items="companyFilterOptions" placeholder="Company" class="w-40" />
+        <USelect v-model="filter.branchId" :items="branchFilterOptions" placeholder="Branch" class="w-40" />
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
-    <UAlert
-      v-if="error"
-      color="error"
-      variant="subtle"
-      class="mb-4"
-      :title="error"
-      icon="i-lucide-triangle-alert"
-    />
+    <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
     <TruncatedResultsAlert v-if="truncated" />
 
     <UCard>
@@ -76,27 +35,12 @@
         @refresh="load"
       >
         <template #bulk-actions="{ selected, clear }">
-          <UButton
-            size="xs"
-            color="warning"
-            variant="soft"
-            icon="i-lucide-log-out"
-            @click="onBulkForceLogoutClick(selected, clear)"
-          >
-            Force logout
-          </UButton>
+          <UButton size="xs" color="warning" variant="soft" icon="i-lucide-log-out" @click="onBulkForceLogoutClick(selected, clear)"> Force logout </UButton>
         </template>
 
         <template #actions-data="{ row }">
           <div class="flex items-center gap-2">
-            <UButton
-              size="xs"
-              color="primary"
-              variant="soft"
-              icon="i-lucide-pencil"
-              :disabled="row.username === myUsername"
-              @click="openEdit(row)"
-            >
+            <UButton size="xs" color="primary" variant="soft" icon="i-lucide-pencil" :disabled="row.username === myUsername" @click="openEdit(row)">
               Edit
             </UButton>
             <UButton
@@ -109,23 +53,8 @@
             >
               Reset password
             </UButton>
-            <UButton
-              size="xs"
-              color="warning"
-              variant="soft"
-              icon="i-lucide-log-out"
-              @click="confirmForceLogout = row"
-            >
-              Force logout
-            </UButton>
-            <UButton
-              size="xs"
-              color="error"
-              variant="soft"
-              icon="i-lucide-trash-2"
-              :disabled="row.username === myUsername"
-              @click="confirmDelete = row"
-            >
+            <UButton size="xs" color="warning" variant="soft" icon="i-lucide-log-out" @click="confirmForceLogout = row"> Force logout </UButton>
+            <UButton size="xs" color="error" variant="soft" icon="i-lucide-trash-2" :disabled="row.username === myUsername" @click="confirmDelete = row">
               Delete
             </UButton>
           </div>
@@ -199,7 +128,11 @@
       confirm-label="Delete"
       color="error"
       :loading="deleting"
-      @update:model-value="(v: boolean) => { if (!v) confirmDelete = null }"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) confirmDelete = null
+        }
+      "
       @confirm="onDelete"
     />
 
@@ -210,7 +143,11 @@
       confirm-label="Force logout"
       color="warning"
       :loading="forcingLogout"
-      @update:model-value="(v: boolean) => { if (!v) confirmForceLogout = null }"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) confirmForceLogout = null
+        }
+      "
       @confirm="onForceLogoutConfirm"
     />
 
@@ -221,7 +158,11 @@
       confirm-label="Force logout"
       color="warning"
       :loading="forcingBulkLogout"
-      @update:model-value="(v: boolean) => { if (!v) bulkForceLogoutTargets = null }"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) bulkForceLogoutTargets = null
+        }
+      "
       @confirm="onBulkForceLogoutConfirm"
     />
   </div>
@@ -259,24 +200,14 @@ async function loadLookups() {
   departments.value = departmentsRes.data
 }
 
-const activeCompanyOptions = computed(() =>
-  companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id }))
-)
-const companyFilterOptions = computed(() => [
-  { label: 'All companies', value: undefined },
-  ...companies.value.map((c) => ({ label: c.name, value: c.id }))
-])
-const branchFilterOptions = computed(() => [
-  { label: 'All branches', value: undefined },
-  ...branches.value.map((b) => ({ label: b.name, value: b.id }))
-])
+const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
+const companyFilterOptions = computed(() => [{ label: 'All companies', value: undefined }, ...companies.value.map((c) => ({ label: c.name, value: c.id }))])
+const branchFilterOptions = computed(() => [{ label: 'All branches', value: undefined }, ...branches.value.map((b) => ({ label: b.name, value: b.id }))])
 function branchOptionsFor(companyId: number | undefined) {
-  return branches.value.filter((b) => b.active && (companyId === undefined || b.companyId === companyId))
-    .map((b) => ({ label: b.name, value: b.id }))
+  return branches.value.filter((b) => b.active && (companyId === undefined || b.companyId === companyId)).map((b) => ({ label: b.name, value: b.id }))
 }
 function departmentOptionsFor(companyId: number | undefined) {
-  return departments.value.filter((d) => d.active && (companyId === undefined || d.companyId === companyId))
-    .map((d) => ({ label: d.name, value: d.id }))
+  return departments.value.filter((d) => d.active && (companyId === undefined || d.companyId === companyId)).map((d) => ({ label: d.name, value: d.id }))
 }
 
 const filter = reactive<{
@@ -307,13 +238,20 @@ const sort = ref<{ column: string; direction: 'asc' | 'desc' } | undefined>({
   direction: 'desc'
 })
 
-const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientTable(rows, {
+const {
+  page,
+  pageSize,
+  total,
+  rows: pagedRows,
+  truncated,
+  search
+} = useClientTable(rows, {
   pageSize: 10,
   searchFields: ['username']
 })
 
 const columns: ColumnDef<AdminUser>[] = [
- // { key: 'id', label: 'ID', sortable: true },
+  // { key: 'id', label: 'ID', sortable: true },
   { key: 'username', sortable: true },
   { key: 'email', value: (row) => row.email ?? '—' },
   { key: 'role', type: 'badge', color: (row) => (row.role === 'ADMIN' ? 'primary' : 'neutral') },
@@ -481,9 +419,8 @@ onMounted(async () => {
 watch(sort, load)
 watch(() => [filter.role, filter.enabled, filter.companyId, filter.branchId], load)
 
-const hasActiveFilter = computed(() =>
-  search.value !== '' || filter.role !== undefined || filter.enabled !== undefined ||
-  filter.companyId !== undefined || filter.branchId !== undefined
+const hasActiveFilter = computed(
+  () => search.value !== '' || filter.role !== undefined || filter.enabled !== undefined || filter.companyId !== undefined || filter.branchId !== undefined
 )
 
 function clearFilters() {

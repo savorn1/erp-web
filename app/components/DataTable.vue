@@ -1,31 +1,16 @@
 <template>
   <div>
-    <div
-      v-if="refreshable || exportable || (showColumnToggle && rows.length > 0)"
-      class="flex justify-end items-center gap-2 mb-2"
-    >
-      <UButton
-        v-if="refreshable"
-        size="xs"
-        variant="soft"
-        color="neutral"
-        icon="i-lucide-refresh-cw"
-        :loading="loading"
-        @click="emit('refresh')"
-      >
+    <div v-if="refreshable || exportable || (showColumnToggle && rows.length > 0)" class="flex justify-end items-center gap-2 mb-2">
+      <UButton v-if="refreshable" size="xs" variant="soft" color="neutral" icon="i-lucide-refresh-cw" :loading="loading" @click="emit('refresh')">
         Refresh
       </UButton>
 
       <UDropdownMenu v-if="exportable && rows.length > 0" :items="exportItems">
-        <UButton size="xs" variant="soft" color="neutral" icon="i-lucide-download" trailing-icon="i-lucide-chevron-down">
-          Export
-        </UButton>
+        <UButton size="xs" variant="soft" color="neutral" icon="i-lucide-download" trailing-icon="i-lucide-chevron-down"> Export </UButton>
       </UDropdownMenu>
 
       <UPopover v-if="showColumnToggle && rows.length > 0">
-        <UButton size="xs" variant="soft" color="neutral" icon="i-lucide-columns-3">
-          Columns
-        </UButton>
+        <UButton size="xs" variant="soft" color="neutral" icon="i-lucide-columns-3"> Columns </UButton>
 
         <template #content>
           <div class="p-3 space-y-2 min-w-[12rem]">
@@ -45,29 +30,16 @@
       v-if="selectable && selected.length > 0"
       class="flex items-center justify-between gap-3 mb-3 rounded-lg bg-primary-50 dark:bg-primary-400/10 px-3 py-2"
     >
-      <span class="text-sm text-primary-700 dark:text-primary-300 font-medium">
-        {{ selected.length }} selected
-      </span>
+      <span class="text-sm text-primary-700 dark:text-primary-300 font-medium"> {{ selected.length }} selected </span>
       <div class="flex items-center gap-2">
         <slot name="bulk-actions" :selected="selected" :clear="() => (selected = [])" />
-        <UButton size="xs" variant="ghost" color="neutral" @click="selected = []">
-          Clear selection
-        </UButton>
+        <UButton size="xs" variant="ghost" color="neutral" @click="selected = []"> Clear selection </UButton>
       </div>
     </div>
 
     <div v-if="loading && rows.length === 0" class="space-y-3" role="status" aria-label="Loading">
-      <div
-        v-for="i in 6"
-        :key="i"
-        class="flex items-center gap-4 rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-3"
-      >
-        <USkeleton
-          v-for="(column, colIndex) in skeletonColumns"
-          :key="column.key"
-          class="h-4"
-          :class="colIndex === 0 ? 'w-1/4' : 'flex-1'"
-        />
+      <div v-for="i in 6" :key="i" class="flex items-center gap-4 rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-3">
+        <USkeleton v-for="(column, colIndex) in skeletonColumns" :key="column.key" class="h-4" :class="colIndex === 0 ? 'w-1/4' : 'flex-1'" />
       </div>
     </div>
 
@@ -109,19 +81,9 @@
         </template>
 
         <template v-for="column in visibleColumns" :key="column.key" #[`${column.key}-header`]>
-          <button
-            v-if="column.sortable"
-            type="button"
-            class="flex items-center gap-1 font-medium"
-            :class="sortButtonClass"
-            @click="toggleSort(column.key)"
-          >
+          <button v-if="column.sortable" type="button" class="flex items-center gap-1 font-medium" :class="sortButtonClass" @click="toggleSort(column.key)">
             {{ column.label ?? humanize(column.key) }}
-            <UIcon
-              :name="sortIcon(column.key)"
-              class="w-3.5 h-3.5"
-              :class="sort?.column === column.key ? 'opacity-100' : 'opacity-30'"
-            />
+            <UIcon :name="sortIcon(column.key)" class="w-3.5 h-3.5" :class="sort?.column === column.key ? 'opacity-100' : 'opacity-30'" />
           </button>
           <span v-else>{{ column.label ?? humanize(column.key) }}</span>
         </template>
@@ -143,14 +105,8 @@
           :class="{ 'active:bg-success/10 dark:active:bg-success/10': hasSelectListener }"
           @click="emit('select', row)"
         >
-          <div
-            v-for="column in visibleColumns"
-            :key="column.key"
-            class="flex items-start justify-between gap-3 py-1 text-sm first:pt-0 last:pb-0"
-          >
-            <span class="text-gray-500 dark:text-gray-400 shrink-0">{{
-              column.label ?? humanize(column.key)
-            }}</span>
+          <div v-for="column in visibleColumns" :key="column.key" class="flex items-start justify-between gap-3 py-1 text-sm first:pt-0 last:pb-0">
+            <span class="text-gray-500 dark:text-gray-400 shrink-0">{{ column.label ?? humanize(column.key) }}</span>
             <span class="text-right font-medium text-gray-900 dark:text-white min-w-0">
               <slot :name="`${column.key}-data`" :row="row">
                 <ColumnValue :column="column" :row="row" />
@@ -222,9 +178,7 @@ const hiddenColumnKeys = ref<Set<string>>(new Set())
 
 const showColumnToggle = computed(() => props.columnsToggleable && props.columns.length > 1)
 
-const visibleColumns = computed(() =>
-  props.columns.filter((c) => !hiddenColumnKeys.value.has(c.key))
-)
+const visibleColumns = computed(() => props.columns.filter((c) => !hiddenColumnKeys.value.has(c.key)))
 
 // Capped so a table with many columns doesn't render a wall of skeleton
 // slivers — enough segments to read as "a row of data," no more.
@@ -299,7 +253,7 @@ function rowClass(row: { index: number }) {
 const tableUiWithHover = computed(() => ({
   ...tableUi.value,
   tbody: hasSelectListener.value
-    ? "isolate [&>tr]:data-[selectable=true]:hover:bg-success/10 [&>tr]:data-[selectable=true]:outline-primary/25 [&>tr]:data-[selectable=true]:focus-visible:outline-3 divide-y divide-default"
+    ? 'isolate [&>tr]:data-[selectable=true]:hover:bg-success/10 [&>tr]:data-[selectable=true]:outline-primary/25 [&>tr]:data-[selectable=true]:focus-visible:outline-3 divide-y divide-default'
     : (tableUi.value as { tbody?: string }).tbody
 }))
 
@@ -350,10 +304,7 @@ async function exportExcel() {
 
 async function exportPdf() {
   const { header, rows } = exportHeaderAndRows()
-  const [{ default: JsPDF }, { default: autoTable }] = await Promise.all([
-    import('jspdf'),
-    import('jspdf-autotable')
-  ])
+  const [{ default: JsPDF }, { default: autoTable }] = await Promise.all([import('jspdf'), import('jspdf-autotable')])
   // Landscape, since these tables tend to be wide (many columns).
   const doc = new JsPDF({ orientation: 'landscape' })
   autoTable(doc, { head: [header], body: rows, styles: { fontSize: 8 } })

@@ -3,38 +3,34 @@
     <div
       v-if="!pendingBlob"
       class="relative rounded-lg border-2 border-dashed p-4 text-center transition-colors cursor-pointer"
-      :class="dragOver
-        ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/30'
-        : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'"
+      :class="
+        dragOver
+          ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/30'
+          : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
+      "
       @click="fileInput?.click()"
       @dragover.prevent="dragOver = true"
       @dragleave.prevent="dragOver = false"
       @drop.prevent="onDrop"
     >
-      <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="onFileChange">
+      <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="onFileChange" />
       <UIcon name="i-lucide-image-plus" class="size-6 text-gray-400 mx-auto mb-1.5" />
-      <p class="text-sm text-gray-500 dark:text-gray-400">
-        <span class="text-primary-500 font-medium">Click to browse</span> or drag an image here
-      </p>
+      <p class="text-sm text-gray-500 dark:text-gray-400"><span class="text-primary-500 font-medium">Click to browse</span> or drag an image here</p>
       <p class="text-xs text-gray-400 mt-1">Up to {{ maxSizeMb }} MB — you'll be able to crop it next</p>
     </div>
 
     <template v-else>
       <div class="flex items-center gap-3">
-        <img :src="pendingPreviewUrl!" class="w-20 h-20 object-cover rounded border border-gray-200 dark:border-gray-800" alt="Cropped preview">
-        <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-crop" @click="reopenCropper">
-          Re-crop
-        </UButton>
+        <img :src="pendingPreviewUrl!" class="w-20 h-20 object-cover rounded border border-gray-200 dark:border-gray-800" alt="Cropped preview" />
+        <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-crop" @click="reopenCropper"> Re-crop </UButton>
         <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearAll" />
       </div>
       <UInput v-model="caption" placeholder="Caption (optional)" class="w-full" />
       <label class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-        <input v-model="primary" type="checkbox">
+        <input v-model="primary" type="checkbox" />
         Set as primary
       </label>
-      <UButton :loading="uploading" icon="i-lucide-upload" @click="submit">
-        Upload
-      </UButton>
+      <UButton :loading="uploading" icon="i-lucide-upload" @click="submit"> Upload </UButton>
     </template>
 
     <UAlert v-if="error" color="error" variant="subtle" :title="error" />
@@ -42,7 +38,7 @@
     <UModal v-model:open="showCropModal" title="Crop image" :ui="{ content: 'sm:max-w-2xl' }">
       <template #body>
         <div class="max-h-[60vh] overflow-hidden">
-          <img ref="cropImageEl" :src="rawObjectUrl!" class="block max-w-full" alt="To crop">
+          <img ref="cropImageEl" :src="rawObjectUrl!" class="block max-w-full" alt="To crop" />
         </div>
       </template>
       <template #footer>
@@ -59,14 +55,17 @@
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
 
-const props = withDefaults(defineProps<{
-  upload: (file: File, caption?: string, primary?: boolean) => Promise<unknown>
-  aspectRatio?: number
-  maxSizeMb?: number
-}>(), {
-  aspectRatio: undefined,
-  maxSizeMb: 10
-})
+const props = withDefaults(
+  defineProps<{
+    upload: (file: File, caption?: string, primary?: boolean) => Promise<unknown>
+    aspectRatio?: number
+    maxSizeMb?: number
+  }>(),
+  {
+    aspectRatio: undefined,
+    maxSizeMb: 10
+  }
+)
 
 const emit = defineEmits<{ uploaded: [] }>()
 

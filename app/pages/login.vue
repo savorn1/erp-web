@@ -38,13 +38,7 @@
         </template>
       </UInput>
 
-      <UAlert
-        v-if="error"
-        color="error"
-        variant="subtle"
-        :title="error"
-        icon="i-lucide-triangle-alert"
-      />
+      <UAlert v-if="error" color="error" variant="subtle" :title="error" icon="i-lucide-triangle-alert" />
 
       <UButton type="submit" block size="lg" :loading="loading">Sign in</UButton>
     </UForm>

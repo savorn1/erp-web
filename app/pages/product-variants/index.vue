@@ -2,9 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Product variants</h1>
-      <UButton icon="i-lucide-plus" :disabled="productOptions.length === 0" @click="openCreate">
-        New variant
-      </UButton>
+      <UButton icon="i-lucide-plus" :disabled="productOptions.length === 0" @click="openCreate"> New variant </UButton>
     </div>
 
     <UAlert
@@ -22,9 +20,7 @@
         <UInput v-model="search" placeholder="Search name or SKU" icon="i-lucide-search" class="w-56" />
         <USelect v-model="filter.productId" :items="productFilterOptions" placeholder="Product" class="w-52" />
         <USelect v-model="filter.active" :items="statusFilterOptions" placeholder="Status" class="w-36" />
-        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters">
-          Clear filters
-        </UButton>
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
@@ -45,12 +41,7 @@
         @refresh="load"
       >
         <template #image-data="{ row }">
-          <img
-            v-if="row.imageUrl"
-            :src="row.imageUrl"
-            :alt="row.name"
-            class="w-9 h-9 rounded object-cover border border-gray-200 dark:border-gray-800"
-          >
+          <img v-if="row.imageUrl" :src="row.imageUrl" :alt="row.name" class="w-9 h-9 rounded object-cover border border-gray-200 dark:border-gray-800" />
           <span v-else class="flex items-center justify-center w-9 h-9 rounded bg-gray-100 dark:bg-gray-800 text-gray-400">
             <UIcon name="i-lucide-package" class="w-4 h-4" />
           </span>
@@ -99,7 +90,12 @@
 
     <UModal v-model:open="showCreate" title="New variant">
       <template #body>
-        <ProductImagePicker :image-url="createForm.imageUrl" :loading="uploadingImage" @pick="triggerImageUpload('create')" @remove="createForm.imageUrl = ''" />
+        <ProductImagePicker
+          :image-url="createForm.imageUrl"
+          :loading="uploadingImage"
+          @pick="triggerImageUpload('create')"
+          @remove="createForm.imageUrl = ''"
+        />
         <DynamicForm
           v-model="createForm"
           :fields="variantFields"
@@ -129,7 +125,7 @@
       </template>
     </UModal>
 
-    <input ref="imageInputRef" type="file" accept="image/*" class="hidden" @change="onImageFileChange">
+    <input ref="imageInputRef" type="file" accept="image/*" class="hidden" @change="onImageFileChange" />
 
     <ConfirmModal
       :model-value="confirmDelete !== null"
@@ -138,7 +134,11 @@
       confirm-label="Delete"
       color="error"
       :loading="deleting"
-      @update:model-value="(v: boolean) => { if (!v) confirmDelete = null }"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) confirmDelete = null
+        }
+      "
       @confirm="onDelete"
     />
   </div>
@@ -169,9 +169,7 @@ async function loadLookups() {
     loadingLookups.value = false
   }
 }
-const productOptions = computed(() =>
-  products.value.filter((p) => p.status === 'ACTIVE').map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
-)
+const productOptions = computed(() => products.value.filter((p) => p.status === 'ACTIVE').map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id })))
 const productFilterOptions = computed(() => [
   { label: 'All products', value: undefined },
   ...products.value.map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
@@ -193,8 +191,8 @@ const columns: ColumnDef<ProductVariant>[] = [
   { key: 'sku', label: 'SKU', sortable: true },
   { key: 'barcode', value: (row) => row.barcode ?? '—' },
   { key: 'productName', label: 'Product', value: (row) => row.productName ?? '—' },
-  { key: 'costPrice', label: 'Cost price', value: (row) => row.costPrice == null ? 'Inherited' : formatCurrency(row.costPrice) },
-  { key: 'sellingPrice', label: 'Selling price', value: (row) => row.sellingPrice == null ? 'Inherited' : formatCurrency(row.sellingPrice) },
+  { key: 'costPrice', label: 'Cost price', value: (row) => (row.costPrice == null ? 'Inherited' : formatCurrency(row.costPrice)) },
+  { key: 'sellingPrice', label: 'Selling price', value: (row) => (row.sellingPrice == null ? 'Inherited' : formatCurrency(row.sellingPrice)) },
   { key: 'active', type: 'boolean', trueLabel: 'Active', trueColor: 'success', falseLabel: 'Inactive', falseColor: 'neutral' },
   { key: 'actions', label: '' }
 ]
@@ -223,15 +221,28 @@ const variantFields = computed<FieldDef[]>(() => [
   { name: 'name', required: true, hint: 'e.g. Red / Large.' },
   { name: 'sku', label: 'SKU', required: true },
   { name: 'barcode' },
-  { name: 'costPrice', label: 'Cost price', type: 'currency', hint: 'Leave blank to inherit the product\'s cost price.' },
-  { name: 'sellingPrice', label: 'Selling price', type: 'currency', hint: 'Leave blank to inherit the product\'s selling price.' },
+  { name: 'costPrice', label: 'Cost price', type: 'currency', hint: "Leave blank to inherit the product's cost price." },
+  { name: 'sellingPrice', label: 'Selling price', type: 'currency', hint: "Leave blank to inherit the product's selling price." },
   { name: 'active', type: 'switch', onLabel: 'Active', offLabel: 'Inactive', default: true }
 ])
 
 const {
-  showCreate, creating, error: createError, createForm, openCreate, onCreate,
-  showEdit, editing, editError, editingRow: editingVariant, editForm, openEdit, onEdit,
-  deleting, confirmDelete, onDelete
+  showCreate,
+  creating,
+  error: createError,
+  createForm,
+  openCreate,
+  onCreate,
+  showEdit,
+  editing,
+  editError,
+  editingRow: editingVariant,
+  editForm,
+  openEdit,
+  onEdit,
+  deleting,
+  confirmDelete,
+  onDelete
 } = useCrudModals<ProductVariant, ProductVariantPayload>(
   {
     create: (payload) => create(payload),

@@ -2,9 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Leads</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate">
-        New lead
-      </UButton>
+      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New lead </UButton>
     </div>
 
     <UAlert
@@ -24,9 +22,7 @@
         <USelect v-model="filter.status" :items="statusFilterOptions" placeholder="Status" class="w-40" />
         <USelect v-model="filter.source" :items="sourceFilterOptions" placeholder="Source" class="w-40" />
         <USelect v-model="filter.assignedToUserId" :items="userFilterOptions" placeholder="Salesperson" class="w-44" />
-        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters">
-          Clear filters
-        </UButton>
+        <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
 
@@ -48,7 +44,9 @@
       >
         <template #actions-data="{ row }">
           <div class="flex items-center gap-2 flex-wrap">
-            <UButton size="xs" color="primary" variant="soft" icon="i-lucide-pencil" :disabled="row.status === 'CONVERTED'" @click="openEdit(row)">Edit</UButton>
+            <UButton size="xs" color="primary" variant="soft" icon="i-lucide-pencil" :disabled="row.status === 'CONVERTED'" @click="openEdit(row)"
+              >Edit</UButton
+            >
             <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-history" @click="openHistoryFor(row)">Follow-ups</UButton>
             <UDropdownMenu v-if="row.status !== 'CONVERTED'" :items="statusMenuItems(row)">
               <UButton size="xs" color="neutral" variant="soft" trailing-icon="i-lucide-chevron-down">Status</UButton>
@@ -136,11 +134,7 @@
           <div v-if="loadingActivities" class="text-sm text-gray-400">Loading…</div>
           <EmptyState v-else-if="activities.length === 0" icon="i-lucide-history" title="No follow-ups yet" />
           <ul v-else class="space-y-2 max-h-96 overflow-y-auto">
-            <li
-              v-for="a in activities"
-              :key="a.id"
-              class="rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm"
-            >
+            <li v-for="a in activities" :key="a.id" class="rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm">
               <div class="flex items-center justify-between gap-2">
                 <span class="font-medium text-gray-900 dark:text-white">{{ a.description }}</span>
                 <span class="text-xs text-gray-400 shrink-0">{{ activityTypeLabel(a.type) }}</span>
@@ -161,7 +155,11 @@
       confirm-label="Delete"
       color="error"
       :loading="deleting"
-      @update:model-value="(v: boolean) => { if (!v) confirmDelete = null }"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) confirmDelete = null
+        }
+      "
       @confirm="onDelete"
     />
   </div>
@@ -210,11 +208,7 @@ const statusOptions = [
   { label: 'Negotiation', value: 'NEGOTIATION' },
   { label: 'Lost', value: 'LOST' }
 ]
-const statusFilterOptions = [
-  { label: 'All statuses', value: undefined },
-  ...statusOptions,
-  { label: 'Converted', value: 'CONVERTED' }
-]
+const statusFilterOptions = [{ label: 'All statuses', value: undefined }, ...statusOptions, { label: 'Converted', value: 'CONVERTED' }]
 const sourceOptions = [
   { label: 'Website', value: 'WEBSITE' },
   { label: 'Referral', value: 'REFERRAL' },
@@ -228,7 +222,10 @@ const sourceOptions = [
 const sourceFilterOptions = [{ label: 'All sources', value: undefined }, ...sourceOptions]
 
 function activityTypeLabel(type: string) {
-  return type.replace('_', ' ').toLowerCase().replace(/^\w/, (c) => c.toUpperCase())
+  return type
+    .replace('_', ' ')
+    .toLowerCase()
+    .replace(/^\w/, (c) => c.toUpperCase())
 }
 
 const filter = reactive<{
@@ -239,7 +236,14 @@ const filter = reactive<{
 }>({ companyId: undefined, status: undefined, source: undefined, assignedToUserId: undefined })
 
 const sort = ref<{ column: string; direction: 'asc' | 'desc' } | undefined>({ column: 'id', direction: 'desc' })
-const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientTable(rows, { pageSize: 10, searchFields: ['contactName', 'organizationName', 'email'] })
+const {
+  page,
+  pageSize,
+  total,
+  rows: pagedRows,
+  truncated,
+  search
+} = useClientTable(rows, { pageSize: 10, searchFields: ['contactName', 'organizationName', 'email'] })
 
 const columns: ColumnDef<Lead>[] = [
   { key: 'contactName', label: 'Contact', sortable: true },
@@ -285,9 +289,22 @@ const leadFields = computed<FieldDef[]>(() => [
 ])
 
 const {
-  showCreate, creating, error: createError, createForm, openCreate, onCreate,
-  showEdit, editing, editError, editingRow: editingLead, editForm, openEdit, onEdit,
-  deleting, confirmDelete, onDelete
+  showCreate,
+  creating,
+  error: createError,
+  createForm,
+  openCreate,
+  onCreate,
+  showEdit,
+  editing,
+  editError,
+  editingRow: editingLead,
+  editForm,
+  openEdit,
+  onEdit,
+  deleting,
+  confirmDelete,
+  onDelete
 } = useCrudModals<Lead, LeadPayload, Omit<LeadPayload, 'assignedToUserId'>>(
   {
     create: (payload) => create(payload),
@@ -334,10 +351,14 @@ const {
 
 function statusMenuItems(row: Lead) {
   const options = [...statusOptions]
-  return [options.filter((o) => o.value !== row.status).map((o) => ({
-    label: o.label,
-    onSelect: () => onStatusChange(row, o.value as LeadStatus)
-  }))]
+  return [
+    options
+      .filter((o) => o.value !== row.status)
+      .map((o) => ({
+        label: o.label,
+        onSelect: () => onStatusChange(row, o.value as LeadStatus)
+      }))
+  ]
 }
 async function onStatusChange(row: Lead, status: LeadStatus) {
   try {
@@ -350,9 +371,7 @@ async function onStatusChange(row: Lead, status: LeadStatus) {
 }
 
 function assignMenuItems(row: Lead) {
-  const items = activeUserOptions.value
-    .filter((u) => u.value !== row.assignedToUserId)
-    .map((u) => ({ label: u.label, onSelect: () => onAssign(row, u.value) }))
+  const items = activeUserOptions.value.filter((u) => u.value !== row.assignedToUserId).map((u) => ({ label: u.label, onSelect: () => onAssign(row, u.value) }))
   if (row.assignedToUserId !== null) {
     items.push({ label: 'Unassign', onSelect: () => onAssign(row, undefined) })
   }
@@ -386,11 +405,7 @@ async function onConvert(row: Lead) {
   }
 }
 
-const {
-  open: showHistory,
-  target: historyTarget,
-  openWith: openHistoryWith
-} = useTargetModal<Lead>()
+const { open: showHistory, target: historyTarget, openWith: openHistoryWith } = useTargetModal<Lead>()
 
 const activities = ref<LeadActivity[]>([])
 const loadingActivities = ref(false)
@@ -432,9 +447,9 @@ onMounted(async () => {
 watch(sort, load)
 watch(() => [filter.companyId, filter.status, filter.source, filter.assignedToUserId], load)
 
-const hasActiveFilter = computed(() =>
-  search.value !== '' || filter.companyId !== undefined || filter.status !== undefined ||
-  filter.source !== undefined || filter.assignedToUserId !== undefined
+const hasActiveFilter = computed(
+  () =>
+    search.value !== '' || filter.companyId !== undefined || filter.status !== undefined || filter.source !== undefined || filter.assignedToUserId !== undefined
 )
 function clearFilters() {
   search.value = ''
