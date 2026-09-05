@@ -4,6 +4,8 @@
 // ship -> receive — plus reject/cancel/delete escape hatches. The backend
 // enforces which transitions are legal from which status.
 
+import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+
 export type StockTransferStatus = 'REQUESTED' | 'APPROVED' | 'SHIPPED' | 'RECEIVED' | 'REJECTED' | 'CANCELLED'
 
 export interface StockTransferLine {
@@ -79,21 +81,6 @@ export interface ShipStockTransferLinePayload {
   // Required when the line's product is SERIAL-tracked — must contain
   // exactly quantityRequested serial numbers.
   serialNumbers?: string[]
-}
-
-interface ApiEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T
-}
-
-interface PageEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T[]
-  metadata: { hasNext: boolean; hasPrev: boolean; totalPage: number; currentPage: number; limit: number; totalCount: number }
 }
 
 export function useStockTransfers() {

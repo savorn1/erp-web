@@ -2,6 +2,8 @@
 // (/api/admin/warehouse-bins/**, requires ROLE_ADMIN). Represents a
 // shelf/bin — the smallest storage location, nested under a WarehouseZone.
 
+import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+
 export interface WarehouseBin {
   id: number
   zoneId: number
@@ -26,21 +28,6 @@ export interface WarehouseBinPayload {
   zoneId: number
   name: string
   active: boolean
-}
-
-interface ApiEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T
-}
-
-interface PageEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T[]
-  metadata: { hasNext: boolean; hasPrev: boolean; totalPage: number; currentPage: number; limit: number; totalCount: number }
 }
 
 export function useWarehouseBins() {

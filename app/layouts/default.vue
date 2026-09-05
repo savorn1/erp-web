@@ -113,9 +113,22 @@ const items = computed<NavigationMenuItem[]>(() => [
         { label: 'Stock Issue', type: 'label' as const },
         { label: 'Sales orders', to: '/sales-orders', icon: 'i-lucide-file-text' },
         { label: 'Deliveries', to: '/deliveries', icon: 'i-lucide-truck' },
+        { label: 'Invoices', to: '/invoices', icon: 'i-lucide-receipt' },
 
         { label: 'Stock Transfer', type: 'label' as const },
         { label: 'Stock transfers', to: '/stock-transfers', icon: 'i-lucide-repeat' },
+
+        { label: 'Stock Adjustment', type: 'label' as const },
+        { label: 'Stock adjustments', to: '/stock-adjustments', icon: 'i-lucide-scale' },
+
+        { label: 'Inventory Control', type: 'label' as const },
+        { label: 'Inventory overview', to: '/inventory-overview', icon: 'i-lucide-layout-dashboard' },
+        { label: 'Stock counts', to: '/stock-counts', icon: 'i-lucide-clipboard-check' },
+
+        { label: 'CRM', type: 'label' as const },
+        { label: 'Leads', to: '/leads', icon: 'i-lucide-user-plus' },
+        { label: 'Opportunities', to: '/opportunities', icon: 'i-lucide-target' },
+        { label: 'Quotations', to: '/quotations', icon: 'i-lucide-file-text' },
 
         { label: 'Administration', type: 'label' as const },
         { label: 'Users', to: '/users', icon: 'i-lucide-users' }

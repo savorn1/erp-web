@@ -3,6 +3,8 @@
 // being null means "inherit the parent product's price" — this composable
 // doesn't resolve that; the page falls back to the product's own price for display.
 
+import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+
 export interface ProductVariant {
   id: number
   productId: number
@@ -37,21 +39,6 @@ export interface ProductVariantPayload {
   sellingPrice?: number
   imageUrl?: string
   active: boolean
-}
-
-interface ApiEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T
-}
-
-interface PageEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T[]
-  metadata: { hasNext: boolean; hasPrev: boolean; totalPage: number; currentPage: number; limit: number; totalCount: number }
 }
 
 export function useProductVariants() {

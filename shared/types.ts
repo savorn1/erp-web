@@ -10,6 +10,25 @@ export interface ApiErrorBody {
   errors?: Record<string, string>
 }
 
+// ── Backend response envelopes ────────────────────────────────────────────
+// Every controller wraps its payload in one of these two shapes (see
+// ApiResponse<T>/PageResponse<T> on the backend) — every composable's api<T>()
+// call is typed against one of them.
+export interface ApiEnvelope<T> {
+  traceId: string
+  statusCode: number
+  message: string
+  data: T
+}
+
+export interface PageEnvelope<T> {
+  traceId: string
+  statusCode: number
+  message: string
+  data: T[]
+  metadata: { hasNext: boolean; hasPrev: boolean; totalPage: number; currentPage: number; limit: number; totalCount: number }
+}
+
 // ── Declarative form fields ───────────────────────────────────────────────
 // `name` is the only mandatory attribute; `label` is auto-humanized from the
 // name when omitted; `type` defaults to 'text'. Rendered by <Field> (one

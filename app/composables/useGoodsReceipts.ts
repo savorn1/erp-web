@@ -3,6 +3,8 @@
 // increases stock immediately — there's no update/delete, a posted receipt
 // is an immutable ledger entry.
 
+import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+
 export interface GoodsReceiptLine {
   id: number
   purchaseOrderLineId: number
@@ -60,21 +62,6 @@ export interface GoodsReceiptPayload {
   receiptDate: string
   notes?: string
   lines: GoodsReceiptLinePayload[]
-}
-
-interface ApiEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T
-}
-
-interface PageEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T[]
-  metadata: { hasNext: boolean; hasPrev: boolean; totalPage: number; currentPage: number; limit: number; totalCount: number }
 }
 
 export function useGoodsReceipts() {

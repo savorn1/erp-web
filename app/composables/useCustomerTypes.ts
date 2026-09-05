@@ -1,6 +1,8 @@
 // Wraps the backend's admin-only CustomerTypeController
 // (/api/admin/customer-types/**, requires ROLE_ADMIN).
 
+import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+
 export interface CustomerType {
   id: number
   companyId: number
@@ -23,21 +25,6 @@ export interface CustomerTypePayload {
   companyId: number
   name: string
   active: boolean
-}
-
-interface ApiEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T
-}
-
-interface PageEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T[]
-  metadata: { hasNext: boolean; hasPrev: boolean; totalPage: number; currentPage: number; limit: number; totalCount: number }
 }
 
 export function useCustomerTypes() {

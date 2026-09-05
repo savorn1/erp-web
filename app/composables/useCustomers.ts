@@ -3,6 +3,8 @@
 // display names. currentBalance only ever changes via adjustBalance — the
 // general update endpoint doesn't accept it.
 
+import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+
 export type CustomerStatus = 'ACTIVE' | 'INACTIVE' | 'BLOCKED'
 export type CustomerPaymentTerms = 'DUE_ON_RECEIPT' | 'NET_15' | 'NET_30' | 'NET_45' | 'NET_60' | 'COD'
 export type CustomerBalanceAdjustmentType = 'CHARGE' | 'PAYMENT'
@@ -82,21 +84,6 @@ export interface CustomerPayload {
   shippingCountry?: string
   creditLimit: number
   paymentTerms: CustomerPaymentTerms
-}
-
-interface ApiEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T
-}
-
-interface PageEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T[]
-  metadata: { hasNext: boolean; hasPrev: boolean; totalPage: number; currentPage: number; limit: number; totalCount: number }
 }
 
 export function useCustomers() {

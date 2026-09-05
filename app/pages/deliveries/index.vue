@@ -13,7 +13,7 @@
       variant="subtle"
       class="mb-4"
       title="Nothing to deliver"
-      description="Submit a sales order first — only submitted or partially-delivered orders can be delivered against."
+      description="Confirm a sales order first — only confirmed or partially-delivered orders can be delivered against."
       icon="i-lucide-triangle-alert"
     />
 
@@ -21,6 +21,7 @@
       <div class="flex flex-wrap gap-3">
         <UInput v-model="search" placeholder="Search delivery number" icon="i-lucide-search" class="w-56" />
         <USelect v-model="filter.warehouseId" :items="warehouseFilterOptions" placeholder="Warehouse" class="w-44" />
+        <USelect v-model="filter.status" :items="statusFilterOptions" placeholder="Status" class="w-40" />
         <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters">
           Clear filters
         </UButton>
@@ -44,7 +45,27 @@
         @refresh="load"
       >
         <template #actions-data="{ row }">
-          <UButton size="xs" color="primary" variant="soft" icon="i-lucide-eye" @click="openView(row)">View</UButton>
+          <div class="flex items-center gap-2 flex-wrap">
+            <UButton size="xs" color="primary" variant="soft" icon="i-lucide-eye" @click="openView(row)">View</UButton>
+            <UButton v-if="row.status === 'PENDING'" size="xs" color="info" variant="soft" icon="i-lucide-package-search" :loading="actingId === row.id" @click="onPick(row)">
+              Pick
+            </UButton>
+            <UButton v-if="row.status === 'PICKED'" size="xs" color="info" variant="soft" icon="i-lucide-box" :loading="actingId === row.id" @click="onPack(row)">
+              Pack
+            </UButton>
+            <UButton v-if="row.status === 'PACKED'" size="xs" color="info" variant="soft" icon="i-lucide-truck" :loading="actingId === row.id" @click="onShip(row)">
+              Ship
+            </UButton>
+            <UButton v-if="row.status === 'SHIPPED'" size="xs" color="success" variant="soft" icon="i-lucide-check-check" :loading="actingId === row.id" @click="onComplete(row)">
+              Confirm delivery
+            </UButton>
+            <NuxtLink v-if="row.status === 'SHIPPED' || row.status === 'DELIVERED'" :to="`/invoices?fromDelivery=${row.id}`">
+              <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-receipt">Invoice</UButton>
+            </NuxtLink>
+            <UButton v-if="row.status === 'PENDING' || row.status === 'PICKED' || row.status === 'PACKED'" size="xs" color="warning" variant="soft" icon="i-lucide-ban" :loading="actingId === row.id" @click="onCancel(row)">
+              Cancel
+            </UButton>
+          </div>
         </template>
         <template #empty-state>
           <EmptyState
@@ -146,7 +167,10 @@
             <div><dt class="text-gray-400">Sales order</dt><dd class="text-gray-900 dark:text-white">{{ viewingDelivery.soNumber }}</dd></div>
             <div><dt class="text-gray-400">Warehouse</dt><dd class="text-gray-900 dark:text-white">{{ viewingDelivery.warehouseName }}</dd></div>
             <div><dt class="text-gray-400">Delivery date</dt><dd class="text-gray-900 dark:text-white">{{ formatDate(viewingDelivery.deliveryDate) }}</dd></div>
-            <div><dt class="text-gray-400">Posted by</dt><dd class="text-gray-900 dark:text-white">{{ viewingDelivery.createdBy ?? '—' }}</dd></div>
+            <div><dt class="text-gray-400">Status</dt><dd class="text-gray-900 dark:text-white">{{ viewingDelivery.status }}</dd></div>
+            <div><dt class="text-gray-400">Created by</dt><dd class="text-gray-900 dark:text-white">{{ viewingDelivery.createdBy ?? '—' }}</dd></div>
+            <div v-if="viewingDelivery.shippedAt"><dt class="text-gray-400">Shipped</dt><dd class="text-gray-900 dark:text-white">{{ formatDateTime(viewingDelivery.shippedAt) }} by {{ viewingDelivery.shippedBy }}</dd></div>
+            <div v-if="viewingDelivery.deliveredAt"><dt class="text-gray-400">Delivered</dt><dd class="text-gray-900 dark:text-white">{{ formatDateTime(viewingDelivery.deliveredAt) }} by {{ viewingDelivery.deliveredBy }}</dd></div>
             <div v-if="viewingDelivery.notes" class="col-span-2"><dt class="text-gray-400">Notes</dt><dd class="text-gray-900 dark:text-white">{{ viewingDelivery.notes }}</dd></div>
           </dl>
           <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lines delivered</p>
@@ -174,12 +198,12 @@
 
 <script setup lang="ts">
 import type { ColumnDef } from '#shared/types'
-import type { Delivery, DeliveryPayload } from '~/composables/useDeliveries'
+import type { Delivery, DeliveryPayload, DeliveryStatus } from '~/composables/useDeliveries'
 
 definePageMeta({ middleware: 'admin' })
 
 const route = useRoute()
-const { list, get, create } = useDeliveries()
+const { list, get, create, pick, pack, ship, complete, cancel } = useDeliveries()
 const { list: listSalesOrders, get: getSalesOrder } = useSalesOrders()
 const { list: listWarehouses } = useWarehouses()
 const { list: listZones } = useWarehouseZones()
@@ -222,12 +246,21 @@ async function loadLookups() {
 
 const deliverableSoOptions = computed(() =>
   salesOrders.value
-    .filter((s) => s.status === 'SUBMITTED' || s.status === 'PARTIALLY_DELIVERED')
+    .filter((s) => s.status === 'CONFIRMED' || s.status === 'PARTIALLY_DELIVERED')
     .map((s) => ({ label: s.soNumber, value: s.id }))
 )
 const warehouseFilterOptions = computed(() => [{ label: 'All warehouses', value: undefined }, ...warehouses.value.map((w) => ({ label: w.name, value: w.id }))])
+const statusFilterOptions = [
+  { label: 'All statuses', value: undefined },
+  { label: 'Pending', value: 'PENDING' },
+  { label: 'Picked', value: 'PICKED' },
+  { label: 'Packed', value: 'PACKED' },
+  { label: 'Shipped', value: 'SHIPPED' },
+  { label: 'Delivered', value: 'DELIVERED' },
+  { label: 'Cancelled', value: 'CANCELLED' }
+]
 
-const filter = reactive<{ warehouseId: number | undefined }>({ warehouseId: undefined })
+const filter = reactive<{ warehouseId: number | undefined; status: DeliveryStatus | undefined }>({ warehouseId: undefined, status: undefined })
 
 const sort = ref<{ column: string; direction: 'asc' | 'desc' } | undefined>({ column: 'id', direction: 'desc' })
 const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientTable(rows, { pageSize: 10, searchFields: ['deliveryNumber'] })
@@ -237,7 +270,8 @@ const columns: ColumnDef<Delivery>[] = [
   { key: 'soNumber', label: 'SO number', value: (row) => row.soNumber ?? '—' },
   { key: 'warehouseName', label: 'Warehouse', value: (row) => row.warehouseName ?? '—' },
   { key: 'deliveryDate', label: 'Delivery date', type: 'date' },
-  { key: 'createdBy', label: 'Posted by', value: (row) => row.createdBy ?? '—' },
+  { key: 'createdBy', label: 'Created by', value: (row) => row.createdBy ?? '—' },
+  { key: 'status', type: 'status' },
   { key: 'actions', label: '' }
 ]
 
@@ -245,7 +279,7 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    const res = await list({ warehouseId: filter.warehouseId, sortBy: sort.value?.column, sortOrder: sort.value?.direction, size: 200 })
+    const res = await list({ warehouseId: filter.warehouseId, status: filter.status, sortBy: sort.value?.column, sortOrder: sort.value?.direction, size: 200 })
     rows.value = res.data
   } catch (err) {
     error.value = apiErrorMessage(err)
@@ -371,10 +405,6 @@ async function onCreateSubmit() {
     return
   }
   for (const line of linesToSend) {
-    if (line.quantityDelivered > availableFor(line)) {
-      createError.value = `${line.productName} — only ${availableFor(line)} available in stock`
-      return
-    }
     if (line.trackingType === 'BATCH' && !line.batchNumber) {
       createError.value = `${line.productName} is batch-tracked — select a batch/lot`
       return
@@ -399,7 +429,7 @@ async function onCreateSubmit() {
   creating.value = true
   try {
     await create(payload)
-    toast.add({ title: 'Delivery posted — stock updated', color: 'success' })
+    toast.add({ title: 'Delivery created — pick, pack, then ship to update stock', color: 'success' })
     showCreate.value = false
     await Promise.all([load(), loadLookups()])
   } catch (err) {
@@ -422,6 +452,68 @@ async function openView(row: Delivery) {
   }
 }
 
+const actingId = ref<number | null>(null)
+async function onPick(row: Delivery) {
+  actingId.value = row.id
+  try {
+    await pick(row.id)
+    toast.add({ title: 'Products picked', color: 'success' })
+    await load()
+  } catch (err) {
+    toast.add({ title: 'Could not pick', description: apiErrorMessage(err), color: 'error' })
+  } finally {
+    actingId.value = null
+  }
+}
+async function onPack(row: Delivery) {
+  actingId.value = row.id
+  try {
+    await pack(row.id)
+    toast.add({ title: 'Products packed', color: 'success' })
+    await load()
+  } catch (err) {
+    toast.add({ title: 'Could not pack', description: apiErrorMessage(err), color: 'error' })
+  } finally {
+    actingId.value = null
+  }
+}
+async function onShip(row: Delivery) {
+  actingId.value = row.id
+  try {
+    await ship(row.id)
+    toast.add({ title: 'Products shipped — stock updated', color: 'success' })
+    await load()
+  } catch (err) {
+    toast.add({ title: 'Could not ship', description: apiErrorMessage(err), color: 'error' })
+  } finally {
+    actingId.value = null
+  }
+}
+async function onComplete(row: Delivery) {
+  actingId.value = row.id
+  try {
+    await complete(row.id)
+    toast.add({ title: 'Delivery confirmed', color: 'success' })
+    await load()
+  } catch (err) {
+    toast.add({ title: 'Could not confirm delivery', description: apiErrorMessage(err), color: 'error' })
+  } finally {
+    actingId.value = null
+  }
+}
+async function onCancel(row: Delivery) {
+  actingId.value = row.id
+  try {
+    await cancel(row.id)
+    toast.add({ title: 'Delivery cancelled', color: 'success' })
+    await load()
+  } catch (err) {
+    toast.add({ title: 'Could not cancel', description: apiErrorMessage(err), color: 'error' })
+  } finally {
+    actingId.value = null
+  }
+}
+
 onMounted(async () => {
   await loadLookups()
   await load()
@@ -429,12 +521,13 @@ onMounted(async () => {
   if (soIdParam) openCreate(soIdParam)
 })
 watch(sort, load)
-watch(() => filter.warehouseId, load)
+watch(() => [filter.warehouseId, filter.status], load)
 
-const hasActiveFilter = computed(() => search.value !== '' || filter.warehouseId !== undefined)
+const hasActiveFilter = computed(() => search.value !== '' || filter.warehouseId !== undefined || filter.status !== undefined)
 function clearFilters() {
   search.value = ''
   filter.warehouseId = undefined
+  filter.status = undefined
   load()
 }
 </script>

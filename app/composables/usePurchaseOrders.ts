@@ -3,6 +3,8 @@
 // dedicated actions (submit/cancel) rather than a generic setter — the
 // backend enforces which transitions are legal.
 
+import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+
 export type PurchaseOrderStatus = 'DRAFT' | 'SUBMITTED' | 'PARTIALLY_RECEIVED' | 'RECEIVED' | 'CANCELLED'
 
 export interface PurchaseOrderLine {
@@ -60,21 +62,6 @@ export interface PurchaseOrderPayload {
   expectedDate?: string
   notes?: string
   lines: PurchaseOrderLinePayload[]
-}
-
-interface ApiEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T
-}
-
-interface PageEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T[]
-  metadata: { hasNext: boolean; hasPrev: boolean; totalPage: number; currentPage: number; limit: number; totalCount: number }
 }
 
 export function usePurchaseOrders() {

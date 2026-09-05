@@ -3,6 +3,8 @@
 // name. currentBalance only ever changes via adjustBalance — the general
 // update endpoint doesn't accept it. Mirrors useCustomers.
 
+import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+
 export type SupplierStatus = 'ACTIVE' | 'INACTIVE' | 'BLOCKED'
 export type SupplierPaymentTerms = 'DUE_ON_RECEIPT' | 'NET_15' | 'NET_30' | 'NET_45' | 'NET_60' | 'COD'
 export type SupplierBalanceAdjustmentType = 'CHARGE' | 'PAYMENT'
@@ -66,21 +68,6 @@ export interface SupplierPayload {
   country?: string
   paymentTerms: SupplierPaymentTerms
   creditLimit: number
-}
-
-interface ApiEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T
-}
-
-interface PageEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T[]
-  metadata: { hasNext: boolean; hasPrev: boolean; totalPage: number; currentPage: number; limit: number; totalCount: number }
 }
 
 export function useSuppliers() {

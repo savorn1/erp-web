@@ -53,10 +53,16 @@
             <UButton v-if="row.status === 'DRAFT'" size="xs" color="success" variant="soft" icon="i-lucide-send" :loading="actingId === row.id" @click="onSubmit(row)">
               Submit
             </UButton>
-            <NuxtLink v-if="row.status === 'SUBMITTED' || row.status === 'PARTIALLY_DELIVERED'" :to="`/deliveries?soId=${row.id}`">
+            <UButton v-if="row.status === 'SUBMITTED'" size="xs" color="success" variant="soft" icon="i-lucide-check" :loading="actingId === row.id" @click="onApprove(row)">
+              Approve
+            </UButton>
+            <NuxtLink v-if="row.status === 'CONFIRMED' || row.status === 'PARTIALLY_DELIVERED'" :to="`/deliveries?soId=${row.id}`">
               <UButton size="xs" color="info" variant="soft" icon="i-lucide-truck">Deliver</UButton>
             </NuxtLink>
-            <UButton v-if="row.status === 'DRAFT' || row.status === 'SUBMITTED'" size="xs" color="warning" variant="soft" icon="i-lucide-ban" :loading="actingId === row.id" @click="onCancel(row)">
+            <NuxtLink v-if="row.status === 'CONFIRMED' || row.status === 'PARTIALLY_DELIVERED' || row.status === 'DELIVERED'" :to="`/invoices?fromSalesOrder=${row.id}`">
+              <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-receipt">Invoice</UButton>
+            </NuxtLink>
+            <UButton v-if="row.status === 'DRAFT' || row.status === 'SUBMITTED' || row.status === 'CONFIRMED'" size="xs" color="warning" variant="soft" icon="i-lucide-ban" :loading="actingId === row.id" @click="onCancel(row)">
               Cancel
             </UButton>
             <UButton v-if="row.status === 'DRAFT'" size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="confirmDelete = row">
@@ -137,18 +143,31 @@
                 :items="productOptionsFor(form.companyId)"
                 placeholder="Product"
                 :disabled="!formEditable"
-                class="col-span-5"
+                class="col-span-4"
               />
               <UInput v-model.number="line.quantityOrdered" type="number" min="0.0001" step="0.0001" placeholder="Qty" :disabled="!formEditable" class="col-span-2" />
-              <UInput v-model.number="line.unitPrice" type="number" min="0" step="0.01" placeholder="Unit price" :disabled="!formEditable" class="col-span-2" />
-              <div class="col-span-2 text-sm text-gray-500 dark:text-gray-400 text-right">
-                {{ formatCurrency((line.quantityOrdered || 0) * (line.unitPrice || 0)) }}
+              <UInput v-model.number="line.unitPrice" type="number" min="0" step="0.01" placeholder="Price (auto)" :disabled="!formEditable" class="col-span-2" />
+              <UInput v-model.number="line.discountPercent" type="number" min="0" max="100" step="0.01" placeholder="Disc %" :disabled="!formEditable" class="col-span-1" />
+              <UInput v-model.number="line.taxRate" type="number" min="0" step="0.01" placeholder="Tax % (auto)" :disabled="!formEditable" class="col-span-2" />
+              <div class="col-span-1 text-sm text-gray-500 dark:text-gray-400 text-right">
+                {{ formatCurrency(lineTotal(line)) }}
               </div>
-              <UButton v-if="formEditable" size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-1" @click="form.lines.splice(i, 1)" />
-              <span v-else-if="viewingLineDelivered[i]" class="col-span-1 text-xs text-gray-400">{{ viewingLineDelivered[i] }} sent</span>
+              <UButton v-if="formEditable" size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-12 justify-self-end" @click="form.lines.splice(i, 1)" />
+              <span v-else-if="viewingLineDelivered[i]" class="col-span-12 text-xs text-gray-400 text-right">{{ viewingLineDelivered[i] }} delivered</span>
             </div>
           </div>
 
+          <p class="text-xs text-gray-400 mb-2">Leave price/tax blank to use the product's own defaults.</p>
+
+          <div class="flex justify-end text-sm text-gray-600 dark:text-gray-300 mb-1">
+            Subtotal: {{ formatCurrency(formSubtotal) }}
+          </div>
+          <div v-if="formDiscountTotal > 0" class="flex justify-end text-sm text-gray-600 dark:text-gray-300 mb-1">
+            Discount: -{{ formatCurrency(formDiscountTotal) }}
+          </div>
+          <div v-if="formTaxTotal > 0" class="flex justify-end text-sm text-gray-600 dark:text-gray-300 mb-1">
+            Tax: {{ formatCurrency(formTaxTotal) }}
+          </div>
           <div class="flex justify-end text-sm font-medium text-gray-900 dark:text-white mb-4">
             Total: {{ formatCurrency(formTotal) }}
           </div>
@@ -182,7 +201,7 @@ import type { SalesOrder, SalesOrderPayload, SalesOrderStatus } from '~/composab
 
 definePageMeta({ middleware: 'admin' })
 
-const { list, get, create, update, submit, cancel, remove } = useSalesOrders()
+const { list, get, create, update, submit, approve, cancel, remove } = useSalesOrders()
 const { list: listCompanies } = useCompanies()
 const { list: listCustomers } = useCustomers()
 const { list: listWarehouses } = useWarehouses()
@@ -224,6 +243,7 @@ const statusFilterOptions = [
   { label: 'All statuses', value: undefined },
   { label: 'Draft', value: 'DRAFT' },
   { label: 'Submitted', value: 'SUBMITTED' },
+  { label: 'Confirmed', value: 'CONFIRMED' },
   { label: 'Partially delivered', value: 'PARTIALLY_DELIVERED' },
   { label: 'Delivered', value: 'DELIVERED' },
   { label: 'Cancelled', value: 'CANCELLED' }
@@ -285,6 +305,8 @@ interface LineForm {
   productId: number | undefined
   quantityOrdered: number | undefined
   unitPrice: number | undefined
+  discountPercent: number | undefined
+  taxRate: number | undefined
 }
 
 const showForm = ref(false)
@@ -315,10 +337,26 @@ const form = reactive<{
 
 const formEditable = computed(() => editingStatus.value === null || editingStatus.value === 'DRAFT')
 const formTitle = computed(() => (editingId.value === null ? 'New sales order' : formEditable.value ? 'Edit sales order' : 'View sales order'))
-const formTotal = computed(() => form.lines.reduce((sum, l) => sum + (l.quantityOrdered || 0) * (l.unitPrice || 0), 0))
+
+function lineSubtotal(l: LineForm) {
+  return (l.quantityOrdered || 0) * (l.unitPrice || 0)
+}
+function lineDiscount(l: LineForm) {
+  return lineSubtotal(l) * ((l.discountPercent || 0) / 100)
+}
+function lineTax(l: LineForm) {
+  return (lineSubtotal(l) - lineDiscount(l)) * ((l.taxRate || 0) / 100)
+}
+function lineTotal(l: LineForm) {
+  return lineSubtotal(l) - lineDiscount(l) + lineTax(l)
+}
+const formSubtotal = computed(() => form.lines.reduce((sum, l) => sum + lineSubtotal(l), 0))
+const formDiscountTotal = computed(() => form.lines.reduce((sum, l) => sum + lineDiscount(l), 0))
+const formTaxTotal = computed(() => form.lines.reduce((sum, l) => sum + lineTax(l), 0))
+const formTotal = computed(() => form.lines.reduce((sum, l) => sum + lineTotal(l), 0))
 
 function addLine() {
-  form.lines.push({ productId: undefined, quantityOrdered: undefined, unitPrice: undefined })
+  form.lines.push({ productId: undefined, quantityOrdered: undefined, unitPrice: undefined, discountPercent: undefined, taxRate: undefined })
 }
 
 function resetForm() {
@@ -355,7 +393,13 @@ async function openView(row: SalesOrder) {
     form.orderDate = detail.orderDate
     form.expectedDate = detail.expectedDate ?? ''
     form.notes = detail.notes ?? ''
-    form.lines = (detail.lines ?? []).map((l) => ({ productId: l.productId, quantityOrdered: l.quantityOrdered, unitPrice: l.unitPrice }))
+    form.lines = (detail.lines ?? []).map((l) => ({
+      productId: l.productId,
+      quantityOrdered: l.quantityOrdered,
+      unitPrice: l.unitPrice,
+      discountPercent: l.discountPercent || undefined,
+      taxRate: l.taxRate || undefined
+    }))
     viewingLineDelivered.value = Object.fromEntries((detail.lines ?? []).map((l, i) => [i, `${l.quantityDelivered}/${l.quantityOrdered}`]))
   } catch (err) {
     formError.value = apiErrorMessage(err)
@@ -370,8 +414,8 @@ async function onSaveForm() {
     formError.value = 'Please fill in company, customer, warehouse, and order date'
     return
   }
-  if (form.lines.length === 0 || form.lines.some((l) => !l.productId || !l.quantityOrdered || l.unitPrice === undefined)) {
-    formError.value = 'Every line needs a product, quantity, and unit price'
+  if (form.lines.length === 0 || form.lines.some((l) => !l.productId || !l.quantityOrdered)) {
+    formError.value = 'Every line needs a product and quantity'
     return
   }
   const payload: SalesOrderPayload = {
@@ -381,7 +425,13 @@ async function onSaveForm() {
     orderDate: form.orderDate,
     expectedDate: form.expectedDate || undefined,
     notes: form.notes || undefined,
-    lines: form.lines.map((l) => ({ productId: l.productId!, quantityOrdered: l.quantityOrdered!, unitPrice: l.unitPrice! }))
+    lines: form.lines.map((l) => ({
+      productId: l.productId!,
+      quantityOrdered: l.quantityOrdered!,
+      unitPrice: l.unitPrice,
+      discountPercent: l.discountPercent,
+      taxRate: l.taxRate
+    }))
   }
   saving.value = true
   try {
@@ -410,6 +460,18 @@ async function onSubmit(row: SalesOrder) {
     await load()
   } catch (err) {
     toast.add({ title: 'Could not submit', description: apiErrorMessage(err), color: 'error' })
+  } finally {
+    actingId.value = null
+  }
+}
+async function onApprove(row: SalesOrder) {
+  actingId.value = row.id
+  try {
+    await approve(row.id)
+    toast.add({ title: 'Sales order confirmed', color: 'success' })
+    await load()
+  } catch (err) {
+    toast.add({ title: 'Could not confirm', description: apiErrorMessage(err), color: 'error' })
   } finally {
     actingId.value = null
   }

@@ -3,6 +3,8 @@
 // only ever change through goods receipts (and, in later inventory steps,
 // other stock movements).
 
+import type { PageEnvelope } from '#shared/types'
+
 export interface StockLevel {
   id: number
   companyId: number
@@ -25,14 +27,6 @@ export interface StockLevelFilter {
   sortOrder?: 'asc' | 'desc'
   page?: number
   size?: number
-}
-
-interface PageEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T[]
-  metadata: { hasNext: boolean; hasPrev: boolean; totalPage: number; currentPage: number; limit: number; totalCount: number }
 }
 
 export function useStockLevels() {

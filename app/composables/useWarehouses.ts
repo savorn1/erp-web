@@ -2,6 +2,8 @@
 // requires ROLE_ADMIN). Company and manager are resolved server-side into
 // display names. Mirrors useBranches.
 
+import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+
 export interface Warehouse {
   id: number
   companyId: number
@@ -45,21 +47,6 @@ export interface WarehousePayload {
   phone?: string
   email?: string
   timezone?: string
-}
-
-interface ApiEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T
-}
-
-interface PageEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T[]
-  metadata: { hasNext: boolean; hasPrev: boolean; totalPage: number; currentPage: number; limit: number; totalCount: number }
 }
 
 export function useWarehouses() {

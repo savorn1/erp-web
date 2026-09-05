@@ -2,6 +2,8 @@
 // requires ROLE_ADMIN). Single-item endpoints wrap their payload in
 // ApiResponse<T>; list wraps in PageResponse<T>.
 
+import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+
 export interface Company {
   id: number
   name: string
@@ -38,30 +40,6 @@ export interface CompanyPayload {
   taxId?: string
   currency: string
   fiscalYearStartMonth: number
-}
-
-interface ApiEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T
-}
-
-interface PageMetadata {
-  hasNext: boolean
-  hasPrev: boolean
-  totalPage: number
-  currentPage: number
-  limit: number
-  totalCount: number
-}
-
-interface PageEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T[]
-  metadata: PageMetadata
 }
 
 export function useCompanies() {

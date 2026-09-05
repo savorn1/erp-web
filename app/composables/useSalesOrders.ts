@@ -1,9 +1,12 @@
 // Wraps the backend's admin-only SalesOrderController
 // (/api/admin/sales-orders/**, requires ROLE_ADMIN). Status moves through
-// dedicated actions (submit/cancel) rather than a generic setter — the
-// backend enforces which transitions are legal.
+// dedicated actions (submit/approve/cancel) rather than a generic setter —
+// approve is where stock availability is actually checked and the order
+// becomes eligible for delivery ("Order confirmation").
 
-export type SalesOrderStatus = 'DRAFT' | 'SUBMITTED' | 'PARTIALLY_DELIVERED' | 'DELIVERED' | 'CANCELLED'
+import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+
+export type SalesOrderStatus = 'DRAFT' | 'SUBMITTED' | 'CONFIRMED' | 'PARTIALLY_DELIVERED' | 'DELIVERED' | 'CANCELLED'
 
 export interface SalesOrderLine {
   id: number
@@ -12,6 +15,10 @@ export interface SalesOrderLine {
   productSku: string | null
   quantityOrdered: number
   unitPrice: number
+  discountPercent: number
+  discountAmount: number
+  taxRate: number
+  taxAmount: number
   quantityDelivered: number
   lineTotal: number
 }
@@ -30,6 +37,9 @@ export interface SalesOrder {
   status: SalesOrderStatus
   notes: string | null
   createdBy: string | null
+  subtotal: number
+  discountAmount: number
+  taxAmount: number
   totalAmount: number
   lines: SalesOrderLine[] | null
 }
@@ -49,7 +59,11 @@ export interface SalesOrderFilter {
 export interface SalesOrderLinePayload {
   productId: number
   quantityOrdered: number
-  unitPrice: number
+  // Omit to default to the product's own selling price.
+  unitPrice?: number
+  discountPercent?: number
+  // Omit to default to the product's own tax rate.
+  taxRate?: number
 }
 
 export interface SalesOrderPayload {
@@ -60,21 +74,6 @@ export interface SalesOrderPayload {
   expectedDate?: string
   notes?: string
   lines: SalesOrderLinePayload[]
-}
-
-interface ApiEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T
-}
-
-interface PageEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T[]
-  metadata: { hasNext: boolean; hasPrev: boolean; totalPage: number; currentPage: number; limit: number; totalCount: number }
 }
 
 export function useSalesOrders() {
@@ -104,6 +103,11 @@ export function useSalesOrders() {
     return res.data
   }
 
+  async function approve(id: number) {
+    const res = await api<ApiEnvelope<SalesOrder>>(`/api/admin/sales-orders/${id}/approve`, { method: 'POST' })
+    return res.data
+  }
+
   async function cancel(id: number) {
     const res = await api<ApiEnvelope<SalesOrder>>(`/api/admin/sales-orders/${id}/cancel`, { method: 'POST' })
     return res.data
@@ -113,5 +117,5 @@ export function useSalesOrders() {
     await api(`/api/admin/sales-orders/${id}`, { method: 'DELETE' })
   }
 
-  return { list, get, create, update, submit, cancel, remove }
+  return { list, get, create, update, submit, approve, cancel, remove }
 }

@@ -1,19 +1,14 @@
 // Wraps the backend's ProfileController (/api/users/me) — self-service
 // view/edit of the current user's own profile and password.
 
+import type { ApiEnvelope } from '#shared/types'
+
 export interface Profile {
   id: number
   username: string
   email: string | null
   role: string
   enabled: boolean
-}
-
-interface ApiEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T
 }
 
 export function useProfile() {

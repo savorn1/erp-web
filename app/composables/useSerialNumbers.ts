@@ -4,6 +4,8 @@
 // products (see useGoodsReceipts). IN_TRANSIT/ISSUED are set by deliveries
 // and stock transfers (see useDeliveries/useStockTransfers).
 
+import type { PageEnvelope } from '#shared/types'
+
 export type SerialNumberStatus = 'IN_STOCK' | 'IN_TRANSIT' | 'ISSUED'
 
 export interface SerialNumber {
@@ -33,14 +35,6 @@ export interface SerialNumberFilter {
   sortOrder?: 'asc' | 'desc'
   page?: number
   size?: number
-}
-
-interface PageEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T[]
-  metadata: { hasNext: boolean; hasPrev: boolean; totalPage: number; currentPage: number; limit: number; totalCount: number }
 }
 
 export function useSerialNumbers() {

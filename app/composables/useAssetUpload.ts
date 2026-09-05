@@ -10,19 +10,14 @@
 // (reading 'accept')` inside Nuxt UI's version, which expects a different
 // call signature).
 
+import type { ApiEnvelope } from '#shared/types'
+
 export interface UploadedFile {
   key: string
   url: string
   fileName: string
   contentType: string
   size: number
-}
-
-interface ApiEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T
 }
 
 export function useAssetUpload() {

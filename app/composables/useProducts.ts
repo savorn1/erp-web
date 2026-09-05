@@ -3,6 +3,8 @@
 // ApiResponse<T>; list wraps in PageResponse<T>. Category/brand/type/unit of
 // measure/supplier are resolved server-side into display names.
 
+import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+
 export type ProductStatus = 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED'
 export type ProductTrackingType = 'NONE' | 'BATCH' | 'SERIAL'
 
@@ -64,21 +66,6 @@ export interface ProductPayload {
   taxRate: number
   trackingType?: ProductTrackingType
   imageUrl?: string
-}
-
-interface ApiEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T
-}
-
-interface PageEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T[]
-  metadata: { hasNext: boolean; hasPrev: boolean; totalPage: number; currentPage: number; limit: number; totalCount: number }
 }
 
 export function useProducts() {

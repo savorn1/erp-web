@@ -1,7 +1,13 @@
 // Wraps the backend's admin-only DeliveryController
-// (/api/admin/deliveries/**, requires ROLE_ADMIN). Posting a delivery
-// decreases stock immediately — there's no update/delete, a posted delivery
-// is an immutable ledger entry.
+// (/api/admin/deliveries/**, requires ROLE_ADMIN). Moves through a
+// pick -> pack -> ship -> deliver workflow — stock only actually decreases
+// at ship() (see DeliveryServiceImpl.shipDelivery); everything before that
+// is just planning, so a pending/picked/packed delivery can still be
+// cancelled with zero stock effect.
+
+import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+
+export type DeliveryStatus = 'PENDING' | 'PICKED' | 'PACKED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED'
 
 export interface DeliveryLine {
   id: number
@@ -26,8 +32,17 @@ export interface Delivery {
   warehouseName: string | null
   deliveryNumber: string
   deliveryDate: string
+  status: DeliveryStatus
   notes: string | null
   createdBy: string | null
+  pickedBy: string | null
+  pickedAt: string | null
+  packedBy: string | null
+  packedAt: string | null
+  shippedBy: string | null
+  shippedAt: string | null
+  deliveredBy: string | null
+  deliveredAt: string | null
   lines: DeliveryLine[] | null
 }
 
@@ -36,6 +51,7 @@ export interface DeliveryFilter {
   companyId?: number
   salesOrderId?: number
   warehouseId?: number
+  status?: DeliveryStatus
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
   page?: number
@@ -47,10 +63,10 @@ export interface DeliveryLinePayload {
   quantityDelivered: number
   binId?: number
   // Required when the product is BATCH-tracked — must reference a batch
-  // that already exists.
+  // that already exists. Not validated for existence until ship().
   batchNumber?: string
   // Required when the product is SERIAL-tracked — must have exactly
-  // quantityDelivered entries, each currently IN_STOCK.
+  // quantityDelivered entries. Not validated for existence until ship().
   serialNumbers?: string[]
 }
 
@@ -59,21 +75,6 @@ export interface DeliveryPayload {
   deliveryDate: string
   notes?: string
   lines: DeliveryLinePayload[]
-}
-
-interface ApiEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T
-}
-
-interface PageEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T[]
-  metadata: { hasNext: boolean; hasPrev: boolean; totalPage: number; currentPage: number; limit: number; totalCount: number }
 }
 
 export function useDeliveries() {
@@ -93,5 +94,30 @@ export function useDeliveries() {
     return res.data
   }
 
-  return { list, get, create }
+  async function pick(id: number) {
+    const res = await api<ApiEnvelope<Delivery>>(`/api/admin/deliveries/${id}/pick`, { method: 'POST' })
+    return res.data
+  }
+
+  async function pack(id: number) {
+    const res = await api<ApiEnvelope<Delivery>>(`/api/admin/deliveries/${id}/pack`, { method: 'POST' })
+    return res.data
+  }
+
+  async function ship(id: number) {
+    const res = await api<ApiEnvelope<Delivery>>(`/api/admin/deliveries/${id}/ship`, { method: 'POST' })
+    return res.data
+  }
+
+  async function complete(id: number) {
+    const res = await api<ApiEnvelope<Delivery>>(`/api/admin/deliveries/${id}/complete`, { method: 'POST' })
+    return res.data
+  }
+
+  async function cancel(id: number) {
+    const res = await api<ApiEnvelope<Delivery>>(`/api/admin/deliveries/${id}/cancel`, { method: 'POST' })
+    return res.data
+  }
+
+  return { list, get, create, pick, pack, ship, complete, cancel }
 }

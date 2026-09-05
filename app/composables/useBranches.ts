@@ -4,6 +4,8 @@
 // Company (see useCompanies) and may have a User assigned as its manager
 // (see useUsers) — both are resolved server-side into companyName/managerUsername.
 
+import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+
 export interface Branch {
   id: number
   companyId: number
@@ -46,30 +48,6 @@ export interface BranchPayload {
   phone?: string
   email?: string
   timezone?: string
-}
-
-interface ApiEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T
-}
-
-interface PageMetadata {
-  hasNext: boolean
-  hasPrev: boolean
-  totalPage: number
-  currentPage: number
-  limit: number
-  totalCount: number
-}
-
-interface PageEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T[]
-  metadata: PageMetadata
 }
 
 export function useBranches() {

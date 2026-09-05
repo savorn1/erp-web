@@ -6,6 +6,8 @@
 // Employee assignment sets the assigned User's own departmentId — there's no
 // separate join table, an employee belongs to at most one department.
 
+import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+
 export interface Department {
   id: number
   companyId: number
@@ -35,30 +37,6 @@ export interface DepartmentPayload {
   name: string
   parentDepartmentId?: number
   managerId?: number
-}
-
-interface ApiEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T
-}
-
-interface PageMetadata {
-  hasNext: boolean
-  hasPrev: boolean
-  totalPage: number
-  currentPage: number
-  limit: number
-  totalCount: number
-}
-
-interface PageEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T[]
-  metadata: PageMetadata
 }
 
 export function useDepartments() {

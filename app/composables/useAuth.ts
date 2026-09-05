@@ -1,3 +1,5 @@
+import type { ApiEnvelope } from '#shared/types'
+
 export interface LoginRequest {
   username: string
   password: string
@@ -10,13 +12,6 @@ export interface AuthResponse {
   expiresIn: number
   username: string
   role: string
-}
-
-interface ApiEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T
 }
 
 export function useAuth() {

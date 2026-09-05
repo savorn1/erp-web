@@ -2,6 +2,8 @@
 // (/api/admin/stock-movements/**, requires ROLE_ADMIN). Read-only audit
 // trail — written only by goods receipt posting so far.
 
+import type { PageEnvelope } from '#shared/types'
+
 export type StockMovementType = 'RECEIPT'
 
 export interface StockMovement {
@@ -31,14 +33,6 @@ export interface StockMovementFilter {
   sortOrder?: 'asc' | 'desc'
   page?: number
   size?: number
-}
-
-interface PageEnvelope<T> {
-  traceId: string
-  statusCode: number
-  message: string
-  data: T[]
-  metadata: { hasNext: boolean; hasPrev: boolean; totalPage: number; currentPage: number; limit: number; totalCount: number }
 }
 
 export function useStockMovements() {
