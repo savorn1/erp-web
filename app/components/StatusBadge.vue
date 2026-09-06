@@ -109,7 +109,30 @@ const STATUS_META: Record<string, { color: StatusColor; icon: string }> = {
   UNDER_CONTRACT: { color: 'info', icon: 'i-lucide-file-signature' },
   // Product status (useProducts' ProductStatus) — ACTIVE/INACTIVE already
   // covered above; DISCONTINUED is permanent, unlike the reversible INACTIVE.
-  DISCONTINUED: { color: 'cancelled', icon: 'i-lucide-ban' }
+  DISCONTINUED: { color: 'cancelled', icon: 'i-lucide-ban' },
+  // RfqSupplier status (useRfqs' RfqSupplierStatus) — PENDING already covered
+  // above.
+  QUOTED: { color: 'info', icon: 'i-lucide-file-check' },
+  // GoodsReceipt status (useGoodsReceipts' GoodsReceiptStatus) — COMPLETED
+  // already covered above.
+  PENDING_QC: { color: 'warning', icon: 'i-lucide-clock' },
+  // GoodsReceiptLine quality check outcome (useGoodsReceipts'
+  // QualityCheckStatus) — PENDING/FAILED already covered above.
+  PASSED: { color: 'success', icon: 'i-lucide-check-circle' },
+  // Account nature (useAccounts' AccountType) — the five fundamental
+  // accounting classifications, each given a distinct color so a chart of
+  // accounts reads at a glance.
+  ASSET: { color: 'info', icon: 'i-lucide-landmark' },
+  LIABILITY: { color: 'warning', icon: 'i-lucide-scale' },
+  EQUITY: { color: 'secondary', icon: 'i-lucide-pie-chart' },
+  REVENUE: { color: 'success', icon: 'i-lucide-trending-up' },
+  EXPENSE: { color: 'error', icon: 'i-lucide-trending-down' },
+  // BankAccount type (useBankAccounts' BankAccountType).
+  CASH: { color: 'success', icon: 'i-lucide-banknote' },
+  BANK: { color: 'info', icon: 'i-lucide-landmark' },
+  // TaxRate type (useTaxRates' TaxType) — OTHER falls back to DEFAULT_META.
+  VAT: { color: 'info', icon: 'i-lucide-percent' },
+  WITHHOLDING: { color: 'warning', icon: 'i-lucide-percent' }
 }
 
 const DEFAULT_META: { color: StatusColor; icon: string } = {

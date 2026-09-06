@@ -48,6 +48,10 @@ export interface Invoice {
   paidAmount: number
   outstandingAmount: number
   paymentStatus: InvoicePaymentStatus
+  // True once dueDate has passed and outstandingAmount is still > 0.
+  overdue: boolean
+  // Days past dueDate (0 when not overdue or dueDate is unset).
+  daysOverdue: number
   lines: InvoiceLine[] | null
 }
 
@@ -68,6 +72,31 @@ export interface CreateInvoicePayload {
   invoiceDate: string
   dueDate?: string
   notes?: string
+}
+
+export interface InvoiceAgingFilter {
+  companyId?: number
+  customerId?: number
+  // Defaults to today when omitted.
+  asOfDate?: string
+}
+
+export interface InvoiceAgingRow {
+  // Null on the report's grand-total row.
+  customerId: number | null
+  customerName: string | null
+  current: number
+  days1To30: number
+  days31To60: number
+  days61To90: number
+  days90Plus: number
+  total: number
+}
+
+export interface InvoiceAgingReport {
+  asOfDate: string
+  rows: InvoiceAgingRow[]
+  totals: InvoiceAgingRow
 }
 
 export function useInvoices() {
@@ -106,5 +135,10 @@ export function useInvoices() {
     await api(`/api/admin/invoices/${id}`, { method: 'DELETE' })
   }
 
-  return { list, get, createFromSalesOrder, createFromDelivery, approve, cancel, remove }
+  async function agingReport(filter: InvoiceAgingFilter = {}) {
+    const res = await api<ApiEnvelope<InvoiceAgingReport>>('/api/admin/invoices/aging', { query: filter })
+    return res.data
+  }
+
+  return { list, get, createFromSalesOrder, createFromDelivery, approve, cancel, remove, agingReport }
 }

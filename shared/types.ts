@@ -77,7 +77,7 @@ export interface FieldDef {
   offLabel?: string
   /** Initial value applied by DynamicForm when the model has none. */
   default?: unknown
-  /** Layout in DynamicForm's 2-column grid. */
+  /** Layout in DynamicForm's 2-column grid. Defaults to 'half'. */
   wrapper?: 'full' | 'half'
   /** Hide the field (and skip its `required` check) when this returns false for the current form values. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

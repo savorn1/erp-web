@@ -267,7 +267,7 @@ const currentFormCompanyId = computed(() => (activeFormTarget.value === 'create'
 
 const supplierFields = computed<FieldDef[]>(() => [
   { name: 'companyId', label: 'Company', type: 'select', required: true, options: activeCompanyOptions.value },
-  { name: 'name', required: true, wrapper: 'full' },
+  { name: 'name', required: true },
   { name: 'supplierTypeId', label: 'Supplier type', type: 'select', options: optionsFor(types.value, currentFormCompanyId.value) },
   { name: 'contactName', label: 'Contact name' },
   { name: 'phone' },

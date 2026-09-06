@@ -1,9 +1,14 @@
 // Wraps the backend's admin-only GoodsReceiptController
 // (/api/admin/goods-receipts/**, requires ROLE_ADMIN). Posting a receipt
-// increases stock immediately — there's no update/delete, a posted receipt
-// is an immutable ledger entry.
+// reserves the lines PENDING quality check — stock only moves, and the
+// receipt reaches COMPLETED, once every line is passed or failed via
+// qualityCheck(). There's no update/delete, a posted receipt is an
+// immutable ledger entry.
 
 import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+
+export type GoodsReceiptStatus = 'PENDING_QC' | 'COMPLETED'
+export type QualityCheckStatus = 'PENDING' | 'PASSED' | 'FAILED'
 
 export interface GoodsReceiptLine {
   id: number
@@ -18,6 +23,10 @@ export interface GoodsReceiptLine {
   batchNumber: string | null
   expirationDate: string | null
   serialNumbers: string[]
+  qualityStatus: QualityCheckStatus
+  qualityNotes: string | null
+  qualityCheckedBy: string | null
+  qualityCheckedAt: string | null
 }
 
 export interface GoodsReceipt {
@@ -29,6 +38,7 @@ export interface GoodsReceipt {
   warehouseName: string | null
   receiptNumber: string
   receiptDate: string
+  status: GoodsReceiptStatus
   notes: string | null
   createdBy: string | null
   lines: GoodsReceiptLine[] | null
@@ -39,6 +49,7 @@ export interface GoodsReceiptFilter {
   companyId?: number
   purchaseOrderId?: number
   warehouseId?: number
+  status?: GoodsReceiptStatus
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
   page?: number
@@ -64,6 +75,12 @@ export interface GoodsReceiptPayload {
   lines: GoodsReceiptLinePayload[]
 }
 
+export interface QualityCheckPayload {
+  // Must be PASSED or FAILED.
+  status: Exclude<QualityCheckStatus, 'PENDING'>
+  notes?: string
+}
+
 export function useGoodsReceipts() {
   const api = useApi()
 
@@ -81,5 +98,13 @@ export function useGoodsReceipts() {
     return res.data
   }
 
-  return { list, get, create }
+  async function qualityCheck(receiptId: number, lineId: number, payload: QualityCheckPayload) {
+    const res = await api<ApiEnvelope<GoodsReceipt>>(`/api/admin/goods-receipts/${receiptId}/lines/${lineId}/quality-check`, {
+      method: 'POST',
+      body: payload
+    })
+    return res.data
+  }
+
+  return { list, get, create, qualityCheck }
 }

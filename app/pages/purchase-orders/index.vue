@@ -57,11 +57,39 @@
             >
               Submit
             </UButton>
-            <NuxtLink v-if="row.status === 'SUBMITTED' || row.status === 'PARTIALLY_RECEIVED'" :to="`/goods-receipts?poId=${row.id}`">
+            <UButton
+              v-if="row.status === 'SUBMITTED'"
+              size="xs"
+              color="success"
+              variant="soft"
+              icon="i-lucide-check"
+              :loading="actingId === row.id"
+              @click="onApprove(row)"
+            >
+              Approve
+            </UButton>
+            <UButton
+              v-if="row.status === 'APPROVED'"
+              size="xs"
+              color="info"
+              variant="soft"
+              icon="i-lucide-mail"
+              :loading="actingId === row.id"
+              @click="onSend(row)"
+            >
+              Send
+            </UButton>
+            <NuxtLink v-if="row.status === 'SENT' || row.status === 'PARTIALLY_RECEIVED'" :to="`/goods-receipts?poId=${row.id}`">
               <UButton size="xs" color="info" variant="soft" icon="i-lucide-package-check">Receive</UButton>
             </NuxtLink>
+            <NuxtLink
+              v-if="row.status === 'SENT' || row.status === 'PARTIALLY_RECEIVED' || row.status === 'RECEIVED'"
+              :to="`/purchase-invoices?fromPurchaseOrderId=${row.id}`"
+            >
+              <UButton size="xs" color="info" variant="soft" icon="i-lucide-receipt">Invoice</UButton>
+            </NuxtLink>
             <UButton
-              v-if="row.status === 'DRAFT' || row.status === 'SUBMITTED'"
+              v-if="row.status === 'DRAFT' || row.status === 'SUBMITTED' || row.status === 'APPROVED' || row.status === 'SENT'"
               size="xs"
               color="warning"
               variant="soft"
@@ -139,7 +167,7 @@
               No line items yet
             </div>
             <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center">
-              <USelect v-model="line.productId" :items="productOptionsFor(form.companyId)" placeholder="Product" :disabled="!formEditable" class="col-span-5" />
+              <USelect v-model="line.productId" :items="productOptionsFor(form.companyId)" placeholder="Product" :disabled="!formEditable" class="col-span-3" />
               <UInput
                 v-model.number="line.quantityOrdered"
                 type="number"
@@ -150,14 +178,30 @@
                 class="col-span-2"
               />
               <UInput v-model.number="line.unitCost" type="number" min="0" step="0.01" placeholder="Unit cost" :disabled="!formEditable" class="col-span-2" />
+              <UInput
+                v-model.number="line.discountPercent"
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                placeholder="Disc %"
+                :disabled="!formEditable"
+                class="col-span-1"
+              />
+              <UInput v-model.number="line.taxRate" type="number" min="0" step="0.01" placeholder="Tax %" :disabled="!formEditable" class="col-span-1" />
               <div class="col-span-2 text-sm text-gray-500 dark:text-gray-400 text-right">
-                {{ formatCurrency((line.quantityOrdered || 0) * (line.unitCost || 0)) }}
+                {{ formatCurrency(lineTotal(line)) }}
               </div>
               <UButton v-if="formEditable" size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-1" @click="form.lines.splice(i, 1)" />
-              <span v-else-if="viewingLineReceived[i]" class="col-span-1 text-xs text-gray-400">{{ viewingLineReceived[i] }} recv'd</span>
+              <span v-else-if="viewingLineReceived[i]" class="col-span-1 text-xs text-gray-400 text-right">{{ viewingLineReceived[i] }} recv'd</span>
             </div>
           </div>
 
+          <div class="flex justify-end text-sm text-gray-600 dark:text-gray-300 mb-1">Subtotal: {{ formatCurrency(formSubtotal) }}</div>
+          <div v-if="formDiscountTotal > 0" class="flex justify-end text-sm text-gray-600 dark:text-gray-300 mb-1">
+            Discount: -{{ formatCurrency(formDiscountTotal) }}
+          </div>
+          <div v-if="formTaxTotal > 0" class="flex justify-end text-sm text-gray-600 dark:text-gray-300 mb-1">Tax: {{ formatCurrency(formTaxTotal) }}</div>
           <div class="flex justify-end text-sm font-medium text-gray-900 dark:text-white mb-4">Total: {{ formatCurrency(formTotal) }}</div>
 
           <UAlert v-if="formError" color="error" variant="subtle" class="mb-3" :title="formError" />
@@ -193,7 +237,7 @@ import type { PurchaseOrder, PurchaseOrderPayload, PurchaseOrderStatus } from '~
 
 definePageMeta({ middleware: 'admin' })
 
-const { list, get, create, update, submit, cancel, remove } = usePurchaseOrders()
+const { list, get, create, update, submit, approve, send, cancel, remove } = usePurchaseOrders()
 const { list: listCompanies } = useCompanies()
 const { list: listSuppliers } = useSuppliers()
 const { list: listWarehouses } = useWarehouses()
@@ -235,6 +279,8 @@ const statusFilterOptions = [
   { label: 'All statuses', value: undefined },
   { label: 'Draft', value: 'DRAFT' },
   { label: 'Submitted', value: 'SUBMITTED' },
+  { label: 'Approved', value: 'APPROVED' },
+  { label: 'Sent', value: 'SENT' },
   { label: 'Partially received', value: 'PARTIALLY_RECEIVED' },
   { label: 'Received', value: 'RECEIVED' },
   { label: 'Cancelled', value: 'CANCELLED' }
@@ -297,6 +343,8 @@ interface LineForm {
   productId: number | undefined
   quantityOrdered: number | undefined
   unitCost: number | undefined
+  discountPercent: number | undefined
+  taxRate: number | undefined
 }
 
 const showForm = ref(false)
@@ -327,10 +375,26 @@ const form = reactive<{
 
 const formEditable = computed(() => editingStatus.value === null || editingStatus.value === 'DRAFT')
 const formTitle = computed(() => (editingId.value === null ? 'New purchase order' : formEditable.value ? 'Edit purchase order' : 'View purchase order'))
-const formTotal = computed(() => form.lines.reduce((sum, l) => sum + (l.quantityOrdered || 0) * (l.unitCost || 0), 0))
+
+function lineSubtotal(l: LineForm) {
+  return (l.quantityOrdered || 0) * (l.unitCost || 0)
+}
+function lineDiscount(l: LineForm) {
+  return lineSubtotal(l) * ((l.discountPercent || 0) / 100)
+}
+function lineTax(l: LineForm) {
+  return (lineSubtotal(l) - lineDiscount(l)) * ((l.taxRate || 0) / 100)
+}
+function lineTotal(l: LineForm) {
+  return lineSubtotal(l) - lineDiscount(l) + lineTax(l)
+}
+const formSubtotal = computed(() => form.lines.reduce((sum, l) => sum + lineSubtotal(l), 0))
+const formDiscountTotal = computed(() => form.lines.reduce((sum, l) => sum + lineDiscount(l), 0))
+const formTaxTotal = computed(() => form.lines.reduce((sum, l) => sum + lineTax(l), 0))
+const formTotal = computed(() => form.lines.reduce((sum, l) => sum + lineTotal(l), 0))
 
 function addLine() {
-  form.lines.push({ productId: undefined, quantityOrdered: undefined, unitCost: undefined })
+  form.lines.push({ productId: undefined, quantityOrdered: undefined, unitCost: undefined, discountPercent: undefined, taxRate: undefined })
 }
 
 function resetForm() {
@@ -367,7 +431,13 @@ async function openView(row: PurchaseOrder) {
     form.orderDate = detail.orderDate
     form.expectedDate = detail.expectedDate ?? ''
     form.notes = detail.notes ?? ''
-    form.lines = (detail.lines ?? []).map((l) => ({ productId: l.productId, quantityOrdered: l.quantityOrdered, unitCost: l.unitCost }))
+    form.lines = (detail.lines ?? []).map((l) => ({
+      productId: l.productId,
+      quantityOrdered: l.quantityOrdered,
+      unitCost: l.unitCost,
+      discountPercent: l.discountPercent || undefined,
+      taxRate: l.taxRate || undefined
+    }))
     viewingLineReceived.value = Object.fromEntries((detail.lines ?? []).map((l, i) => [i, `${l.quantityReceived}/${l.quantityOrdered}`]))
   } catch (err) {
     formError.value = apiErrorMessage(err)
@@ -393,7 +463,13 @@ async function onSaveForm() {
     orderDate: form.orderDate,
     expectedDate: form.expectedDate || undefined,
     notes: form.notes || undefined,
-    lines: form.lines.map((l) => ({ productId: l.productId!, quantityOrdered: l.quantityOrdered!, unitCost: l.unitCost! }))
+    lines: form.lines.map((l) => ({
+      productId: l.productId!,
+      quantityOrdered: l.quantityOrdered!,
+      unitCost: l.unitCost!,
+      discountPercent: l.discountPercent,
+      taxRate: l.taxRate
+    }))
   }
   saving.value = true
   try {
@@ -422,6 +498,30 @@ async function onSubmit(row: PurchaseOrder) {
     await load()
   } catch (err) {
     toast.add({ title: 'Could not submit', description: apiErrorMessage(err), color: 'error' })
+  } finally {
+    actingId.value = null
+  }
+}
+async function onApprove(row: PurchaseOrder) {
+  actingId.value = row.id
+  try {
+    await approve(row.id)
+    toast.add({ title: 'Purchase order approved', color: 'success' })
+    await load()
+  } catch (err) {
+    toast.add({ title: 'Could not approve', description: apiErrorMessage(err), color: 'error' })
+  } finally {
+    actingId.value = null
+  }
+}
+async function onSend(row: PurchaseOrder) {
+  actingId.value = row.id
+  try {
+    await send(row.id)
+    toast.add({ title: 'Purchase order sent to supplier', color: 'success' })
+    await load()
+  } catch (err) {
+    toast.add({ title: 'Could not send', description: apiErrorMessage(err), color: 'error' })
   } finally {
     actingId.value = null
   }

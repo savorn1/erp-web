@@ -261,7 +261,7 @@ async function load() {
 
 const productFields = computed<FieldDef[]>(() => [
   { name: 'companyId', label: 'Company', type: 'select', required: true, options: activeCompanyOptions.value },
-  { name: 'name', required: true, wrapper: 'full' },
+  { name: 'name', required: true },
   { name: 'sku', label: 'SKU', required: true },
   { name: 'barcode' },
   { name: 'categoryId', label: 'Category', type: 'select', options: optionsFor(categories.value, currentFormCompanyId.value) },

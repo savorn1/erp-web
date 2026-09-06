@@ -102,9 +102,15 @@ const items = computed<NavigationMenuItem[]>(() => [
         { label: 'Zones', to: '/warehouse-zones', icon: 'i-lucide-layout-grid' },
         { label: 'Shelves / bins', to: '/warehouse-bins', icon: 'i-lucide-package-2' },
 
+        { label: 'Purchasing', type: 'label' as const },
+        { label: 'Purchase requests', to: '/purchase-requests', icon: 'i-lucide-clipboard-list' },
+        { label: 'RFQs', to: '/rfqs', icon: 'i-lucide-send' },
+        { label: 'Purchase orders', to: '/purchase-orders', icon: 'i-lucide-shopping-cart' },
+
         { label: 'Stock Receiving', type: 'label' as const },
-        { label: 'Purchase orders', to: '/purchase-orders', icon: 'i-lucide-clipboard-list' },
         { label: 'Goods receipts', to: '/goods-receipts', icon: 'i-lucide-package-check' },
+        { label: 'Purchase invoices', to: '/purchase-invoices', icon: 'i-lucide-receipt' },
+        { label: 'Supplier payments', to: '/supplier-payments', icon: 'i-lucide-banknote' },
         { label: 'Stock levels', to: '/stock-levels', icon: 'i-lucide-boxes' },
         { label: 'Stock movements', to: '/stock-movements', icon: 'i-lucide-history' },
         { label: 'Serial numbers', to: '/serial-numbers', icon: 'i-lucide-scan-barcode' },
@@ -129,6 +135,16 @@ const items = computed<NavigationMenuItem[]>(() => [
         { label: 'Leads', to: '/leads', icon: 'i-lucide-user-plus' },
         { label: 'Opportunities', to: '/opportunities', icon: 'i-lucide-target' },
         { label: 'Quotations', to: '/quotations', icon: 'i-lucide-file-text' },
+
+        { label: 'Accounting', type: 'label' as const },
+        { label: 'Chart of accounts', to: '/chart-of-accounts', icon: 'i-lucide-book-open' },
+        { label: 'Journal entries', to: '/journal-entries', icon: 'i-lucide-book-text' },
+        { label: 'Accounts receivable', to: '/accounts-receivable', icon: 'i-lucide-hand-coins' },
+        { label: 'Accounts payable', to: '/accounts-payable', icon: 'i-lucide-credit-card' },
+        { label: 'Bank & cash', to: '/bank-accounts', icon: 'i-lucide-landmark' },
+        { label: 'Tax rates', to: '/tax-rates', icon: 'i-lucide-percent' },
+        { label: 'Tax report', to: '/tax-report', icon: 'i-lucide-file-bar-chart' },
+        { label: 'Financial reports', to: '/financial-reports', icon: 'i-lucide-bar-chart-3' },
 
         { label: 'Administration', type: 'label' as const },
         { label: 'Users', to: '/users', icon: 'i-lucide-users' }

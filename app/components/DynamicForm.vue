@@ -1,7 +1,7 @@
 <template>
   <UForm novalidate :state="model" class="space-y-4" @submit="onSubmit">
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div v-for="field in visibleFields" :key="field.name" :class="(field.wrapper ?? 'full') === 'full' ? 'sm:col-span-2' : 'sm:col-span-1'">
+      <div v-for="field in visibleFields" :key="field.name" :class="(field.wrapper ?? 'half') === 'full' ? 'sm:col-span-2' : 'sm:col-span-1'">
         <Field v-model="model[field.name]" :field="field" />
       </div>
     </div>
