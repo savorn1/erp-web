@@ -2,20 +2,10 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">UOM conversions</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New conversion </UButton>
+      <UButton icon="i-lucide-plus" @click="openCreate"> New conversion </UButton>
     </div>
 
     <UAlert
-      v-if="!loadingLookups && activeCompanyOptions.length === 0"
-      color="warning"
-      variant="subtle"
-      class="mb-4"
-      title="No active companies yet"
-      description="Create a company first — every conversion belongs to one."
-      icon="i-lucide-triangle-alert"
-    />
-    <UAlert
-      v-else
       color="info"
       variant="subtle"
       class="mb-4"
@@ -26,7 +16,6 @@
 
     <UCard class="mb-4">
       <div class="flex flex-wrap gap-3">
-        <USelect v-model="filter.companyId" :items="companyFilterOptions" placeholder="Company" class="w-48" />
         <USelect v-model="filter.active" :items="statusFilterOptions" placeholder="Status" class="w-36" />
         <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
@@ -72,7 +61,7 @@
             description="Setting a non-base unit's conversion factor on the Units of measure page will create one automatically."
           >
             <template #action>
-              <UButton :disabled="activeCompanyOptions.length === 0" icon="i-lucide-plus" @click="openCreate">New conversion</UButton>
+              <UButton icon="i-lucide-plus" @click="openCreate">New conversion</UButton>
             </template>
           </EmptyState>
         </template>
@@ -138,39 +127,24 @@ import type { UnitOfMeasure } from '~/composables/useUnitsOfMeasure'
 definePageMeta({ middleware: 'admin' })
 
 const { list, create, update, remove } = useUomConversions()
-const { list: listCompanies } = useCompanies()
 const { list: listUnits } = useUnitsOfMeasure()
 
 const rows = ref<UomConversion[]>([])
 const loading = ref(false)
 const error = ref('')
 
-const companies = ref<{ id: number; name: string; active: boolean }[]>([])
 const units = ref<UnitOfMeasure[]>([])
-const loadingLookups = ref(false)
 async function loadLookups() {
-  loadingLookups.value = true
-  try {
-    const [c, u] = await Promise.all([listCompanies({ size: 200 }), listUnits({ size: 500 })])
-    companies.value = c.data
-    units.value = u.data
-  } finally {
-    loadingLookups.value = false
-  }
+  units.value = (await listUnits({ size: 500 })).data
 }
-const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
-const companyFilterOptions = computed(() => [{ label: 'All companies', value: undefined }, ...companies.value.map((c) => ({ label: c.name, value: c.id }))])
 
-function unitsFor(companyId: number | undefined) {
-  return units.value.filter((u) => u.active && u.categoryId && (companyId === undefined || u.companyId === companyId))
-}
-function unitOptionsFor(companyId: number | undefined, categoryId: number | null | undefined, excludeId?: number) {
-  return unitsFor(companyId)
-    .filter((u) => (categoryId ? u.categoryId === categoryId : true) && u.id !== excludeId)
+function unitOptionsFor(categoryId: number | null | undefined, excludeId?: number) {
+  return units.value
+    .filter((u) => u.active && u.categoryId && (categoryId ? u.categoryId === categoryId : true) && u.id !== excludeId)
     .map((u) => ({ label: `${u.name} (${u.abbreviation})`, value: u.id }))
 }
 
-const filter = reactive<{ companyId: number | undefined; active: boolean | undefined }>({ companyId: undefined, active: undefined })
+const filter = reactive<{ active: boolean | undefined }>({ active: undefined })
 const statusFilterOptions = [
   { label: 'All statuses', value: undefined },
   { label: 'Active', value: true },
@@ -184,7 +158,6 @@ const columns: ColumnDef<UomConversion>[] = [
   { key: 'fromUnitOfMeasureName', label: 'From', value: (row) => `${row.fromUnitOfMeasureName} (${row.fromUnitOfMeasureAbbreviation})` },
   { key: 'toUnitOfMeasureName', label: 'To', value: (row) => `${row.toUnitOfMeasureName} (${row.toUnitOfMeasureAbbreviation})` },
   { key: 'conversionFactor', label: 'Factor', type: 'number' },
-  { key: 'companyName', label: 'Company', value: (row) => row.companyName ?? '—' },
   { key: 'active', type: 'boolean', trueLabel: 'Active', trueColor: 'success', falseLabel: 'Inactive', falseColor: 'neutral' },
   { key: 'actions', label: '' }
 ]
@@ -193,7 +166,7 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    const res = await list({ companyId: filter.companyId, active: filter.active, sortBy: sort.value?.column, sortOrder: sort.value?.direction, size: 200 })
+    const res = await list({ active: filter.active, sortBy: sort.value?.column, sortOrder: sort.value?.direction, size: 200 })
     rows.value = res.data
   } catch (err) {
     error.value = apiErrorMessage(err)
@@ -203,18 +176,16 @@ async function load() {
 }
 
 const activeFormTarget = ref<'create' | 'edit'>('create')
-const currentFormCompanyId = computed(() => (activeFormTarget.value === 'create' ? createForm.value?.companyId : editForm.value?.companyId))
 const currentFormFromUnitId = computed(() => (activeFormTarget.value === 'create' ? createForm.value?.fromUnitOfMeasureId : editForm.value?.fromUnitOfMeasureId))
 const currentFromCategoryId = computed(() => units.value.find((u) => u.id === currentFormFromUnitId.value)?.categoryId ?? undefined)
 
 const formFields = computed<FieldDef[]>(() => [
-  { name: 'companyId', label: 'Company', type: 'select', required: true, options: activeCompanyOptions.value },
   {
     name: 'fromUnitOfMeasureId',
     label: 'From unit',
     type: 'select',
     required: true,
-    options: unitOptionsFor(currentFormCompanyId.value, undefined),
+    options: unitOptionsFor(undefined),
     hint: 'Only units already assigned to a UOM category can be converted.'
   },
   {
@@ -222,7 +193,7 @@ const formFields = computed<FieldDef[]>(() => [
     label: 'To unit',
     type: 'select',
     required: true,
-    options: unitOptionsFor(currentFormCompanyId.value, currentFromCategoryId.value, currentFormFromUnitId.value),
+    options: unitOptionsFor(currentFromCategoryId.value, currentFormFromUnitId.value),
     hint: 'Must be in the same UOM category as the from unit.'
   },
   {
@@ -264,14 +235,12 @@ const {
     entityName: 'UOM conversion',
     createDefaults: () => ({ active: true }),
     toForm: (row) => ({
-      companyId: row.companyId,
       fromUnitOfMeasureId: row.fromUnitOfMeasureId,
       toUnitOfMeasureId: row.toUnitOfMeasureId,
       conversionFactor: row.conversionFactor,
       active: row.active
     }),
     toPayload: (values) => ({
-      companyId: values.companyId,
       fromUnitOfMeasureId: values.fromUnitOfMeasureId,
       toUnitOfMeasureId: values.toUnitOfMeasureId,
       conversionFactor: values.conversionFactor,
@@ -294,11 +263,10 @@ onMounted(async () => {
   await load()
 })
 watch(sort, load)
-watch(() => [filter.companyId, filter.active], load)
+watch(() => filter.active, load)
 
-const hasActiveFilter = computed(() => filter.companyId !== undefined || filter.active !== undefined)
+const hasActiveFilter = computed(() => filter.active !== undefined)
 function clearFilters() {
-  filter.companyId = undefined
   filter.active = undefined
   load()
 }

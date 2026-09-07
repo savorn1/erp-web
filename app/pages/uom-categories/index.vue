@@ -3,43 +3,23 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">UOM categories</h1>
       <div class="flex items-center gap-2">
-        <UButton
-          v-if="filter.companyId"
-          color="neutral"
-          variant="soft"
-          icon="i-lucide-sparkles"
-          :loading="seeding"
-          @click="onSeedStandard"
-        >
-          Seed standard categories
-        </UButton>
-        <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New category </UButton>
+        <UButton color="neutral" variant="soft" icon="i-lucide-sparkles" :loading="seeding" @click="onSeedStandard"> Seed standard categories </UButton>
+        <UButton icon="i-lucide-plus" @click="openCreate"> New category </UButton>
       </div>
     </div>
 
     <UAlert
-      v-if="!loadingLookups && activeCompanyOptions.length === 0"
-      color="warning"
-      variant="subtle"
-      class="mb-4"
-      title="No active companies yet"
-      description="Create a company first — every UOM category belongs to one."
-      icon="i-lucide-triangle-alert"
-    />
-    <UAlert
-      v-else-if="!filter.companyId"
       color="info"
       variant="subtle"
       class="mb-4"
-      title="Pick a company to seed standard categories"
-      description="Quantity (PCS, Box, Carton), Weight (KG, Gram, Ton), Volume (L, Milliliter), Length (M, Centimeter), and Area (M2) — filter by a company above to add them with one click. Box/Carton are seeded without a fixed conversion factor, since pack size varies by product."
+      title="Seed standard categories"
+      description="Quantity (PCS, Box, Carton), Weight (KG, Gram, Ton), Volume (L, Milliliter), Length (M, Centimeter), and Area (M2) — one click adds them all. Box/Carton are seeded without a fixed conversion factor, since pack size varies by product."
       icon="i-lucide-info"
     />
 
     <UCard class="mb-4">
       <div class="flex flex-wrap gap-3">
         <UInput v-model="search" placeholder="Search code or name" icon="i-lucide-search" class="w-56" />
-        <USelect v-model="filter.companyId" :items="companyFilterOptions" placeholder="Company" class="w-48" />
         <USelect v-model="filter.active" :items="statusFilterOptions" placeholder="Status" class="w-36" />
         <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
@@ -85,7 +65,7 @@
             description="Group compatible units (e.g. Weight: kg/g/lb) so they can be converted between each other."
           >
             <template #action>
-              <UButton :disabled="activeCompanyOptions.length === 0" icon="i-lucide-plus" @click="openCreate">New category</UButton>
+              <UButton icon="i-lucide-plus" @click="openCreate">New category</UButton>
             </template>
           </EmptyState>
         </template>
@@ -150,27 +130,13 @@ import type { UomCategory, UomCategoryPayload } from '~/composables/useUomCatego
 definePageMeta({ middleware: 'admin' })
 
 const { list, create, update, remove, seedStandard } = useUomCategories()
-const { list: listCompanies } = useCompanies()
 const toast = useToast()
 
 const rows = ref<UomCategory[]>([])
 const loading = ref(false)
 const error = ref('')
 
-const companies = ref<{ id: number; name: string; active: boolean }[]>([])
-const loadingLookups = ref(false)
-async function loadLookups() {
-  loadingLookups.value = true
-  try {
-    companies.value = (await listCompanies({ size: 200 })).data
-  } finally {
-    loadingLookups.value = false
-  }
-}
-const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
-const companyFilterOptions = computed(() => [{ label: 'All companies', value: undefined }, ...companies.value.map((c) => ({ label: c.name, value: c.id }))])
-
-const filter = reactive<{ companyId: number | undefined; active: boolean | undefined }>({ companyId: undefined, active: undefined })
+const filter = reactive<{ active: boolean | undefined }>({ active: undefined })
 const statusFilterOptions = [
   { label: 'All statuses', value: undefined },
   { label: 'Active', value: true },
@@ -188,7 +154,6 @@ const columns: ColumnDef<UomCategory>[] = [
     label: 'Base unit',
     value: (row) => (row.baseUnitAbbreviation ? `${row.baseUnitName} (${row.baseUnitAbbreviation})` : '—')
   },
-  { key: 'companyName', label: 'Company', value: (row) => row.companyName ?? '—' },
   { key: 'active', type: 'boolean', trueLabel: 'Active', trueColor: 'success', falseLabel: 'Inactive', falseColor: 'neutral' },
   { key: 'actions', label: '' }
 ]
@@ -197,7 +162,7 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    const res = await list({ companyId: filter.companyId, active: filter.active, sortBy: sort.value?.column, sortOrder: sort.value?.direction, size: 200 })
+    const res = await list({ active: filter.active, sortBy: sort.value?.column, sortOrder: sort.value?.direction, size: 200 })
     rows.value = res.data
   } catch (err) {
     error.value = apiErrorMessage(err)
@@ -207,7 +172,6 @@ async function load() {
 }
 
 const formFields = computed<FieldDef[]>(() => [
-  { name: 'companyId', label: 'Company', type: 'select', required: true, options: activeCompanyOptions.value },
   { name: 'code', required: true, hint: 'Short, stable key, e.g. WEIGHT.' },
   { name: 'name', required: true, hint: 'e.g. Weight, Volume, Count.' },
   { name: 'description', type: 'textarea', wrapper: 'full' },
@@ -241,9 +205,8 @@ const {
   {
     entityName: 'UOM category',
     createDefaults: () => ({ active: true }),
-    toForm: (row) => ({ companyId: row.companyId, code: row.code ?? '', name: row.name, description: row.description ?? '', active: row.active }),
+    toForm: (row) => ({ code: row.code ?? '', name: row.name, description: row.description ?? '', active: row.active }),
     toPayload: (values) => ({
-      companyId: values.companyId,
       code: values.code,
       name: values.name,
       description: values.description || undefined,
@@ -252,27 +215,22 @@ const {
   }
 )
 
-onMounted(async () => {
-  await loadLookups()
-  await load()
-})
+onMounted(load)
 watch(sort, load)
-watch(() => [filter.companyId, filter.active], load)
+watch(() => filter.active, load)
 
-const hasActiveFilter = computed(() => search.value !== '' || filter.companyId !== undefined || filter.active !== undefined)
+const hasActiveFilter = computed(() => search.value !== '' || filter.active !== undefined)
 function clearFilters() {
   search.value = ''
-  filter.companyId = undefined
   filter.active = undefined
   load()
 }
 
 const seeding = ref(false)
 async function onSeedStandard() {
-  if (!filter.companyId) return
   seeding.value = true
   try {
-    await seedStandard(filter.companyId)
+    await seedStandard()
     toast.add({ title: 'Standard UOM categories created', color: 'success' })
     await load()
   } catch (err) {
