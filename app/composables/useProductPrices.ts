@@ -9,7 +9,6 @@ import type { ApiEnvelope, PageEnvelope } from '#shared/types'
 
 export interface ProductPrice {
   id: number
-  companyId: number
   productId: number
   productName: string | null
   productSku: string | null
@@ -19,7 +18,6 @@ export interface ProductPrice {
 }
 
 export interface ProductPriceFilter {
-  companyId?: number
   productId?: number
   priceGroupId?: number
   sortBy?: string
@@ -29,7 +27,6 @@ export interface ProductPriceFilter {
 }
 
 export interface ProductPricePayload {
-  companyId: number
   productId: number
   priceGroupId: number
   price: number

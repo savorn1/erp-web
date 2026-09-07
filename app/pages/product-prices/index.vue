@@ -4,24 +4,13 @@
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Product prices</h1>
       <div class="flex items-center gap-2">
         <UButton to="/product-prices/matrix" size="sm" color="neutral" variant="soft" icon="i-lucide-table-2">Matrix view</UButton>
-        <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New price override </UButton>
+        <UButton icon="i-lucide-plus" @click="openCreate"> New price override </UButton>
       </div>
     </div>
-
-    <UAlert
-      v-if="!loadingLookups && activeCompanyOptions.length === 0"
-      color="warning"
-      variant="subtle"
-      class="mb-4"
-      title="No active companies yet"
-      description="Create a company first — every price override belongs to one."
-      icon="i-lucide-triangle-alert"
-    />
 
     <UCard class="mb-4">
       <div class="flex flex-wrap gap-3">
         <UInput v-model="search" placeholder="Search product or price group" icon="i-lucide-search" class="w-64" />
-        <USelect v-model="filter.companyId" :items="companyFilterOptions" placeholder="Company" class="w-48" />
         <USelect v-model="filter.priceGroupId" :items="priceGroupFilterOptions" placeholder="Price group" class="w-48" />
         <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
@@ -62,7 +51,7 @@
           </EmptyState>
           <EmptyState v-else icon="i-lucide-tag" title="No price overrides yet" description="Create the first per-product price override to get started.">
             <template #action>
-              <UButton :disabled="activeCompanyOptions.length === 0" icon="i-lucide-plus" @click="openCreate">New price override</UButton>
+              <UButton icon="i-lucide-plus" @click="openCreate">New price override</UButton>
             </template>
           </EmptyState>
         </template>
@@ -129,7 +118,6 @@ import type { Product } from '~/composables/useProducts'
 definePageMeta({ middleware: 'admin' })
 
 const { list, create, update, remove } = useProductPrices()
-const { list: listCompanies } = useCompanies()
 const { list: listPriceGroups } = usePriceGroups()
 const { list: listProducts } = useProducts()
 
@@ -137,34 +125,20 @@ const rows = ref<ProductPrice[]>([])
 const loading = ref(false)
 const error = ref('')
 
-const companies = ref<{ id: number; name: string; active: boolean }[]>([])
 const priceGroups = ref<PriceGroup[]>([])
 const products = ref<Product[]>([])
-const loadingLookups = ref(false)
 async function loadLookups() {
-  loadingLookups.value = true
-  try {
-    companies.value = (await listCompanies({ size: 200 })).data
-    priceGroups.value = (await listPriceGroups({ active: true, size: 200 })).data
-    products.value = (await listProducts({ size: 500 })).data
-  } finally {
-    loadingLookups.value = false
-  }
+  priceGroups.value = (await listPriceGroups({ active: true, size: 200 })).data
+  products.value = (await listProducts({ size: 500 })).data
 }
-const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
-const companyFilterOptions = computed(() => [{ label: 'All companies', value: undefined }, ...companies.value.map((c) => ({ label: c.name, value: c.id }))])
 const priceGroupFilterOptions = computed(() => [
   { label: 'All price groups', value: undefined },
   ...priceGroups.value.map((g) => ({ label: g.name, value: g.id }))
 ])
-function priceGroupOptionsFor(companyId: number | undefined) {
-  return priceGroups.value.filter((g) => g.companyId === companyId).map((g) => ({ label: g.name, value: g.id }))
-}
-function productOptionsFor(companyId: number | undefined) {
-  return products.value.filter((p) => p.companyId === companyId).map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
-}
+const priceGroupOptions = computed(() => priceGroups.value.map((g) => ({ label: g.name, value: g.id })))
+const productOptions = computed(() => products.value.map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id })))
 
-const filter = reactive<{ companyId: number | undefined; priceGroupId: number | undefined }>({ companyId: undefined, priceGroupId: undefined })
+const filter = reactive<{ priceGroupId: number | undefined }>({ priceGroupId: undefined })
 
 const sort = ref<{ column: string; direction: 'asc' | 'desc' } | undefined>({ column: 'id', direction: 'desc' })
 const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientTable(rows, { pageSize: 10, searchFields: ['productName', 'priceGroupName'] })
@@ -181,7 +155,6 @@ async function load() {
   error.value = ''
   try {
     const res = await list({
-      companyId: filter.companyId,
       priceGroupId: filter.priceGroupId,
       sortBy: sort.value?.column,
       sortOrder: sort.value?.direction,
@@ -195,13 +168,9 @@ async function load() {
   }
 }
 
-const activeFormTarget = ref<'create' | 'edit'>('create')
-const currentFormCompanyId = computed(() => (activeFormTarget.value === 'create' ? createForm.value?.companyId : editForm.value?.companyId))
-
 const formFields = computed<FieldDef[]>(() => [
-  { name: 'companyId', label: 'Company', type: 'select', required: true, options: activeCompanyOptions.value },
-  { name: 'productId', label: 'Product', type: 'select', required: true, options: productOptionsFor(currentFormCompanyId.value) },
-  { name: 'priceGroupId', label: 'Price group', type: 'select', required: true, options: priceGroupOptionsFor(currentFormCompanyId.value) },
+  { name: 'productId', label: 'Product', type: 'select', required: true, options: productOptions.value },
+  { name: 'priceGroupId', label: 'Price group', type: 'select', required: true, options: priceGroupOptions.value },
   { name: 'price', label: 'Price', type: 'currency', required: true }
 ])
 
@@ -210,14 +179,14 @@ const {
   creating,
   error: createError,
   createForm,
-  openCreate: openCreateModal,
+  openCreate,
   onCreate,
   showEdit,
   editing,
   editError,
   editingRow: editingPrice,
   editForm,
-  openEdit: openEditModal,
+  openEdit,
   onEdit,
   deleting,
   confirmDelete,
@@ -232,31 +201,21 @@ const {
   {
     entityName: 'Product price',
     createDefaults: () => ({}),
-    toForm: (row) => ({ companyId: row.companyId, productId: row.productId, priceGroupId: row.priceGroupId, price: row.price }),
-    toPayload: (values) => ({ companyId: values.companyId, productId: values.productId, priceGroupId: values.priceGroupId, price: values.price })
+    toForm: (row) => ({ productId: row.productId, priceGroupId: row.priceGroupId, price: row.price }),
+    toPayload: (values) => ({ productId: values.productId, priceGroupId: values.priceGroupId, price: values.price })
   }
 )
-
-function openCreate() {
-  activeFormTarget.value = 'create'
-  openCreateModal()
-}
-function openEdit(row: ProductPrice) {
-  activeFormTarget.value = 'edit'
-  openEditModal(row)
-}
 
 onMounted(async () => {
   await loadLookups()
   await load()
 })
 watch(sort, load)
-watch(() => [filter.companyId, filter.priceGroupId], load)
+watch(() => filter.priceGroupId, load)
 
-const hasActiveFilter = computed(() => search.value !== '' || filter.companyId !== undefined || filter.priceGroupId !== undefined)
+const hasActiveFilter = computed(() => search.value !== '' || filter.priceGroupId !== undefined)
 function clearFilters() {
   search.value = ''
-  filter.companyId = undefined
   filter.priceGroupId = undefined
   load()
 }

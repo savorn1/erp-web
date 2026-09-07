@@ -7,8 +7,6 @@ import type { ApiEnvelope, PageEnvelope } from '#shared/types'
 
 export interface UnitOfMeasure {
   id: number
-  companyId: number
-  companyName: string | null
   name: string
   abbreviation: string
   active: boolean
@@ -19,7 +17,6 @@ export interface UnitOfMeasure {
 
 export interface UnitOfMeasureFilter {
   name?: string
-  companyId?: number
   active?: boolean
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
@@ -28,7 +25,6 @@ export interface UnitOfMeasureFilter {
 }
 
 export interface UnitOfMeasurePayload {
-  companyId: number
   name: string
   abbreviation: string
   active: boolean

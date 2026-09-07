@@ -2,23 +2,12 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Branches</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New branch </UButton>
+      <UButton icon="i-lucide-plus" @click="openCreate"> New branch </UButton>
     </div>
-
-    <UAlert
-      v-if="!loadingCompanies && activeCompanyOptions.length === 0"
-      color="warning"
-      variant="subtle"
-      class="mb-4"
-      title="No active companies yet"
-      description="Create a company first — every branch belongs to one."
-      icon="i-lucide-triangle-alert"
-    />
 
     <UCard class="mb-4">
       <div class="flex flex-wrap gap-3">
         <UInput v-model="search" placeholder="Search name" icon="i-lucide-search" class="w-56" />
-        <USelect v-model="filter.companyId" :items="companyFilterOptions" placeholder="Company" class="w-48" />
         <USelect v-model="filter.active" :items="statusFilterOptions" placeholder="Status" class="w-36" />
         <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
@@ -70,7 +59,7 @@
           </EmptyState>
           <EmptyState v-else icon="i-lucide-map-pin" title="No branches yet" description="Create the first branch to get started.">
             <template #action>
-              <UButton :disabled="activeCompanyOptions.length === 0" icon="i-lucide-plus" @click="openCreate">New branch</UButton>
+              <UButton icon="i-lucide-plus" @click="openCreate">New branch</UButton>
             </template>
           </EmptyState>
         </template>
@@ -135,7 +124,6 @@ import type { Branch, BranchPayload } from '~/composables/useBranches'
 definePageMeta({ middleware: 'admin' })
 
 const { list, create, update, updateStatus, remove } = useBranches()
-const { list: listCompanies } = useCompanies()
 const { list: listUsers } = useUsers()
 const toast = useToast()
 
@@ -143,27 +131,15 @@ const rows = ref<Branch[]>([])
 const loading = ref(false)
 const error = ref('')
 
-const companies = ref<{ id: number; name: string; active: boolean }[]>([])
-const loadingCompanies = ref(false)
 const users = ref<{ id: number; username: string }[]>([])
 
 async function loadLookups() {
-  loadingCompanies.value = true
-  try {
-    const [companiesRes, usersRes] = await Promise.all([listCompanies({ size: 200 }), listUsers({ size: 200 })])
-    companies.value = companiesRes.data
-    users.value = usersRes.data
-  } finally {
-    loadingCompanies.value = false
-  }
+  users.value = (await listUsers({ size: 200 })).data
 }
 
-const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
-const companyFilterOptions = computed(() => [{ label: 'All companies', value: undefined }, ...companies.value.map((c) => ({ label: c.name, value: c.id }))])
 const managerOptions = computed(() => users.value.map((u) => ({ label: u.username, value: u.id })))
 
-const filter = reactive<{ companyId: number | undefined; active: boolean | undefined }>({
-  companyId: undefined,
+const filter = reactive<{ active: boolean | undefined }>({
   active: undefined
 })
 const statusFilterOptions = [
@@ -191,7 +167,6 @@ const {
 
 const columns: ColumnDef<Branch>[] = [
   { key: 'name', sortable: true },
-  { key: 'companyName', label: 'Company', value: (row) => row.companyName ?? '—' },
   { key: 'managerUsername', label: 'Manager', value: (row) => row.managerUsername ?? '—' },
   { key: 'phone', value: (row) => row.phone ?? '—' },
   { key: 'active', type: 'boolean', trueLabel: 'Active', trueColor: 'success', falseLabel: 'Inactive', falseColor: 'neutral' },
@@ -203,7 +178,6 @@ async function load() {
   error.value = ''
   try {
     const res = await list({
-      companyId: filter.companyId,
       active: filter.active,
       sortBy: sort.value?.column,
       sortOrder: sort.value?.direction,
@@ -218,7 +192,6 @@ async function load() {
 }
 
 const branchFields = computed<FieldDef[]>(() => [
-  { name: 'companyId', label: 'Company', type: 'select', required: true, options: activeCompanyOptions.value },
   { name: 'name', required: true },
   { name: 'managerId', label: 'Branch manager', type: 'select', options: managerOptions.value, hint: "Optional — assign a user as this branch's manager." },
   { name: 'phone' },
@@ -260,7 +233,6 @@ const {
     entityName: 'Branch',
     createDefaults: () => ({}),
     toForm: (row) => ({
-      companyId: row.companyId,
       name: row.name,
       managerId: row.managerId ?? undefined,
       phone: row.phone ?? '',
@@ -274,7 +246,6 @@ const {
       country: row.country ?? ''
     }),
     toPayload: (values) => ({
-      companyId: values.companyId,
       name: values.name,
       managerId: values.managerId || undefined,
       phone: values.phone || undefined,
@@ -309,13 +280,12 @@ onMounted(async () => {
   await load()
 })
 watch(sort, load)
-watch(() => [filter.companyId, filter.active], load)
+watch(() => filter.active, load)
 
-const hasActiveFilter = computed(() => search.value !== '' || filter.companyId !== undefined || filter.active !== undefined)
+const hasActiveFilter = computed(() => search.value !== '' || filter.active !== undefined)
 
 function clearFilters() {
   search.value = ''
-  filter.companyId = undefined
   filter.active = undefined
   load()
 }

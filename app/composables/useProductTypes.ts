@@ -5,15 +5,12 @@ import type { ApiEnvelope, PageEnvelope } from '#shared/types'
 
 export interface ProductType {
   id: number
-  companyId: number
-  companyName: string | null
   name: string
   active: boolean
 }
 
 export interface ProductTypeFilter {
   name?: string
-  companyId?: number
   active?: boolean
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
@@ -22,7 +19,6 @@ export interface ProductTypeFilter {
 }
 
 export interface ProductTypePayload {
-  companyId: number
   name: string
   active: boolean
 }

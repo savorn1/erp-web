@@ -5,8 +5,6 @@ import type { ApiEnvelope, PageEnvelope } from '#shared/types'
 
 export interface CustomerGroup {
   id: number
-  companyId: number
-  companyName: string | null
   name: string
   priceGroupId: number | null
   priceGroupName: string | null
@@ -15,7 +13,6 @@ export interface CustomerGroup {
 
 export interface CustomerGroupFilter {
   name?: string
-  companyId?: number
   active?: boolean
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
@@ -24,7 +21,6 @@ export interface CustomerGroupFilter {
 }
 
 export interface CustomerGroupPayload {
-  companyId: number
   name: string
   priceGroupId?: number
   active: boolean

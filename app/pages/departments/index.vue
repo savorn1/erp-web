@@ -2,23 +2,12 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Departments</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New department </UButton>
+      <UButton icon="i-lucide-plus" @click="openCreate"> New department </UButton>
     </div>
-
-    <UAlert
-      v-if="!loadingLookups && activeCompanyOptions.length === 0"
-      color="warning"
-      variant="subtle"
-      class="mb-4"
-      title="No active companies yet"
-      description="Create a company first — every department belongs to one."
-      icon="i-lucide-triangle-alert"
-    />
 
     <UCard class="mb-4">
       <div class="flex flex-wrap gap-3">
         <UInput v-model="search" placeholder="Search name" icon="i-lucide-search" class="w-56" />
-        <USelect v-model="filter.companyId" :items="companyFilterOptions" placeholder="Company" class="w-48" />
         <USelect v-model="filter.active" :items="statusFilterOptions" placeholder="Status" class="w-36" />
         <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
@@ -78,7 +67,7 @@
           </EmptyState>
           <EmptyState v-else icon="i-lucide-sitemap" title="No departments yet" description="Create the first department to get started.">
             <template #action>
-              <UButton :disabled="activeCompanyOptions.length === 0" icon="i-lucide-plus" @click="openCreate">New department</UButton>
+              <UButton icon="i-lucide-plus" @click="openCreate">New department</UButton>
             </template>
           </EmptyState>
         </template>
@@ -183,7 +172,6 @@ import type { AdminUser } from '~/composables/useUsers'
 definePageMeta({ middleware: 'admin' })
 
 const { list, create, update, updateStatus, remove, assignEmployees, unassignEmployee } = useDepartments()
-const { list: listCompanies } = useCompanies()
 const { list: listUsers } = useUsers()
 const toast = useToast()
 
@@ -192,27 +180,16 @@ const allDepartments = ref<Department[]>([])
 const loading = ref(false)
 const error = ref('')
 
-const companies = ref<{ id: number; name: string; active: boolean }[]>([])
 const users = ref<AdminUser[]>([])
-const loadingLookups = ref(false)
 
 async function loadLookups() {
-  loadingLookups.value = true
-  try {
-    const [companiesRes, usersRes] = await Promise.all([listCompanies({ size: 200 }), listUsers({ size: 200 })])
-    companies.value = companiesRes.data
-    users.value = usersRes.data
-  } finally {
-    loadingLookups.value = false
-  }
+  users.value = (await listUsers({ size: 200 })).data
 }
 
-const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
-const companyFilterOptions = computed(() => [{ label: 'All companies', value: undefined }, ...companies.value.map((c) => ({ label: c.name, value: c.id }))])
 const managerOptions = computed(() => users.value.map((u) => ({ label: u.username, value: u.id })))
 
-function parentOptionsFor(companyId: number | undefined, excludeId?: number) {
-  return allDepartments.value.filter((d) => d.companyId === companyId && d.active && d.id !== excludeId).map((d) => ({ label: d.name, value: d.id }))
+function parentOptionsFor(excludeId?: number) {
+  return allDepartments.value.filter((d) => d.active && d.id !== excludeId).map((d) => ({ label: d.name, value: d.id }))
 }
 
 const departmentById = computed(() => new Map(allDepartments.value.map((d) => [d.id, d])))
@@ -230,8 +207,7 @@ function depthOf(department: Department): number {
   return depth
 }
 
-const filter = reactive<{ companyId: number | undefined; active: boolean | undefined }>({
-  companyId: undefined,
+const filter = reactive<{ active: boolean | undefined }>({
   active: undefined
 })
 const statusFilterOptions = [
@@ -259,7 +235,6 @@ const {
 
 const columns: ColumnDef<Department>[] = [
   { key: 'name', sortable: true },
-  { key: 'companyName', label: 'Company', value: (row) => row.companyName ?? '—' },
   { key: 'parentDepartmentName', label: 'Parent department', value: (row) => row.parentDepartmentName ?? 'Top-level' },
   { key: 'managerUsername', label: 'Manager', value: (row) => row.managerUsername ?? '—' },
   { key: 'employeeCount', label: 'Employees' },
@@ -273,14 +248,13 @@ async function load() {
   try {
     const [filteredRes, allRes] = await Promise.all([
       list({
-        companyId: filter.companyId,
         active: filter.active,
         sortBy: sort.value?.column,
         sortOrder: sort.value?.direction,
         size: 200
       }),
       // Unfiltered, used to resolve hierarchy depth and parent-select options
-      // regardless of which company/status filter the table itself is under.
+      // regardless of which status filter the table itself is under.
       list({ size: 200 })
     ])
     rows.value = filteredRes.data
@@ -293,13 +267,12 @@ async function load() {
 }
 
 const createDepartmentFields = computed<FieldDef[]>(() => [
-  { name: 'companyId', label: 'Company', type: 'select', required: true, options: activeCompanyOptions.value },
   { name: 'name', required: true },
   {
     name: 'parentDepartmentId',
     label: 'Parent department',
     type: 'select',
-    options: parentOptionsFor(createForm.value.companyId),
+    options: parentOptionsFor(),
     hint: 'Optional — leave blank for a top-level department.'
   },
   {
@@ -312,13 +285,12 @@ const createDepartmentFields = computed<FieldDef[]>(() => [
 ])
 
 const editDepartmentFields = computed<FieldDef[]>(() => [
-  { name: 'companyId', label: 'Company', type: 'select', required: true, options: activeCompanyOptions.value },
   { name: 'name', required: true },
   {
     name: 'parentDepartmentId',
     label: 'Parent department',
     type: 'select',
-    options: parentOptionsFor(editForm.value.companyId, editingDepartment.value?.id),
+    options: parentOptionsFor(editingDepartment.value?.id),
     hint: 'Optional — leave blank for a top-level department.'
   },
   {
@@ -358,13 +330,11 @@ const {
     entityName: 'Department',
     createDefaults: () => ({}),
     toForm: (row) => ({
-      companyId: row.companyId,
       name: row.name,
       parentDepartmentId: row.parentDepartmentId ?? undefined,
       managerId: row.managerId ?? undefined
     }),
     toPayload: (values) => ({
-      companyId: values.companyId,
       name: values.name,
       parentDepartmentId: values.parentDepartmentId || undefined,
       managerId: values.managerId || undefined
@@ -452,13 +422,12 @@ onMounted(async () => {
   await load()
 })
 watch(sort, load)
-watch(() => [filter.companyId, filter.active], load)
+watch(() => filter.active, load)
 
-const hasActiveFilter = computed(() => search.value !== '' || filter.companyId !== undefined || filter.active !== undefined)
+const hasActiveFilter = computed(() => search.value !== '' || filter.active !== undefined)
 
 function clearFilters() {
   search.value = ''
-  filter.companyId = undefined
   filter.active = undefined
   load()
 }

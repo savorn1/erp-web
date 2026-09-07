@@ -1,15 +1,12 @@
 // Wraps the backend's admin-only BranchController (/api/admin/branches/**,
 // requires ROLE_ADMIN). Single-item endpoints wrap their payload in
-// ApiResponse<T>; list wraps in PageResponse<T>. Each branch belongs to a
-// Company (see useCompanies) and may have a User assigned as its manager
-// (see useUsers) — both are resolved server-side into companyName/managerUsername.
+// ApiResponse<T>; list wraps in PageResponse<T>. A branch may have a User
+// assigned as its manager (see useUsers), resolved server-side into managerUsername.
 
 import type { ApiEnvelope, PageEnvelope } from '#shared/types'
 
 export interface Branch {
   id: number
-  companyId: number
-  companyName: string | null
   name: string
   addressLine1: string | null
   addressLine2: string | null
@@ -27,7 +24,6 @@ export interface Branch {
 
 export interface BranchFilter {
   name?: string
-  companyId?: number
   active?: boolean
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
@@ -36,7 +32,6 @@ export interface BranchFilter {
 }
 
 export interface BranchPayload {
-  companyId: number
   name: string
   addressLine1?: string
   addressLine2?: string

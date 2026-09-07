@@ -2,23 +2,12 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Customer groups</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New group </UButton>
+      <UButton icon="i-lucide-plus" @click="openCreate"> New group </UButton>
     </div>
-
-    <UAlert
-      v-if="!loadingLookups && activeCompanyOptions.length === 0"
-      color="warning"
-      variant="subtle"
-      class="mb-4"
-      title="No active companies yet"
-      description="Create a company first — every group belongs to one."
-      icon="i-lucide-triangle-alert"
-    />
 
     <UCard class="mb-4">
       <div class="flex flex-wrap gap-3">
         <UInput v-model="search" placeholder="Search name" icon="i-lucide-search" class="w-56" />
-        <USelect v-model="filter.companyId" :items="companyFilterOptions" placeholder="Company" class="w-48" />
         <USelect v-model="filter.active" :items="statusFilterOptions" placeholder="Status" class="w-36" />
         <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
@@ -59,7 +48,7 @@
           </EmptyState>
           <EmptyState v-else icon="i-lucide-users-round" title="No groups yet" description="Create the first customer group to get started.">
             <template #action>
-              <UButton :disabled="activeCompanyOptions.length === 0" icon="i-lucide-plus" @click="openCreate">New group</UButton>
+              <UButton icon="i-lucide-plus" @click="openCreate">New group</UButton>
             </template>
           </EmptyState>
         </template>
@@ -125,32 +114,19 @@ import type { PriceGroup } from '~/composables/usePriceGroups'
 definePageMeta({ middleware: 'admin' })
 
 const { list, create, update, remove } = useCustomerGroups()
-const { list: listCompanies } = useCompanies()
 const { list: listPriceGroups } = usePriceGroups()
 
 const rows = ref<CustomerGroup[]>([])
 const loading = ref(false)
 const error = ref('')
 
-const companies = ref<{ id: number; name: string; active: boolean }[]>([])
 const priceGroups = ref<PriceGroup[]>([])
-const loadingLookups = ref(false)
 async function loadLookups() {
-  loadingLookups.value = true
-  try {
-    companies.value = (await listCompanies({ size: 200 })).data
-    priceGroups.value = (await listPriceGroups({ active: true, size: 200 })).data
-  } finally {
-    loadingLookups.value = false
-  }
+  priceGroups.value = (await listPriceGroups({ active: true, size: 200 })).data
 }
-const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
-const companyFilterOptions = computed(() => [{ label: 'All companies', value: undefined }, ...companies.value.map((c) => ({ label: c.name, value: c.id }))])
-function priceGroupOptionsFor(companyId: number | undefined) {
-  return priceGroups.value.filter((g) => g.companyId === companyId).map((g) => ({ label: g.name, value: g.id }))
-}
+const priceGroupOptions = computed(() => priceGroups.value.map((g) => ({ label: g.name, value: g.id })))
 
-const filter = reactive<{ companyId: number | undefined; active: boolean | undefined }>({ companyId: undefined, active: undefined })
+const filter = reactive<{ active: boolean | undefined }>({ active: undefined })
 const statusFilterOptions = [
   { label: 'All statuses', value: undefined },
   { label: 'Active', value: true },
@@ -162,7 +138,6 @@ const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientT
 
 const columns: ColumnDef<CustomerGroup>[] = [
   { key: 'name', sortable: true },
-  { key: 'companyName', label: 'Company', value: (row) => row.companyName ?? '—' },
   { key: 'priceGroupName', label: 'Price group', value: (row) => row.priceGroupName ?? '—' },
   { key: 'active', type: 'boolean', trueLabel: 'Active', trueColor: 'success', falseLabel: 'Inactive', falseColor: 'neutral' },
   { key: 'actions', label: '' }
@@ -172,7 +147,7 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    const res = await list({ companyId: filter.companyId, active: filter.active, sortBy: sort.value?.column, sortOrder: sort.value?.direction, size: 200 })
+    const res = await list({ active: filter.active, sortBy: sort.value?.column, sortOrder: sort.value?.direction, size: 200 })
     rows.value = res.data
   } catch (err) {
     error.value = apiErrorMessage(err)
@@ -181,13 +156,9 @@ async function load() {
   }
 }
 
-const activeFormTarget = ref<'create' | 'edit'>('create')
-const currentFormCompanyId = computed(() => (activeFormTarget.value === 'create' ? createForm.value?.companyId : editForm.value?.companyId))
-
 const formFields = computed<FieldDef[]>(() => [
-  { name: 'companyId', label: 'Company', type: 'select', required: true, options: activeCompanyOptions.value },
   { name: 'name', required: true },
-  { name: 'priceGroupId', label: 'Price group', type: 'select', options: priceGroupOptionsFor(currentFormCompanyId.value) },
+  { name: 'priceGroupId', label: 'Price group', type: 'select', options: priceGroupOptions.value },
   { name: 'active', type: 'switch', onLabel: 'Active', offLabel: 'Inactive', default: true }
 ])
 
@@ -196,14 +167,14 @@ const {
   creating,
   error: createError,
   createForm,
-  openCreate: openCreateModal,
+  openCreate,
   onCreate,
   showEdit,
   editing,
   editError,
   editingRow: editingGroup,
   editForm,
-  openEdit: openEditModal,
+  openEdit,
   onEdit,
   deleting,
   confirmDelete,
@@ -218,31 +189,21 @@ const {
   {
     entityName: 'Customer group',
     createDefaults: () => ({ active: true }),
-    toForm: (row) => ({ companyId: row.companyId, name: row.name, priceGroupId: row.priceGroupId ?? undefined, active: row.active }),
-    toPayload: (values) => ({ companyId: values.companyId, name: values.name, priceGroupId: values.priceGroupId || undefined, active: values.active ?? true })
+    toForm: (row) => ({ name: row.name, priceGroupId: row.priceGroupId ?? undefined, active: row.active }),
+    toPayload: (values) => ({ name: values.name, priceGroupId: values.priceGroupId || undefined, active: values.active ?? true })
   }
 )
-
-function openCreate() {
-  activeFormTarget.value = 'create'
-  openCreateModal()
-}
-function openEdit(row: CustomerGroup) {
-  activeFormTarget.value = 'edit'
-  openEditModal(row)
-}
 
 onMounted(async () => {
   await loadLookups()
   await load()
 })
 watch(sort, load)
-watch(() => [filter.companyId, filter.active], load)
+watch(() => filter.active, load)
 
-const hasActiveFilter = computed(() => search.value !== '' || filter.companyId !== undefined || filter.active !== undefined)
+const hasActiveFilter = computed(() => search.value !== '' || filter.active !== undefined)
 function clearFilters() {
   search.value = ''
-  filter.companyId = undefined
   filter.active = undefined
   load()
 }

@@ -1,14 +1,12 @@
 // Wraps the backend's admin-only UomCategoryController
 // (/api/admin/uom-categories/**, requires ROLE_ADMIN). Groups compatible
 // units of measure (e.g. "Weight": kg/g/lb) so they can be converted through
-// their shared conversionFactorToBase — see useUnitsOfMeasure.
+// UomConversion rows anchored on baseUnitId — see useUomConversions.
 
 import type { ApiEnvelope, PageEnvelope } from '#shared/types'
 
 export interface UomCategory {
   id: number
-  companyId: number
-  companyName: string | null
   code: string | null
   name: string
   description: string | null
@@ -21,7 +19,6 @@ export interface UomCategory {
 
 export interface UomCategoryFilter {
   name?: string
-  companyId?: number
   active?: boolean
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
@@ -30,7 +27,6 @@ export interface UomCategoryFilter {
 }
 
 export interface UomCategoryPayload {
-  companyId: number
   code: string
   name: string
   description?: string
@@ -65,10 +61,10 @@ export function useUomCategories() {
 
   // Idempotent — creates the standard QUANTITY (PCS base, Box/Carton),
   // WEIGHT (KG base, Gram/Ton), VOLUME (L base, Milliliter), LENGTH (M base,
-  // Centimeter), and AREA (M2 base) categories for the given company,
-  // skipping any category code or unit name that already exists.
-  async function seedStandard(companyId: number) {
-    const res = await api<ApiEnvelope<UomCategory[]>>(`/api/admin/uom-categories/seed-standard/${companyId}`, { method: 'POST' })
+  // Centimeter), and AREA (M2 base) categories, skipping any category code
+  // or unit name that already exists.
+  async function seedStandard() {
+    const res = await api<ApiEnvelope<UomCategory[]>>('/api/admin/uom-categories/seed-standard', { method: 'POST' })
     return res.data
   }
 

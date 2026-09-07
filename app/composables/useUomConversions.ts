@@ -8,8 +8,6 @@ import type { ApiEnvelope, PageEnvelope } from '#shared/types'
 
 export interface UomConversion {
   id: number
-  companyId: number
-  companyName: string | null
   fromUnitOfMeasureId: number
   fromUnitOfMeasureName: string | null
   fromUnitOfMeasureAbbreviation: string | null
@@ -21,7 +19,6 @@ export interface UomConversion {
 }
 
 export interface UomConversionFilter {
-  companyId?: number
   unitOfMeasureId?: number
   active?: boolean
   sortBy?: string
@@ -31,7 +28,6 @@ export interface UomConversionFilter {
 }
 
 export interface UomConversionPayload {
-  companyId: number
   fromUnitOfMeasureId: number
   toUnitOfMeasureId: number
   conversionFactor: number
@@ -39,7 +35,6 @@ export interface UomConversionPayload {
 }
 
 export interface ConvertUnitsPayload {
-  companyId: number
   fromUnitOfMeasureId: number
   toUnitOfMeasureId: number
   quantity: number

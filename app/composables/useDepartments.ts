@@ -1,17 +1,15 @@
 // Wraps the backend's admin-only DepartmentController (/api/admin/departments/**,
 // requires ROLE_ADMIN). Single-item endpoints wrap their payload in
-// ApiResponse<T>; list wraps in PageResponse<T>. Each department belongs to a
-// Company, optionally a parent Department (org hierarchy) and a manager User
-// (see useCompanies/useUsers) — all resolved server-side into display names.
-// Employee assignment sets the assigned User's own departmentId — there's no
-// separate join table, an employee belongs to at most one department.
+// ApiResponse<T>; list wraps in PageResponse<T>. A department can optionally
+// have a parent Department (org hierarchy) and a manager User (see useUsers)
+// — both resolved server-side into display names. Employee assignment sets
+// the assigned User's own departmentId — there's no separate join table, an
+// employee belongs to at most one department.
 
 import type { ApiEnvelope, PageEnvelope } from '#shared/types'
 
 export interface Department {
   id: number
-  companyId: number
-  companyName: string | null
   name: string
   parentDepartmentId: number | null
   parentDepartmentName: string | null
@@ -23,7 +21,6 @@ export interface Department {
 
 export interface DepartmentFilter {
   name?: string
-  companyId?: number
   parentDepartmentId?: number
   active?: boolean
   sortBy?: string
@@ -33,7 +30,6 @@ export interface DepartmentFilter {
 }
 
 export interface DepartmentPayload {
-  companyId: number
   name: string
   parentDepartmentId?: number
   managerId?: number

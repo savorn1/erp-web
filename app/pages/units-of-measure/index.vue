@@ -2,20 +2,10 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Units of measure</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New unit </UButton>
+      <UButton icon="i-lucide-plus" @click="openCreate"> New unit </UButton>
     </div>
 
     <UAlert
-      v-if="!loadingLookups && activeCompanyOptions.length === 0"
-      color="warning"
-      variant="subtle"
-      class="mb-4"
-      title="No active companies yet"
-      description="Create a company first — every unit belongs to one."
-      icon="i-lucide-triangle-alert"
-    />
-    <UAlert
-      v-else
       color="info"
       variant="subtle"
       class="mb-4"
@@ -31,7 +21,6 @@
     <UCard class="mb-4">
       <div class="flex flex-wrap gap-3">
         <UInput v-model="search" placeholder="Search name" icon="i-lucide-search" class="w-56" />
-        <USelect v-model="filter.companyId" :items="companyFilterOptions" placeholder="Company" class="w-48" />
         <USelect v-model="filter.active" :items="statusFilterOptions" placeholder="Status" class="w-36" />
         <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
@@ -72,7 +61,7 @@
           </EmptyState>
           <EmptyState v-else icon="i-lucide-ruler" title="No units yet" description="Create the first unit of measure to get started.">
             <template #action>
-              <UButton :disabled="activeCompanyOptions.length === 0" icon="i-lucide-plus" @click="openCreate">New unit</UButton>
+              <UButton icon="i-lucide-plus" @click="openCreate">New unit</UButton>
             </template>
           </EmptyState>
         </template>
@@ -138,36 +127,22 @@ import type { UomCategory } from '~/composables/useUomCategories'
 definePageMeta({ middleware: 'admin' })
 
 const { list, create, update, remove } = useUnitsOfMeasure()
-const { list: listCompanies } = useCompanies()
 const { list: listUomCategories } = useUomCategories()
 
 const rows = ref<UnitOfMeasure[]>([])
 const loading = ref(false)
 const error = ref('')
 
-const companies = ref<{ id: number; name: string; active: boolean }[]>([])
 const uomCategories = ref<UomCategory[]>([])
-const loadingLookups = ref(false)
 async function loadLookups() {
-  loadingLookups.value = true
-  try {
-    const [c, cat] = await Promise.all([listCompanies({ size: 200 }), listUomCategories({ size: 200 })])
-    companies.value = c.data
-    uomCategories.value = cat.data
-  } finally {
-    loadingLookups.value = false
-  }
+  uomCategories.value = (await listUomCategories({ size: 200 })).data
 }
-const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
-const companyFilterOptions = computed(() => [{ label: 'All companies', value: undefined }, ...companies.value.map((c) => ({ label: c.name, value: c.id }))])
-function categoryOptionsFor(companyId: number | undefined) {
-  return [
-    { label: 'No category (standalone)', value: undefined },
-    ...uomCategories.value.filter((c) => c.active && (companyId === undefined || c.companyId === companyId)).map((c) => ({ label: c.name, value: c.id }))
-  ]
-}
+const categoryOptions = computed(() => [
+  { label: 'No category (standalone)', value: undefined },
+  ...uomCategories.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id }))
+])
 
-const filter = reactive<{ companyId: number | undefined; active: boolean | undefined }>({ companyId: undefined, active: undefined })
+const filter = reactive<{ active: boolean | undefined }>({ active: undefined })
 const statusFilterOptions = [
   { label: 'All statuses', value: undefined },
   { label: 'Active', value: true },
@@ -186,7 +161,6 @@ const columns: ColumnDef<UnitOfMeasure>[] = [
     label: 'Base unit',
     value: (row) => (row.categoryId ? (row.baseUnit ? 'Yes' : 'No') : '—')
   },
-  { key: 'companyName', label: 'Company', value: (row) => row.companyName ?? '—' },
   { key: 'active', type: 'boolean', trueLabel: 'Active', trueColor: 'success', falseLabel: 'Inactive', falseColor: 'neutral' },
   { key: 'actions', label: '' }
 ]
@@ -195,7 +169,7 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    const res = await list({ companyId: filter.companyId, active: filter.active, sortBy: sort.value?.column, sortOrder: sort.value?.direction, size: 200 })
+    const res = await list({ active: filter.active, sortBy: sort.value?.column, sortOrder: sort.value?.direction, size: 200 })
     rows.value = res.data
   } catch (err) {
     error.value = apiErrorMessage(err)
@@ -204,21 +178,14 @@ async function load() {
   }
 }
 
-// Whichever form is currently open drives the category options below —
-// DynamicForm re-renders when formFields changes, so switching a unit's
-// company narrows the category select to that company's data.
-const activeFormTarget = ref<'create' | 'edit'>('create')
-const currentFormCompanyId = computed(() => (activeFormTarget.value === 'create' ? createForm.value?.companyId : editForm.value?.companyId))
-
 const formFields = computed<FieldDef[]>(() => [
-  { name: 'companyId', label: 'Company', type: 'select', required: true, options: activeCompanyOptions.value },
   { name: 'name', required: true, hint: 'e.g. Kilogram, Piece, Liter.' },
   { name: 'abbreviation', required: true, hint: 'Short display form, e.g. kg, pcs, L.' },
   {
     name: 'categoryId',
     label: 'UOM category',
     type: 'select',
-    options: categoryOptionsFor(currentFormCompanyId.value),
+    options: categoryOptions.value,
     hint: 'Group with compatible units to enable conversion, e.g. Weight: kg/g/lb.'
   },
   {
@@ -239,14 +206,14 @@ const {
   creating,
   error: createError,
   createForm,
-  openCreate: openCreateModal,
+  openCreate,
   onCreate,
   showEdit,
   editing,
   editError,
   editingRow: editingUnit,
   editForm,
-  openEdit: openEditModal,
+  openEdit,
   onEdit,
   deleting,
   confirmDelete,
@@ -262,7 +229,6 @@ const {
     entityName: 'Unit of measure',
     createDefaults: () => ({ active: true }),
     toForm: (row) => ({
-      companyId: row.companyId,
       name: row.name,
       abbreviation: row.abbreviation,
       categoryId: row.categoryId ?? undefined,
@@ -270,7 +236,6 @@ const {
       active: row.active
     }),
     toPayload: (values) => ({
-      companyId: values.companyId,
       name: values.name,
       abbreviation: values.abbreviation,
       categoryId: values.categoryId || undefined,
@@ -280,26 +245,16 @@ const {
   }
 )
 
-function openCreate() {
-  activeFormTarget.value = 'create'
-  openCreateModal()
-}
-function openEdit(row: UnitOfMeasure) {
-  activeFormTarget.value = 'edit'
-  openEditModal(row)
-}
-
 onMounted(async () => {
   await loadLookups()
   await load()
 })
 watch(sort, load)
-watch(() => [filter.companyId, filter.active], load)
+watch(() => filter.active, load)
 
-const hasActiveFilter = computed(() => search.value !== '' || filter.companyId !== undefined || filter.active !== undefined)
+const hasActiveFilter = computed(() => search.value !== '' || filter.active !== undefined)
 function clearFilters() {
   search.value = ''
-  filter.companyId = undefined
   filter.active = undefined
   load()
 }

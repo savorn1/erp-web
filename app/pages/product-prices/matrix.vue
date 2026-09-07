@@ -11,32 +11,20 @@
     </div>
 
     <UCard class="mb-4">
-      <div class="flex flex-wrap items-center gap-3">
-        <USelect v-model="companyId" :items="companyOptions" placeholder="Select a company" class="w-56" />
-        <span class="text-sm text-gray-500 dark:text-gray-400">
-          Edit any cell to set a per-product price override for that price group. Leave a cell blank to fall back to the price group's default discount (if
-          any), then the product's own selling price.
-        </span>
-      </div>
+      <span class="text-sm text-gray-500 dark:text-gray-400">
+        Edit any cell to set a per-product price override for that price group. Leave a cell blank to fall back to the price group's default discount (if
+        any), then the product's own selling price.
+      </span>
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
 
     <UAlert
-      v-if="!companyId"
-      color="neutral"
-      variant="subtle"
-      title="Select a company"
-      description="Choose a company above to see its products and price groups."
-      icon="i-lucide-info"
-    />
-
-    <UAlert
-      v-else-if="!loading && priceGroups.length === 0"
+      v-if="!loading && priceGroups.length === 0"
       color="warning"
       variant="subtle"
       title="No price groups yet"
-      description="Create at least one price group for this company before setting per-product prices."
+      description="Create at least one price group before setting per-product prices."
       icon="i-lucide-triangle-alert"
     />
 
@@ -75,7 +63,7 @@
             </tr>
           </tbody>
         </table>
-        <EmptyState v-if="products.length === 0" icon="i-lucide-package" title="No products for this company" />
+        <EmptyState v-if="products.length === 0" icon="i-lucide-package" title="No products yet" />
       </div>
     </UCard>
   </div>
@@ -88,15 +76,10 @@ import type { ProductPrice } from '~/composables/useProductPrices'
 
 definePageMeta({ middleware: 'admin' })
 
-const { list: listCompanies } = useCompanies()
 const { list: listProducts } = useProducts()
 const { list: listPriceGroups } = usePriceGroups()
 const { list: listProductPrices, create, update, remove } = useProductPrices()
 const toast = useToast()
-
-const companies = ref<{ id: number; name: string; active: boolean }[]>([])
-const companyId = ref<number | undefined>(undefined)
-const companyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
 
 const products = ref<Product[]>([])
 const priceGroups = ref<PriceGroup[]>([])
@@ -138,19 +121,13 @@ function onCellInput(product: Product, priceGroup: PriceGroup, value: string | n
 }
 
 async function loadScope() {
-  if (!companyId.value) {
-    products.value = []
-    priceGroups.value = []
-    productPrices.value = []
-    return
-  }
   loading.value = true
   error.value = ''
   try {
     const [prodRes, pgRes, ppRes] = await Promise.all([
-      listProducts({ companyId: companyId.value, size: 500 }),
-      listPriceGroups({ companyId: companyId.value, active: true, size: 200 }),
-      listProductPrices({ companyId: companyId.value, size: 1000 })
+      listProducts({ size: 500 }),
+      listPriceGroups({ active: true, size: 200 }),
+      listProductPrices({ size: 1000 })
     ])
     products.value = prodRes.data
     priceGroups.value = pgRes.data
@@ -180,9 +157,9 @@ async function saveChanges() {
       if (price === null) {
         if (original) await remove(original.id)
       } else if (original) {
-        await update(original.id, { companyId: companyId.value!, productId, priceGroupId, price })
+        await update(original.id, { productId, priceGroupId, price })
       } else {
-        await create({ companyId: companyId.value!, productId, priceGroupId, price })
+        await create({ productId, priceGroupId, price })
       }
     }
     toast.add({ title: 'Price overrides saved', color: 'success' })
@@ -195,10 +172,5 @@ async function saveChanges() {
   }
 }
 
-onMounted(async () => {
-  companies.value = (await listCompanies({ size: 200 })).data
-  const firstActive = companies.value.find((c) => c.active)
-  if (firstActive) companyId.value = firstActive.id
-})
-watch(companyId, loadScope)
+onMounted(loadScope)
 </script>

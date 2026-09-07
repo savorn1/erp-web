@@ -8,8 +8,6 @@ import type { ApiEnvelope, PageEnvelope } from '#shared/types'
 
 export interface PriceGroup {
   id: number
-  companyId: number
-  companyName: string | null
   name: string
   discountPercent: number | null
   active: boolean
@@ -17,7 +15,6 @@ export interface PriceGroup {
 
 export interface PriceGroupFilter {
   name?: string
-  companyId?: number
   active?: boolean
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
@@ -26,7 +23,6 @@ export interface PriceGroupFilter {
 }
 
 export interface PriceGroupPayload {
-  companyId: number
   name: string
   discountPercent?: number
   active: boolean
