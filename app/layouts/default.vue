@@ -88,6 +88,8 @@ const items = computed<NavigationMenuItem[]>(() => [
         { label: 'Brands', to: '/product-brands', icon: 'i-lucide-badge' },
         { label: 'Types', to: '/product-types', icon: 'i-lucide-shapes' },
         { label: 'Units of measure', to: '/units-of-measure', icon: 'i-lucide-ruler' },
+        { label: 'UOM categories', to: '/uom-categories', icon: 'i-lucide-shapes' },
+        { label: 'UOM conversions', to: '/uom-conversions', icon: 'i-lucide-arrow-left-right' },
         { label: 'Suppliers', to: '/suppliers', icon: 'i-lucide-truck' },
         { label: 'Supplier types', to: '/supplier-types', icon: 'i-lucide-shapes' },
         { label: 'Customers', to: '/customers', icon: 'i-lucide-contact' },
@@ -145,6 +147,9 @@ const items = computed<NavigationMenuItem[]>(() => [
         { label: 'Tax rates', to: '/tax-rates', icon: 'i-lucide-percent' },
         { label: 'Tax report', to: '/tax-report', icon: 'i-lucide-file-bar-chart' },
         { label: 'Financial reports', to: '/financial-reports', icon: 'i-lucide-bar-chart-3' },
+
+        { label: 'Reports', type: 'label' as const },
+        { label: 'Reports', to: '/reports', icon: 'i-lucide-file-bar-chart-2' },
 
         { label: 'Administration', type: 'label' as const },
         { label: 'Users', to: '/users', icon: 'i-lucide-users' }

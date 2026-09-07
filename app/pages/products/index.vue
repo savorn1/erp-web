@@ -52,6 +52,7 @@
         <template #actions-data="{ row }">
           <div class="flex items-center gap-2">
             <UButton size="xs" color="primary" variant="soft" icon="i-lucide-pencil" @click="openEdit(row)">Edit</UButton>
+            <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-scale" @click="openUomModal(row)">UOMs</UButton>
             <UDropdownMenu :items="statusMenuItems(row)">
               <UButton size="xs" color="neutral" variant="soft" trailing-icon="i-lucide-chevron-down">Status</UButton>
             </UDropdownMenu>
@@ -136,11 +137,70 @@
       "
       @confirm="onDelete"
     />
+
+    <!-- Product UOM management -->
+    <UModal v-model:open="showUomModal" :title="`Units of measure — ${uomProduct?.name ?? ''}`" :ui="{ content: 'sm:max-w-3xl' }">
+      <template #body>
+        <div v-if="uomProduct" class="mb-4 text-sm text-gray-500 dark:text-gray-400">
+          Base unit: <span class="font-medium text-gray-900 dark:text-white">{{ uomProduct.unitOfMeasureName }}</span> — every conversion factor below is
+          expressed relative to it.
+        </div>
+        <div v-if="loadingUoms" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+        <template v-else>
+          <div class="space-y-2 mb-4">
+            <div
+              v-for="row in uomRows"
+              :key="row.id"
+              class="grid grid-cols-12 gap-2 items-center rounded-lg border border-gray-200 dark:border-gray-800 p-2"
+            >
+              <div class="col-span-3 text-sm text-gray-900 dark:text-white truncate">
+                {{ row.unitOfMeasureName }} ({{ row.unitOfMeasureAbbreviation }})
+                <UBadge v-if="row.baseUnit" color="info" variant="subtle" size="xs" class="ml-1">Base</UBadge>
+              </div>
+              <div class="col-span-2 text-sm text-gray-600 dark:text-gray-300 text-right">
+                {{ row.baseUnit ? '1 (base)' : `${row.conversionFactor} : 1` }}
+              </div>
+              <div class="col-span-2 flex items-center gap-1 text-xs">
+                <UCheckbox v-model="row.allowPurchase" label="Purchase" :disabled="row.baseUnit" @change="onToggle(row)" />
+              </div>
+              <div class="col-span-2 flex items-center gap-1 text-xs">
+                <UCheckbox v-model="row.allowSales" label="Sales" :disabled="row.baseUnit" @change="onToggle(row)" />
+              </div>
+              <div class="col-span-2 text-sm text-gray-600 dark:text-gray-300 text-right truncate">{{ formatCurrency(row.effectivePrice) }}</div>
+              <div class="col-span-1 flex justify-end">
+                <UButton
+                  v-if="!row.baseUnit"
+                  size="xs"
+                  color="error"
+                  variant="ghost"
+                  icon="i-lucide-trash-2"
+                  :loading="deletingUomId === row.id"
+                  @click="onDeleteUom(row)"
+                />
+              </div>
+            </div>
+          </div>
+
+          <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Add a unit</p>
+          <div class="grid grid-cols-12 gap-2 items-center mb-2">
+            <USelect v-model="uomForm.unitOfMeasureId" :items="availableUomUnitOptions" placeholder="Unit" class="col-span-4" />
+            <UInput v-model.number="uomForm.conversionFactor" type="number" min="0.000001" step="0.000001" placeholder="Conversion factor" class="col-span-3" />
+            <UInput v-model="uomForm.barcode" placeholder="Barcode (optional)" class="col-span-3" />
+            <UInput v-model.number="uomForm.price" type="number" min="0" step="0.01" placeholder="Price override" class="col-span-2" />
+          </div>
+          <UAlert v-if="uomError" color="error" variant="subtle" class="mb-3" :title="uomError" />
+          <div class="flex justify-end">
+            <UButton size="sm" icon="i-lucide-plus" :loading="addingUom" @click="onAddUom">Add unit</UButton>
+          </div>
+        </template>
+      </template>
+    </UModal>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { ColumnDef, FieldDef } from '#shared/types'
+import type { ProductUom } from '~/composables/useProductUoms'
 import type { Product, ProductPayload, ProductStatus } from '~/composables/useProducts'
 
 definePageMeta({ middleware: 'admin' })
@@ -153,6 +213,7 @@ const { list: listTypes } = useProductTypes()
 const { list: listUnits } = useUnitsOfMeasure()
 const { list: listSuppliers } = useSuppliers()
 const { upload: uploadFile } = useAssetUpload()
+const { list: listUoms, create: createUom, update: updateUom, remove: removeUom } = useProductUoms()
 const toast = useToast()
 
 const rows = ref<Product[]>([])
@@ -284,6 +345,7 @@ const productFields = computed<FieldDef[]>(() => [
     ],
     hint: 'Determines what a goods receipt must capture when receiving this product.'
   },
+  { name: 'reorderPoint', label: 'Reorder point', type: 'number', min: 0, default: 0, hint: 'Flag this product on the Low Stock report once available stock falls below this. Leave at 0 to never flag it.' },
   { name: 'description', type: 'textarea', wrapper: 'full' }
 ])
 
@@ -334,6 +396,7 @@ const {
       sellingPrice: row.sellingPrice,
       taxRate: row.taxRate,
       trackingType: row.trackingType,
+      reorderPoint: row.reorderPoint,
       description: row.description ?? '',
       imageUrl: row.imageUrl ?? ''
     }),
@@ -352,6 +415,7 @@ const {
       sellingPrice: values.sellingPrice,
       taxRate: values.taxRate ?? 0,
       trackingType: values.trackingType ?? 'NONE',
+      reorderPoint: values.reorderPoint ?? 0,
       imageUrl: values.imageUrl || undefined
     })
   }
@@ -434,5 +498,118 @@ function clearFilters() {
   filter.brandId = undefined
   filter.status = undefined
   load()
+}
+
+// ── Product UOM management ──────────────────────────────────────────────
+const showUomModal = ref(false)
+const uomProduct = ref<Product | null>(null)
+const uomRows = ref<ProductUom[]>([])
+const loadingUoms = ref(false)
+const uomError = ref('')
+const addingUom = ref(false)
+const deletingUomId = ref<number | null>(null)
+
+const uomForm = reactive<{ unitOfMeasureId: number | undefined; conversionFactor: number | undefined; barcode: string; price: number | undefined }>({
+  unitOfMeasureId: undefined,
+  conversionFactor: undefined,
+  barcode: '',
+  price: undefined
+})
+
+const availableUomUnitOptions = computed(() => {
+  const usedIds = new Set(uomRows.value.map((r) => r.unitOfMeasureId))
+  return unitOptionsFor(uomProduct.value?.companyId).filter((o) => !usedIds.has(o.value))
+})
+
+async function openUomModal(row: Product) {
+  uomProduct.value = row
+  uomError.value = ''
+  uomForm.unitOfMeasureId = undefined
+  uomForm.conversionFactor = undefined
+  uomForm.barcode = ''
+  uomForm.price = undefined
+  showUomModal.value = true
+  await loadUoms()
+}
+
+async function loadUoms() {
+  if (!uomProduct.value) return
+  loadingUoms.value = true
+  try {
+    uomRows.value = await listUoms(uomProduct.value.id)
+  } catch (err) {
+    uomError.value = apiErrorMessage(err)
+  } finally {
+    loadingUoms.value = false
+  }
+}
+
+async function onAddUom() {
+  if (!uomProduct.value) return
+  uomError.value = ''
+  if (!uomForm.unitOfMeasureId || !uomForm.conversionFactor) {
+    uomError.value = 'Select a unit and enter a conversion factor'
+    return
+  }
+  addingUom.value = true
+  try {
+    await createUom(uomProduct.value.id, {
+      unitOfMeasureId: uomForm.unitOfMeasureId,
+      conversionFactor: uomForm.conversionFactor,
+      allowPurchase: true,
+      allowSales: true,
+      allowInventory: true,
+      defaultPurchase: false,
+      defaultSales: false,
+      barcode: uomForm.barcode || undefined,
+      price: uomForm.price,
+      active: true
+    })
+    toast.add({ title: 'Unit added', color: 'success' })
+    uomForm.unitOfMeasureId = undefined
+    uomForm.conversionFactor = undefined
+    uomForm.barcode = ''
+    uomForm.price = undefined
+    await loadUoms()
+  } catch (err) {
+    uomError.value = apiErrorMessage(err)
+  } finally {
+    addingUom.value = false
+  }
+}
+
+async function onToggle(row: ProductUom) {
+  if (!uomProduct.value) return
+  try {
+    await updateUom(uomProduct.value.id, row.id, {
+      unitOfMeasureId: row.unitOfMeasureId,
+      conversionFactor: row.baseUnit ? undefined : row.conversionFactor,
+      allowPurchase: row.allowPurchase,
+      allowSales: row.allowSales,
+      allowInventory: row.allowInventory,
+      defaultPurchase: row.defaultPurchase,
+      defaultSales: row.defaultSales,
+      barcode: row.barcode ?? undefined,
+      price: row.price ?? undefined,
+      active: row.active
+    })
+  } catch (err) {
+    toast.add({ title: 'Could not update unit', description: apiErrorMessage(err), color: 'error' })
+    await loadUoms()
+  }
+}
+
+async function onDeleteUom(row: ProductUom) {
+  if (!uomProduct.value) return
+  deletingUomId.value = row.id
+  try {
+    await removeUom(uomProduct.value.id, row.id)
+    toast.add({ title: 'Unit removed', color: 'success' })
+    await loadUoms()
+  } catch (err) {
+    toast.add({ title: 'Could not remove unit', description: apiErrorMessage(err), color: 'error' })
+  } finally {
+    deletingUomId.value = null
+  }
 }
 </script>

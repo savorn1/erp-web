@@ -33,6 +33,8 @@ export interface Product {
   status: ProductStatus
   trackingType: ProductTrackingType
   imageUrl: string | null
+  // Zero means no threshold configured — never flagged by the Low Stock report.
+  reorderPoint: number
 }
 
 export interface ProductFilter {
@@ -66,6 +68,7 @@ export interface ProductPayload {
   taxRate: number
   trackingType?: ProductTrackingType
   imageUrl?: string
+  reorderPoint?: number
 }
 
 export function useProducts() {

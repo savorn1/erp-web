@@ -1,5 +1,7 @@
 // Wraps the backend's admin-only UnitOfMeasureController
-// (/api/admin/units-of-measure/**, requires ROLE_ADMIN).
+// (/api/admin/units-of-measure/**, requires ROLE_ADMIN). Conversion factors
+// against a category's base unit are managed separately — see
+// useUomConversions.
 
 import type { ApiEnvelope, PageEnvelope } from '#shared/types'
 
@@ -10,6 +12,9 @@ export interface UnitOfMeasure {
   name: string
   abbreviation: string
   active: boolean
+  categoryId: number | null
+  categoryName: string | null
+  baseUnit: boolean
 }
 
 export interface UnitOfMeasureFilter {
@@ -27,6 +32,8 @@ export interface UnitOfMeasurePayload {
   name: string
   abbreviation: string
   active: boolean
+  categoryId?: number
+  baseUnit?: boolean
 }
 
 export function useUnitsOfMeasure() {

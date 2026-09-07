@@ -19,6 +19,8 @@ export interface InventoryOverviewRow {
   outgoingStock: number
   unitCost: number
   valuationValue: number
+  // Zero means no threshold configured — never flagged by the Low Stock report.
+  reorderPoint: number
 }
 
 export interface InventoryOverviewFilter {

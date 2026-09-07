@@ -1,10 +1,9 @@
 // Wraps the backend's admin-only StockMovementController
-// (/api/admin/stock-movements/**, requires ROLE_ADMIN). Read-only audit
-// trail — written only by goods receipt posting so far.
+// (/api/admin/stock-movements/**, requires ROLE_ADMIN). Read-only audit trail.
 
 import type { PageEnvelope } from '#shared/types'
 
-export type StockMovementType = 'RECEIPT'
+export type StockMovementType = 'RECEIPT' | 'ISSUE' | 'TRANSFER_OUT' | 'TRANSFER_IN' | 'ADJUSTMENT'
 
 export interface StockMovement {
   id: number
@@ -29,6 +28,8 @@ export interface StockMovementFilter {
   productId?: number
   warehouseId?: number
   type?: StockMovementType
+  dateFrom?: string
+  dateTo?: string
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
   page?: number

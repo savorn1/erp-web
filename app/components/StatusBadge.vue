@@ -132,7 +132,13 @@ const STATUS_META: Record<string, { color: StatusColor; icon: string }> = {
   BANK: { color: 'info', icon: 'i-lucide-landmark' },
   // TaxRate type (useTaxRates' TaxType) — OTHER falls back to DEFAULT_META.
   VAT: { color: 'info', icon: 'i-lucide-percent' },
-  WITHHOLDING: { color: 'warning', icon: 'i-lucide-percent' }
+  WITHHOLDING: { color: 'warning', icon: 'i-lucide-percent' },
+  // StockMovement type (useStockMovements' StockMovementType).
+  RECEIPT: { color: 'success', icon: 'i-lucide-arrow-down-to-line' },
+  ISSUE: { color: 'error', icon: 'i-lucide-arrow-up-from-line' },
+  TRANSFER_OUT: { color: 'warning', icon: 'i-lucide-arrow-right' },
+  TRANSFER_IN: { color: 'info', icon: 'i-lucide-arrow-left' },
+  ADJUSTMENT: { color: 'secondary', icon: 'i-lucide-scale' }
 }
 
 const DEFAULT_META: { color: StatusColor; icon: string } = {

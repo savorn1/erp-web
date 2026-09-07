@@ -1,8 +1,20 @@
 <template>
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Units of measure</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New unit </UButton>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">UOM categories</h1>
+      <div class="flex items-center gap-2">
+        <UButton
+          v-if="filter.companyId"
+          color="neutral"
+          variant="soft"
+          icon="i-lucide-sparkles"
+          :loading="seeding"
+          @click="onSeedStandard"
+        >
+          Seed standard categories
+        </UButton>
+        <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New category </UButton>
+      </div>
     </div>
 
     <UAlert
@@ -11,26 +23,22 @@
       variant="subtle"
       class="mb-4"
       title="No active companies yet"
-      description="Create a company first — every unit belongs to one."
+      description="Create a company first — every UOM category belongs to one."
       icon="i-lucide-triangle-alert"
     />
     <UAlert
-      v-else
+      v-else-if="!filter.companyId"
       color="info"
       variant="subtle"
       class="mb-4"
-      title="Conversion factors moved"
-      description="Set how a non-base unit converts to its category's base unit on the UOM conversions page — this page only manages the unit itself."
+      title="Pick a company to seed standard categories"
+      description="Quantity (PCS, Box, Carton), Weight (KG, Gram, Ton), Volume (L, Milliliter), Length (M, Centimeter), and Area (M2) — filter by a company above to add them with one click. Box/Carton are seeded without a fixed conversion factor, since pack size varies by product."
       icon="i-lucide-info"
-    >
-      <template #actions>
-        <UButton to="/uom-conversions" size="xs" color="neutral" variant="soft" trailing-icon="i-lucide-arrow-right">Go to UOM conversions</UButton>
-      </template>
-    </UAlert>
+    />
 
     <UCard class="mb-4">
       <div class="flex flex-wrap gap-3">
-        <UInput v-model="search" placeholder="Search name" icon="i-lucide-search" class="w-56" />
+        <UInput v-model="search" placeholder="Search code or name" icon="i-lucide-search" class="w-56" />
         <USelect v-model="filter.companyId" :items="companyFilterOptions" placeholder="Company" class="w-48" />
         <USelect v-model="filter.active" :items="statusFilterOptions" placeholder="Status" class="w-36" />
         <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
@@ -49,7 +57,7 @@
         refreshable
         numbered
         exportable
-        export-filename="units-of-measure"
+        export-filename="uom-categories"
         :row-number-start="(page - 1) * pageSize"
         @refresh="load"
       >
@@ -63,16 +71,21 @@
           <EmptyState
             v-if="hasActiveFilter"
             icon="i-lucide-search-x"
-            title="No units match your filters"
+            title="No categories match your filters"
             description="Try a different search or clear your filters."
           >
             <template #action>
               <UButton color="neutral" variant="soft" icon="i-lucide-x" @click="clearFilters">Clear filters</UButton>
             </template>
           </EmptyState>
-          <EmptyState v-else icon="i-lucide-ruler" title="No units yet" description="Create the first unit of measure to get started.">
+          <EmptyState
+            v-else
+            icon="i-lucide-shapes"
+            title="No UOM categories yet"
+            description="Group compatible units (e.g. Weight: kg/g/lb) so they can be converted between each other."
+          >
             <template #action>
-              <UButton :disabled="activeCompanyOptions.length === 0" icon="i-lucide-plus" @click="openCreate">New unit</UButton>
+              <UButton :disabled="activeCompanyOptions.length === 0" icon="i-lucide-plus" @click="openCreate">New category</UButton>
             </template>
           </EmptyState>
         </template>
@@ -83,7 +96,7 @@
       </div>
     </UCard>
 
-    <UModal v-model:open="showCreate" title="New unit of measure">
+    <UModal v-model:open="showCreate" title="New UOM category">
       <template #body>
         <DynamicForm
           v-model="createForm"
@@ -98,7 +111,7 @@
       </template>
     </UModal>
 
-    <UModal v-model:open="showEdit" :title="`Edit unit '${editingUnit?.name ?? ''}'`">
+    <UModal v-model:open="showEdit" :title="`Edit category '${editingCategory?.name ?? ''}'`">
       <template #body>
         <DynamicForm
           v-model="editForm"
@@ -115,8 +128,8 @@
 
     <ConfirmModal
       :model-value="confirmDelete !== null"
-      title="Delete unit of measure"
-      :description="`Delete unit '${confirmDelete?.name ?? ''}'? This cannot be undone.`"
+      title="Delete UOM category"
+      :description="`Delete category '${confirmDelete?.name ?? ''}'? This cannot be undone.`"
       confirm-label="Delete"
       color="error"
       :loading="deleting"
@@ -132,40 +145,30 @@
 
 <script setup lang="ts">
 import type { ColumnDef, FieldDef } from '#shared/types'
-import type { UnitOfMeasure, UnitOfMeasurePayload } from '~/composables/useUnitsOfMeasure'
-import type { UomCategory } from '~/composables/useUomCategories'
+import type { UomCategory, UomCategoryPayload } from '~/composables/useUomCategories'
 
 definePageMeta({ middleware: 'admin' })
 
-const { list, create, update, remove } = useUnitsOfMeasure()
+const { list, create, update, remove, seedStandard } = useUomCategories()
 const { list: listCompanies } = useCompanies()
-const { list: listUomCategories } = useUomCategories()
+const toast = useToast()
 
-const rows = ref<UnitOfMeasure[]>([])
+const rows = ref<UomCategory[]>([])
 const loading = ref(false)
 const error = ref('')
 
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
-const uomCategories = ref<UomCategory[]>([])
 const loadingLookups = ref(false)
 async function loadLookups() {
   loadingLookups.value = true
   try {
-    const [c, cat] = await Promise.all([listCompanies({ size: 200 }), listUomCategories({ size: 200 })])
-    companies.value = c.data
-    uomCategories.value = cat.data
+    companies.value = (await listCompanies({ size: 200 })).data
   } finally {
     loadingLookups.value = false
   }
 }
 const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
 const companyFilterOptions = computed(() => [{ label: 'All companies', value: undefined }, ...companies.value.map((c) => ({ label: c.name, value: c.id }))])
-function categoryOptionsFor(companyId: number | undefined) {
-  return [
-    { label: 'No category (standalone)', value: undefined },
-    ...uomCategories.value.filter((c) => c.active && (companyId === undefined || c.companyId === companyId)).map((c) => ({ label: c.name, value: c.id }))
-  ]
-}
 
 const filter = reactive<{ companyId: number | undefined; active: boolean | undefined }>({ companyId: undefined, active: undefined })
 const statusFilterOptions = [
@@ -175,16 +178,15 @@ const statusFilterOptions = [
 ]
 
 const sort = ref<{ column: string; direction: 'asc' | 'desc' } | undefined>({ column: 'id', direction: 'desc' })
-const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientTable(rows, { pageSize: 10, searchFields: ['name', 'abbreviation'] })
+const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientTable(rows, { pageSize: 10, searchFields: ['code', 'name'] })
 
-const columns: ColumnDef<UnitOfMeasure>[] = [
+const columns: ColumnDef<UomCategory>[] = [
+  { key: 'code', value: (row) => row.code ?? '—' },
   { key: 'name', sortable: true },
-  { key: 'abbreviation' },
-  { key: 'categoryName', label: 'Category', value: (row) => row.categoryName ?? '—' },
   {
-    key: 'baseUnit',
+    key: 'baseUnitName',
     label: 'Base unit',
-    value: (row) => (row.categoryId ? (row.baseUnit ? 'Yes' : 'No') : '—')
+    value: (row) => (row.baseUnitAbbreviation ? `${row.baseUnitName} (${row.baseUnitAbbreviation})` : '—')
   },
   { key: 'companyName', label: 'Company', value: (row) => row.companyName ?? '—' },
   { key: 'active', type: 'boolean', trueLabel: 'Active', trueColor: 'success', falseLabel: 'Inactive', falseColor: 'neutral' },
@@ -204,33 +206,11 @@ async function load() {
   }
 }
 
-// Whichever form is currently open drives the category options below —
-// DynamicForm re-renders when formFields changes, so switching a unit's
-// company narrows the category select to that company's data.
-const activeFormTarget = ref<'create' | 'edit'>('create')
-const currentFormCompanyId = computed(() => (activeFormTarget.value === 'create' ? createForm.value?.companyId : editForm.value?.companyId))
-
 const formFields = computed<FieldDef[]>(() => [
   { name: 'companyId', label: 'Company', type: 'select', required: true, options: activeCompanyOptions.value },
-  { name: 'name', required: true, hint: 'e.g. Kilogram, Piece, Liter.' },
-  { name: 'abbreviation', required: true, hint: 'Short display form, e.g. kg, pcs, L.' },
-  {
-    name: 'categoryId',
-    label: 'UOM category',
-    type: 'select',
-    options: categoryOptionsFor(currentFormCompanyId.value),
-    hint: 'Group with compatible units to enable conversion, e.g. Weight: kg/g/lb.'
-  },
-  {
-    name: 'baseUnit',
-    label: 'Base unit of category',
-    type: 'switch',
-    onLabel: 'Yes',
-    offLabel: 'No',
-    default: false,
-    showIf: (v) => !!v.categoryId,
-    hint: 'Setting this unsets whichever unit was previously the base for this category. Set conversion factors on the UOM conversions page.'
-  },
+  { name: 'code', required: true, hint: 'Short, stable key, e.g. WEIGHT.' },
+  { name: 'name', required: true, hint: 'e.g. Weight, Volume, Count.' },
+  { name: 'description', type: 'textarea', wrapper: 'full' },
   { name: 'active', type: 'switch', onLabel: 'Active', offLabel: 'Inactive', default: true }
 ])
 
@@ -239,19 +219,19 @@ const {
   creating,
   error: createError,
   createForm,
-  openCreate: openCreateModal,
+  openCreate,
   onCreate,
   showEdit,
   editing,
   editError,
-  editingRow: editingUnit,
+  editingRow: editingCategory,
   editForm,
-  openEdit: openEditModal,
+  openEdit,
   onEdit,
   deleting,
   confirmDelete,
   onDelete
-} = useCrudModals<UnitOfMeasure, UnitOfMeasurePayload>(
+} = useCrudModals<UomCategory, UomCategoryPayload>(
   {
     create: (payload) => create(payload),
     update: (row, payload) => update(row.id, payload),
@@ -259,35 +239,18 @@ const {
   },
   load,
   {
-    entityName: 'Unit of measure',
+    entityName: 'UOM category',
     createDefaults: () => ({ active: true }),
-    toForm: (row) => ({
-      companyId: row.companyId,
-      name: row.name,
-      abbreviation: row.abbreviation,
-      categoryId: row.categoryId ?? undefined,
-      baseUnit: row.baseUnit,
-      active: row.active
-    }),
+    toForm: (row) => ({ companyId: row.companyId, code: row.code ?? '', name: row.name, description: row.description ?? '', active: row.active }),
     toPayload: (values) => ({
       companyId: values.companyId,
+      code: values.code,
       name: values.name,
-      abbreviation: values.abbreviation,
-      categoryId: values.categoryId || undefined,
-      baseUnit: values.categoryId ? (values.baseUnit ?? false) : false,
+      description: values.description || undefined,
       active: values.active ?? true
     })
   }
 )
-
-function openCreate() {
-  activeFormTarget.value = 'create'
-  openCreateModal()
-}
-function openEdit(row: UnitOfMeasure) {
-  activeFormTarget.value = 'edit'
-  openEditModal(row)
-}
 
 onMounted(async () => {
   await loadLookups()
@@ -302,5 +265,20 @@ function clearFilters() {
   filter.companyId = undefined
   filter.active = undefined
   load()
+}
+
+const seeding = ref(false)
+async function onSeedStandard() {
+  if (!filter.companyId) return
+  seeding.value = true
+  try {
+    await seedStandard(filter.companyId)
+    toast.add({ title: 'Standard UOM categories created', color: 'success' })
+    await load()
+  } catch (err) {
+    toast.add({ title: 'Could not seed categories', description: apiErrorMessage(err), color: 'error' })
+  } finally {
+    seeding.value = false
+  }
 }
 </script>

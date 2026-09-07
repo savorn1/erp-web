@@ -9,6 +9,9 @@
       <div class="flex flex-wrap gap-3">
         <USelect v-model="filter.warehouseId" :items="warehouseFilterOptions" placeholder="Warehouse" class="w-44" />
         <USelect v-model="filter.productId" :items="productFilterOptions" placeholder="Product" class="w-48" />
+        <USelect v-model="filter.type" :items="typeFilterOptions" placeholder="Type" class="w-40" />
+        <UInput v-model="filter.dateFrom" type="date" class="w-40" />
+        <UInput v-model="filter.dateTo" type="date" class="w-40" />
         <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
@@ -58,7 +61,7 @@
 
 <script setup lang="ts">
 import type { ColumnDef } from '#shared/types'
-import type { StockMovement } from '~/composables/useStockMovements'
+import type { StockMovement, StockMovementType } from '~/composables/useStockMovements'
 
 definePageMeta({ middleware: 'admin' })
 
@@ -85,7 +88,22 @@ const productFilterOptions = computed(() => [
   ...products.value.map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
 ])
 
-const filter = reactive<{ warehouseId: number | undefined; productId: number | undefined }>({ warehouseId: undefined, productId: undefined })
+const typeFilterOptions = [
+  { label: 'All types', value: undefined },
+  { label: 'Receipt', value: 'RECEIPT' },
+  { label: 'Issue', value: 'ISSUE' },
+  { label: 'Transfer out', value: 'TRANSFER_OUT' },
+  { label: 'Transfer in', value: 'TRANSFER_IN' },
+  { label: 'Adjustment', value: 'ADJUSTMENT' }
+]
+
+const filter = reactive<{
+  warehouseId: number | undefined
+  productId: number | undefined
+  type: StockMovementType | undefined
+  dateFrom: string
+  dateTo: string
+}>({ warehouseId: undefined, productId: undefined, type: undefined, dateFrom: '', dateTo: '' })
 
 const sort = ref<{ column: string; direction: 'asc' | 'desc' } | undefined>({ column: 'createdAt', direction: 'desc' })
 const { page, pageSize, total, rows: pagedRows, truncated } = useClientTable(rows, { pageSize: 15 })
@@ -108,6 +126,9 @@ async function load() {
     const res = await list({
       warehouseId: filter.warehouseId,
       productId: filter.productId,
+      type: filter.type,
+      dateFrom: filter.dateFrom || undefined,
+      dateTo: filter.dateTo || undefined,
       sortBy: sort.value?.column,
       sortOrder: sort.value?.direction,
       size: 200
@@ -125,12 +146,22 @@ onMounted(async () => {
   await load()
 })
 watch(sort, load)
-watch(() => [filter.warehouseId, filter.productId], load)
+watch(() => [filter.warehouseId, filter.productId, filter.type, filter.dateFrom, filter.dateTo], load)
 
-const hasActiveFilter = computed(() => filter.warehouseId !== undefined || filter.productId !== undefined)
+const hasActiveFilter = computed(
+  () =>
+    filter.warehouseId !== undefined ||
+    filter.productId !== undefined ||
+    filter.type !== undefined ||
+    filter.dateFrom !== '' ||
+    filter.dateTo !== ''
+)
 function clearFilters() {
   filter.warehouseId = undefined
   filter.productId = undefined
+  filter.type = undefined
+  filter.dateFrom = ''
+  filter.dateTo = ''
   load()
 }
 </script>
