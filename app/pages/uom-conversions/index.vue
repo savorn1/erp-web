@@ -15,6 +15,21 @@
     />
 
     <UCard class="mb-4">
+      <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Quick convert</p>
+      <div class="flex flex-wrap items-center gap-2">
+        <UInput v-model.number="calc.quantity" type="number" step="0.0001" class="w-28" />
+        <USelect v-model="calc.fromUnitOfMeasureId" :items="unitOptionsFor(undefined)" placeholder="From unit" class="w-48" />
+        <UIcon name="i-lucide-arrow-right" class="text-gray-400 shrink-0" />
+        <USelect v-model="calc.toUnitOfMeasureId" :items="unitOptionsFor(undefined)" placeholder="To unit" class="w-48" />
+        <UButton :loading="calculating" @click="onCalculate">Convert</UButton>
+      </div>
+      <p v-if="calcResult !== null" class="text-sm text-gray-900 dark:text-white mt-3">
+        {{ calc.quantity }} {{ unitAbbr(calc.fromUnitOfMeasureId) }} = <span class="font-semibold">{{ calcResult }} {{ unitAbbr(calc.toUnitOfMeasureId) }}</span>
+      </p>
+      <UAlert v-if="calcError" color="error" variant="subtle" class="mt-3" :title="calcError" />
+    </UCard>
+
+    <UCard class="mb-4">
       <div class="flex flex-wrap gap-3">
         <USelect v-model="filter.active" :items="statusFilterOptions" placeholder="Status" class="w-36" />
         <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
@@ -126,7 +141,7 @@ import type { UnitOfMeasure } from '~/composables/useUnitsOfMeasure'
 
 definePageMeta({ middleware: 'admin' })
 
-const { list, create, update, remove } = useUomConversions()
+const { list, create, update, remove, convert } = useUomConversions()
 const { list: listUnits } = useUnitsOfMeasure()
 
 const rows = ref<UomConversion[]>([])
@@ -142,6 +157,35 @@ function unitOptionsFor(categoryId: number | null | undefined, excludeId?: numbe
   return units.value
     .filter((u) => u.active && u.categoryId && (categoryId ? u.categoryId === categoryId : true) && u.id !== excludeId)
     .map((u) => ({ label: `${u.name} (${u.abbreviation})`, value: u.id }))
+}
+function unitAbbr(id: number | undefined) {
+  return id === undefined ? '' : (units.value.find((u) => u.id === id)?.abbreviation ?? '')
+}
+
+const calc = reactive<{ fromUnitOfMeasureId: number | undefined; toUnitOfMeasureId: number | undefined; quantity: number | undefined }>({
+  fromUnitOfMeasureId: undefined,
+  toUnitOfMeasureId: undefined,
+  quantity: 1
+})
+const calcResult = ref<number | null>(null)
+const calcError = ref('')
+const calculating = ref(false)
+async function onCalculate() {
+  calcError.value = ''
+  calcResult.value = null
+  if (!calc.fromUnitOfMeasureId || !calc.toUnitOfMeasureId || calc.quantity === undefined) {
+    calcError.value = 'Pick both units and a quantity'
+    return
+  }
+  calculating.value = true
+  try {
+    const res = await convert({ fromUnitOfMeasureId: calc.fromUnitOfMeasureId, toUnitOfMeasureId: calc.toUnitOfMeasureId, quantity: calc.quantity })
+    calcResult.value = res.convertedQuantity
+  } catch (err) {
+    calcError.value = apiErrorMessage(err)
+  } finally {
+    calculating.value = false
+  }
 }
 
 const filter = reactive<{ active: boolean | undefined }>({ active: undefined })

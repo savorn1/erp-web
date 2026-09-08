@@ -9,6 +9,10 @@ export interface UnitOfMeasure {
   id: number
   name: string
   abbreviation: string
+  description: string | null
+  // Whether a fractional quantity is valid for this unit, e.g. 2.5 KG is
+  // fine, 2.5 PCS is not.
+  decimalAllowed: boolean
   active: boolean
   categoryId: number | null
   categoryName: string | null
@@ -27,6 +31,8 @@ export interface UnitOfMeasureFilter {
 export interface UnitOfMeasurePayload {
   name: string
   abbreviation: string
+  description?: string
+  decimalAllowed: boolean
   active: boolean
   categoryId?: number
   baseUnit?: boolean

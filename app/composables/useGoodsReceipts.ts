@@ -16,7 +16,11 @@ export interface GoodsReceiptLine {
   productId: number
   productName: string | null
   productSku: string | null
+  unitOfMeasureId: number | null
+  unitOfMeasureAbbreviation: string | null
+  conversionFactor: number
   quantityReceived: number
+  baseQuantityReceived: number
   binId: number | null
   binName: string | null
   batchId: number | null

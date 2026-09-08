@@ -37,11 +37,13 @@ export interface PageEnvelope<T> {
 // Lean subset of loan-frontend's FieldType — add more `fields/Field*.vue`
 // components and wire them into Field.vue's CONTROLS map to extend this.
 export type FieldType =
-  'text' | 'textarea' | 'number' | 'currency' | 'email' | 'password' | 'url' | 'select' | 'radio' | 'checkbox' | 'switch' | 'date' | 'datetime' | 'hidden'
+  'text' | 'textarea' | 'number' | 'currency' | 'email' | 'password' | 'url' | 'select' | 'combobox' | 'radio' | 'checkbox' | 'switch' | 'date' | 'datetime' | 'hidden'
 
 export interface FieldOption {
   label: string
-  value: string | number | boolean
+  // undefined is a legitimate option value (e.g. an "Inherit"/"Default" choice
+  // that clears the field), not an absent one.
+  value: string | number | boolean | undefined
 }
 
 export interface FieldDef {
@@ -64,7 +66,7 @@ export interface FieldDef {
   required?: boolean
   disabled?: boolean
   readonly?: boolean
-  /** select / radio choices. */
+  /** select / combobox / radio choices. combobox is a select with a search box — use it for long option lists. */
   options?: FieldOption[]
   /** number / date constraints. */
   min?: number | string

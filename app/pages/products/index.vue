@@ -53,6 +53,7 @@
           <div class="flex items-center gap-2">
             <UButton size="xs" color="primary" variant="soft" icon="i-lucide-pencil" @click="openEdit(row)">Edit</UButton>
             <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-scale" @click="openUomModal(row)">UOMs</UButton>
+            <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-boxes" @click="openVariantsModal(row)">Variants</UButton>
             <UDropdownMenu :items="statusMenuItems(row)">
               <UButton size="xs" color="neutral" variant="soft" trailing-icon="i-lucide-chevron-down">Status</UButton>
             </UDropdownMenu>
@@ -141,53 +142,98 @@
     <!-- Product UOM management -->
     <UModal v-model:open="showUomModal" :title="`Units of measure — ${uomProduct?.name ?? ''}`" :ui="{ content: 'sm:max-w-3xl' }">
       <template #body>
-        <div v-if="uomProduct" class="mb-4 text-sm text-gray-500 dark:text-gray-400">
+        <div v-if="uomProduct" class="mb-3 text-sm text-gray-500 dark:text-gray-400">
           Base unit: <span class="font-medium text-gray-900 dark:text-white">{{ uomProduct.unitOfMeasureName }}</span> — every conversion factor below is
           expressed relative to it.
         </div>
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Preview price for</span>
+          <USelect v-model="uomPreviewPriceGroupId" :items="uomPreviewPriceGroupOptions" placeholder="Default (no price group)" class="w-48" />
+        </div>
         <div v-if="loadingUoms" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
         <template v-else>
-          <div class="space-y-2 mb-4">
-            <div
-              v-for="row in uomRows"
-              :key="row.id"
-              class="grid grid-cols-12 gap-2 items-center rounded-lg border border-gray-200 dark:border-gray-800 p-2"
-            >
-              <div class="col-span-3 text-sm text-gray-900 dark:text-white truncate">
-                {{ row.unitOfMeasureName }} ({{ row.unitOfMeasureAbbreviation }})
-                <UBadge v-if="row.baseUnit" color="info" variant="subtle" size="xs" class="ml-1">Base</UBadge>
+          <div class="space-y-2 mb-5">
+            <div v-for="row in uomRows" :key="row.id" class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ row.unitOfMeasureName }} ({{ row.unitOfMeasureAbbreviation }})</span>
+                  <UBadge v-if="row.baseUnit" color="info" variant="subtle" size="xs">Base unit</UBadge>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <span class="text-sm text-gray-600 dark:text-gray-300 mr-1">
+                    {{ formatCurrency(row.effectivePrice) }}
+                    <UIcon v-if="row.priceGroupId" name="i-lucide-tag" class="w-3 h-3 inline-block text-primary-500 align-text-top" title="From price group" />
+                  </span>
+                  <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-tags" title="Price-group prices" @click="openUomPricesModal(row)" />
+                  <UButton
+                    v-if="!row.baseUnit"
+                    size="xs"
+                    color="error"
+                    variant="ghost"
+                    icon="i-lucide-trash-2"
+                    title="Remove this unit"
+                    :loading="deletingUomId === row.id"
+                    @click="onDeleteUom(row)"
+                  />
+                </div>
               </div>
-              <div class="col-span-2 text-sm text-gray-600 dark:text-gray-300 text-right">
-                {{ row.baseUnit ? '1 (base)' : `${row.conversionFactor} : 1` }}
-              </div>
-              <div class="col-span-2 flex items-center gap-1 text-xs">
-                <UCheckbox v-model="row.allowPurchase" label="Purchase" :disabled="row.baseUnit" @change="onToggle(row)" />
-              </div>
-              <div class="col-span-2 flex items-center gap-1 text-xs">
-                <UCheckbox v-model="row.allowSales" label="Sales" :disabled="row.baseUnit" @change="onToggle(row)" />
-              </div>
-              <div class="col-span-2 text-sm text-gray-600 dark:text-gray-300 text-right truncate">{{ formatCurrency(row.effectivePrice) }}</div>
-              <div class="col-span-1 flex justify-end">
-                <UButton
-                  v-if="!row.baseUnit"
-                  size="xs"
-                  color="error"
-                  variant="ghost"
-                  icon="i-lucide-trash-2"
-                  :loading="deletingUomId === row.id"
-                  @click="onDeleteUom(row)"
-                />
+
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                <template v-if="row.baseUnit">Every other unit's conversion factor is expressed relative to this one.</template>
+                <template v-else>
+                  1 {{ row.unitOfMeasureAbbreviation }} = {{ row.conversionFactor }} {{ uomProduct?.unitOfMeasureAbbreviation }}
+                </template>
+              </p>
+
+              <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+                <div class="flex items-center gap-2">
+                  <UCheckbox v-model="row.allowPurchase" label="Purchasing" :disabled="row.baseUnit" @change="onToggle(row)" />
+                  <UButton
+                    v-if="row.allowPurchase"
+                    size="xs"
+                    :color="row.defaultPurchase ? 'warning' : 'neutral'"
+                    :variant="row.defaultPurchase ? 'subtle' : 'ghost'"
+                    :disabled="row.defaultPurchase"
+                    :title="row.defaultPurchase ? undefined : 'Make this the unit purchase orders default to'"
+                    @click="onSetDefault(row, 'purchase')"
+                  >
+                    {{ row.defaultPurchase ? 'Default for purchasing' : 'Set as default' }}
+                  </UButton>
+                </div>
+                <div class="flex items-center gap-2">
+                  <UCheckbox v-model="row.allowSales" label="Sales" :disabled="row.baseUnit" @change="onToggle(row)" />
+                  <UButton
+                    v-if="row.allowSales"
+                    size="xs"
+                    :color="row.defaultSales ? 'warning' : 'neutral'"
+                    :variant="row.defaultSales ? 'subtle' : 'ghost'"
+                    :disabled="row.defaultSales"
+                    :title="row.defaultSales ? undefined : 'Make this the unit sales orders default to'"
+                    @click="onSetDefault(row, 'sales')"
+                  >
+                    {{ row.defaultSales ? 'Default for sales' : 'Set as default' }}
+                  </UButton>
+                </div>
               </div>
             </div>
           </div>
 
           <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Add a unit</p>
-          <div class="grid grid-cols-12 gap-2 items-center mb-2">
-            <USelect v-model="uomForm.unitOfMeasureId" :items="availableUomUnitOptions" placeholder="Unit" class="col-span-4" />
-            <UInput v-model.number="uomForm.conversionFactor" type="number" min="0.000001" step="0.000001" placeholder="Conversion factor" class="col-span-3" />
-            <UInput v-model="uomForm.barcode" placeholder="Barcode (optional)" class="col-span-3" />
-            <UInput v-model.number="uomForm.price" type="number" min="0" step="0.01" placeholder="Price override" class="col-span-2" />
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-1">
+            <UFormField label="Unit" required>
+              <USelect v-model="uomForm.unitOfMeasureId" :items="availableUomUnitOptions" placeholder="Select a unit" class="w-full" />
+            </UFormField>
+            <UFormField label="Conversion factor" required>
+              <UInput v-model.number="uomForm.conversionFactor" type="number" min="0.000001" step="0.000001" placeholder="e.g. 24" class="w-full" />
+            </UFormField>
+            <UFormField label="Barcode">
+              <UInput v-model="uomForm.barcode" placeholder="Optional" class="w-full" />
+            </UFormField>
+            <UFormField label="Price override">
+              <UInput v-model.number="uomForm.price" type="number" min="0" step="0.01" placeholder="Optional" class="w-full" />
+            </UFormField>
           </div>
+          <p v-if="addUnitPreview" class="text-xs text-gray-500 dark:text-gray-400 mb-3">{{ addUnitPreview }}</p>
           <UAlert v-if="uomError" color="error" variant="subtle" class="mb-3" :title="uomError" />
           <div class="flex justify-end">
             <UButton size="sm" icon="i-lucide-plus" :loading="addingUom" @click="onAddUom">Add unit</UButton>
@@ -195,13 +241,170 @@
         </template>
       </template>
     </UModal>
+
+    <!-- Product UOM pricing (per UOM, per price group) -->
+    <UModal
+      v-model:open="showUomPricesModal"
+      :title="`Prices — ${uomPricesRow?.unitOfMeasureName ?? ''} (${uomPricesRow?.unitOfMeasureAbbreviation ?? ''})`"
+      :ui="{ content: 'sm:max-w-2xl' }"
+    >
+      <template #body>
+        <div v-if="loadingUomPrices" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+        <template v-else>
+          <EmptyState
+            v-if="uomPriceRows.length === 0"
+            icon="i-lucide-tags"
+            title="No price-group prices yet"
+            description="Falls back to the unit's own effective price until you add one."
+          />
+          <div v-else class="space-y-2 mb-4">
+            <div
+              v-for="row in uomPriceRows"
+              :key="row.id"
+              class="grid grid-cols-12 gap-2 items-center rounded-lg border border-gray-200 dark:border-gray-800 p-2"
+            >
+              <div class="col-span-4 text-sm text-gray-900 dark:text-white truncate">{{ row.priceGroupName }}</div>
+              <div class="col-span-3 text-sm text-gray-600 dark:text-gray-300 text-right truncate">{{ formatCurrency(row.price) }}</div>
+              <div class="col-span-4 text-xs text-gray-500 dark:text-gray-400 truncate">
+                {{ row.effectiveFrom || row.effectiveTo ? `${row.effectiveFrom ?? '…'} → ${row.effectiveTo ?? '…'}` : 'Always' }}
+              </div>
+              <div class="col-span-1 flex justify-end">
+                <UButton
+                  size="xs"
+                  color="error"
+                  variant="ghost"
+                  icon="i-lucide-trash-2"
+                  :loading="deletingUomPriceId === row.id"
+                  @click="onDeleteUomPrice(row)"
+                />
+              </div>
+            </div>
+          </div>
+
+          <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Add a price</p>
+          <div class="grid grid-cols-12 gap-2 items-center mb-2">
+            <USelect v-model="uomPriceForm.priceGroupId" :items="availableUomPriceGroupOptions" placeholder="Price group" class="col-span-4" />
+            <UInput v-model.number="uomPriceForm.price" type="number" min="0" step="0.01" placeholder="Price" class="col-span-3" />
+            <UInput v-model="uomPriceForm.effectiveFrom" type="date" placeholder="From (optional)" class="col-span-3" />
+            <UInput v-model="uomPriceForm.effectiveTo" type="date" placeholder="To (optional)" class="col-span-2" />
+          </div>
+          <UAlert v-if="uomPriceError" color="error" variant="subtle" class="mb-3" :title="uomPriceError" />
+          <div class="flex justify-end">
+            <UButton size="sm" icon="i-lucide-plus" :loading="addingUomPrice" @click="onAddUomPrice">Add price</UButton>
+          </div>
+        </template>
+      </template>
+    </UModal>
+
+    <!-- Product variant management -->
+    <UModal v-model:open="showVariantsModal" :title="`Variants — ${variantsProduct?.name ?? ''}`" :ui="{ content: 'sm:max-w-3xl' }">
+      <template #body>
+        <div class="flex justify-end mb-3">
+          <UButton size="sm" icon="i-lucide-plus" @click="openVariantCreate">New variant</UButton>
+        </div>
+        <div v-if="loadingVariants" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+        <template v-else>
+          <EmptyState
+            v-if="variantRows.length === 0"
+            icon="i-lucide-boxes"
+            title="No variants yet"
+            description="Create the first variant of this product to get started."
+          />
+          <div v-else class="space-y-2">
+            <div
+              v-for="row in variantRows"
+              :key="row.id"
+              class="grid grid-cols-12 gap-2 items-center rounded-lg border border-gray-200 dark:border-gray-800 p-2"
+            >
+              <div class="col-span-3 text-sm text-gray-900 dark:text-white truncate">
+                {{ row.name }}
+                <span v-if="!row.active" class="text-xs text-gray-400">(inactive)</span>
+              </div>
+              <div class="col-span-2 text-xs text-gray-500 dark:text-gray-400 truncate">{{ row.sku }}</div>
+              <div class="col-span-2 text-xs text-gray-500 dark:text-gray-400 truncate">
+                {{ row.unitOfMeasureAbbreviation ?? `${variantsProduct?.unitOfMeasureAbbreviation ?? '—'} (inherited)` }}
+              </div>
+              <div class="col-span-2 text-sm text-gray-600 dark:text-gray-300 text-right truncate">
+                {{ formatCurrency(row.sellingPrice ?? variantsProduct?.sellingPrice ?? 0) }}
+              </div>
+              <div class="col-span-3 flex justify-end gap-1">
+                <UButton size="xs" color="primary" variant="ghost" icon="i-lucide-pencil" @click="openVariantEdit(row)" />
+                <UButton size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" @click="confirmDeleteVariant = row" />
+              </div>
+            </div>
+          </div>
+        </template>
+      </template>
+    </UModal>
+
+    <UModal v-model:open="showVariantCreate" title="New variant" :ui="{ content: 'sm:max-w-xl' }">
+      <template #body>
+        <ProductImagePicker
+          :image-url="variantCreateForm.imageUrl"
+          :loading="uploadingVariantImage"
+          @pick="triggerVariantImageUpload('create')"
+          @remove="variantCreateForm.imageUrl = ''"
+        />
+        <DynamicForm
+          v-model="variantCreateForm"
+          :fields="variantFields"
+          :loading="creatingVariant"
+          :error="createVariantError"
+          submit-label="Create"
+          cancelable
+          @submit="onVariantCreate"
+          @cancel="showVariantCreate = false"
+        />
+      </template>
+    </UModal>
+
+    <UModal v-model:open="showVariantEdit" :title="`Edit variant '${editingVariantRow?.name ?? ''}'`" :ui="{ content: 'sm:max-w-xl' }">
+      <template #body>
+        <ProductImagePicker
+          :image-url="variantEditForm.imageUrl"
+          :loading="uploadingVariantImage"
+          @pick="triggerVariantImageUpload('edit')"
+          @remove="variantEditForm.imageUrl = ''"
+        />
+        <DynamicForm
+          v-model="variantEditForm"
+          :fields="variantFields"
+          :loading="editingVariant"
+          :error="editVariantError"
+          submit-label="Save changes"
+          cancelable
+          @submit="onVariantEdit"
+          @cancel="showVariantEdit = false"
+        />
+      </template>
+    </UModal>
+
+    <input ref="variantImageInputRef" type="file" accept="image/*" class="hidden" @change="onVariantImageFileChange" />
+
+    <ConfirmModal
+      :model-value="confirmDeleteVariant !== null"
+      title="Delete variant"
+      :description="`Delete variant '${confirmDeleteVariant?.name ?? ''}'? This cannot be undone.`"
+      confirm-label="Delete"
+      color="error"
+      :loading="deletingVariant"
+      @update:model-value="
+        (v: boolean) => {
+          if (!v) confirmDeleteVariant = null
+        }
+      "
+      @confirm="onVariantDelete"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { ColumnDef, FieldDef } from '#shared/types'
 import type { ProductUom } from '~/composables/useProductUoms'
+import type { ProductUomPrice } from '~/composables/useProductUomPrices'
 import type { Product, ProductPayload, ProductStatus } from '~/composables/useProducts'
+import type { ProductVariant, ProductVariantPayload } from '~/composables/useProductVariants'
+import type { PriceGroup } from '~/composables/usePriceGroups'
 
 definePageMeta({ middleware: 'admin' })
 
@@ -214,6 +417,9 @@ const { list: listUnits } = useUnitsOfMeasure()
 const { list: listSuppliers } = useSuppliers()
 const { upload: uploadFile } = useAssetUpload()
 const { list: listUoms, create: createUom, update: updateUom, remove: removeUom } = useProductUoms()
+const { list: listUomPrices, create: createUomPrice, remove: removeUomPrice } = useProductUomPrices()
+const { list: listPriceGroups } = usePriceGroups()
+const { list: listVariants, create: createVariant, update: updateVariant, remove: removeVariant } = useProductVariants()
 const toast = useToast()
 
 const rows = ref<Product[]>([])
@@ -221,23 +427,25 @@ const loading = ref(false)
 const error = ref('')
 
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
-const categories = ref<{ id: number; name: string; companyId: number; active: boolean }[]>([])
-const brands = ref<{ id: number; name: string; companyId: number; active: boolean }[]>([])
-const types = ref<{ id: number; name: string; companyId: number; active: boolean }[]>([])
-const units = ref<{ id: number; name: string; abbreviation: string; companyId: number; active: boolean }[]>([])
+const categories = ref<{ id: number; name: string; active: boolean }[]>([])
+const brands = ref<{ id: number; name: string; active: boolean }[]>([])
+const types = ref<{ id: number; name: string; active: boolean }[]>([])
+const units = ref<{ id: number; name: string; abbreviation: string; active: boolean }[]>([])
 const suppliers = ref<{ id: number; name: string; companyId: number; status: string }[]>([])
+const priceGroups = ref<PriceGroup[]>([])
 const loadingLookups = ref(false)
 
 async function loadLookups() {
   loadingLookups.value = true
   try {
-    const [c, cat, b, t, u, s] = await Promise.all([
+    const [c, cat, b, t, u, s, pg] = await Promise.all([
       listCompanies({ size: 200 }),
       listCategories({ size: 200 }),
       listBrands({ size: 200 }),
       listTypes({ size: 200 }),
       listUnits({ size: 200 }),
-      listSuppliers({ size: 200 })
+      listSuppliers({ size: 200 }),
+      listPriceGroups({ active: true, size: 200 })
     ])
     companies.value = c.data
     categories.value = cat.data
@@ -245,6 +453,7 @@ async function loadLookups() {
     types.value = t.data
     units.value = u.data
     suppliers.value = s.data
+    priceGroups.value = pg.data
   } finally {
     loadingLookups.value = false
   }
@@ -261,13 +470,11 @@ const statusFilterOptions = [
   { label: 'Discontinued', value: 'DISCONTINUED' }
 ]
 
-function optionsFor(list: { id: number; name: string; companyId: number; active: boolean }[], companyId: number | undefined) {
-  return list.filter((item) => item.active && (companyId === undefined || item.companyId === companyId)).map((item) => ({ label: item.name, value: item.id }))
+function optionsFor(list: { id: number; name: string; active: boolean }[]) {
+  return list.filter((item) => item.active).map((item) => ({ label: item.name, value: item.id }))
 }
-function unitOptionsFor(companyId: number | undefined) {
-  return units.value
-    .filter((u) => u.active && (companyId === undefined || u.companyId === companyId))
-    .map((u) => ({ label: `${u.name} (${u.abbreviation})`, value: u.id }))
+function unitOptionsFor() {
+  return units.value.filter((u) => u.active).map((u) => ({ label: `${u.name} (${u.abbreviation})`, value: u.id }))
 }
 function supplierOptionsFor(companyId: number | undefined) {
   return suppliers.value
@@ -290,7 +497,8 @@ const columns: ColumnDef<Product>[] = [
   { key: 'name', sortable: true },
   { key: 'sku', label: 'SKU', sortable: true },
   { key: 'categoryName', label: 'Category', value: (row) => row.categoryName ?? '—' },
-  { key: 'unit', label: 'Unit', value: (row) => row.unitOfMeasureAbbreviation ?? '—' },
+  { key: 'purchaseUnit', label: 'Buys in', value: (row) => row.purchaseUnitOfMeasureAbbreviation ?? row.unitOfMeasureAbbreviation ?? '—' },
+  { key: 'salesUnit', label: 'Sells in', value: (row) => row.salesUnitOfMeasureAbbreviation ?? row.unitOfMeasureAbbreviation ?? '—' },
   { key: 'costPrice', label: 'Cost price', type: 'currency' },
   { key: 'sellingPrice', label: 'Selling price', type: 'currency' },
   { key: 'taxRate', label: 'Tax', type: 'percent' },
@@ -325,10 +533,10 @@ const productFields = computed<FieldDef[]>(() => [
   { name: 'name', required: true },
   { name: 'sku', label: 'SKU', required: true },
   { name: 'barcode' },
-  { name: 'categoryId', label: 'Category', type: 'select', options: optionsFor(categories.value, currentFormCompanyId.value) },
-  { name: 'brandId', label: 'Brand', type: 'select', options: optionsFor(brands.value, currentFormCompanyId.value) },
-  { name: 'typeId', label: 'Type', type: 'select', options: optionsFor(types.value, currentFormCompanyId.value) },
-  { name: 'unitOfMeasureId', label: 'Unit of measure', type: 'select', required: true, options: unitOptionsFor(currentFormCompanyId.value) },
+  { name: 'categoryId', label: 'Category', type: 'select', options: optionsFor(categories.value) },
+  { name: 'brandId', label: 'Brand', type: 'select', options: optionsFor(brands.value) },
+  { name: 'typeId', label: 'Type', type: 'select', options: optionsFor(types.value) },
+  { name: 'unitOfMeasureId', label: 'Unit of measure', type: 'select', required: true, options: unitOptionsFor() },
   { name: 'supplierId', label: 'Supplier', type: 'select', options: supplierOptionsFor(currentFormCompanyId.value) },
   { name: 'costPrice', label: 'Cost price', type: 'currency', required: true },
   { name: 'sellingPrice', label: 'Selling price', type: 'currency', required: true },
@@ -518,12 +726,26 @@ const uomForm = reactive<{ unitOfMeasureId: number | undefined; conversionFactor
 
 const availableUomUnitOptions = computed(() => {
   const usedIds = new Set(uomRows.value.map((r) => r.unitOfMeasureId))
-  return unitOptionsFor(uomProduct.value?.companyId).filter((o) => !usedIds.has(o.value))
+  return unitOptionsFor().filter((o) => !usedIds.has(o.value))
 })
+
+const addUnitPreview = computed(() => {
+  if (!uomForm.unitOfMeasureId || !uomForm.conversionFactor) return ''
+  const unit = units.value.find((u) => u.id === uomForm.unitOfMeasureId)
+  const baseAbbr = uomProduct.value?.unitOfMeasureAbbreviation ?? ''
+  return `1 ${unit?.abbreviation ?? 'unit'} = ${uomForm.conversionFactor} ${baseAbbr}`
+})
+
+const uomPreviewPriceGroupId = ref<number | undefined>(undefined)
+const uomPreviewPriceGroupOptions = computed(() => [
+  { label: 'Default (no price group)', value: undefined },
+  ...priceGroups.value.map((g) => ({ label: g.name, value: g.id }))
+])
 
 async function openUomModal(row: Product) {
   uomProduct.value = row
   uomError.value = ''
+  uomPreviewPriceGroupId.value = undefined
   uomForm.unitOfMeasureId = undefined
   uomForm.conversionFactor = undefined
   uomForm.barcode = ''
@@ -536,13 +758,14 @@ async function loadUoms() {
   if (!uomProduct.value) return
   loadingUoms.value = true
   try {
-    uomRows.value = await listUoms(uomProduct.value.id)
+    uomRows.value = await listUoms(uomProduct.value.id, undefined, uomPreviewPriceGroupId.value)
   } catch (err) {
     uomError.value = apiErrorMessage(err)
   } finally {
     loadingUoms.value = false
   }
 }
+watch(uomPreviewPriceGroupId, loadUoms)
 
 async function onAddUom() {
   if (!uomProduct.value) return
@@ -599,6 +822,29 @@ async function onToggle(row: ProductUom) {
   }
 }
 
+async function onSetDefault(row: ProductUom, kind: 'purchase' | 'sales') {
+  if (!uomProduct.value) return
+  if (kind === 'purchase' ? row.defaultPurchase : row.defaultSales) return
+  try {
+    await updateUom(uomProduct.value.id, row.id, {
+      unitOfMeasureId: row.unitOfMeasureId,
+      conversionFactor: row.baseUnit ? undefined : row.conversionFactor,
+      allowPurchase: row.allowPurchase,
+      allowSales: row.allowSales,
+      allowInventory: row.allowInventory,
+      defaultPurchase: kind === 'purchase' ? true : row.defaultPurchase,
+      defaultSales: kind === 'sales' ? true : row.defaultSales,
+      barcode: row.barcode ?? undefined,
+      price: row.price ?? undefined,
+      active: row.active
+    })
+    toast.add({ title: `Default ${kind} unit updated`, color: 'success' })
+    await loadUoms()
+  } catch (err) {
+    toast.add({ title: 'Could not update default unit', description: apiErrorMessage(err), color: 'error' })
+  }
+}
+
 async function onDeleteUom(row: ProductUom) {
   if (!uomProduct.value) return
   deletingUomId.value = row.id
@@ -610,6 +856,214 @@ async function onDeleteUom(row: ProductUom) {
     toast.add({ title: 'Could not remove unit', description: apiErrorMessage(err), color: 'error' })
   } finally {
     deletingUomId.value = null
+  }
+}
+
+// ── Product UOM pricing (per UOM, per price group) ────────────────────────
+const showUomPricesModal = ref(false)
+const uomPricesRow = ref<ProductUom | null>(null)
+const uomPriceRows = ref<ProductUomPrice[]>([])
+const loadingUomPrices = ref(false)
+const uomPriceError = ref('')
+const addingUomPrice = ref(false)
+const deletingUomPriceId = ref<number | null>(null)
+
+const uomPriceForm = reactive<{ priceGroupId: number | undefined; price: number | undefined; effectiveFrom: string; effectiveTo: string }>({
+  priceGroupId: undefined,
+  price: undefined,
+  effectiveFrom: '',
+  effectiveTo: ''
+})
+
+const availableUomPriceGroupOptions = computed(() => {
+  const usedIds = new Set(uomPriceRows.value.map((r) => r.priceGroupId))
+  return priceGroups.value.filter((g) => !usedIds.has(g.id)).map((g) => ({ label: g.name, value: g.id }))
+})
+
+async function openUomPricesModal(row: ProductUom) {
+  if (!uomProduct.value) return
+  uomPricesRow.value = row
+  uomPriceError.value = ''
+  uomPriceForm.priceGroupId = undefined
+  uomPriceForm.price = undefined
+  uomPriceForm.effectiveFrom = ''
+  uomPriceForm.effectiveTo = ''
+  showUomPricesModal.value = true
+  await loadUomPrices()
+}
+
+async function loadUomPrices() {
+  if (!uomProduct.value || !uomPricesRow.value) return
+  loadingUomPrices.value = true
+  try {
+    uomPriceRows.value = await listUomPrices(uomProduct.value.id, uomPricesRow.value.id)
+  } catch (err) {
+    uomPriceError.value = apiErrorMessage(err)
+  } finally {
+    loadingUomPrices.value = false
+  }
+}
+
+async function onAddUomPrice() {
+  if (!uomProduct.value || !uomPricesRow.value) return
+  uomPriceError.value = ''
+  if (!uomPriceForm.priceGroupId || uomPriceForm.price == null) {
+    uomPriceError.value = 'Select a price group and enter a price'
+    return
+  }
+  addingUomPrice.value = true
+  try {
+    await createUomPrice(uomProduct.value.id, uomPricesRow.value.id, {
+      priceGroupId: uomPriceForm.priceGroupId,
+      price: uomPriceForm.price,
+      effectiveFrom: uomPriceForm.effectiveFrom || undefined,
+      effectiveTo: uomPriceForm.effectiveTo || undefined,
+      active: true
+    })
+    toast.add({ title: 'Price added', color: 'success' })
+    uomPriceForm.priceGroupId = undefined
+    uomPriceForm.price = undefined
+    uomPriceForm.effectiveFrom = ''
+    uomPriceForm.effectiveTo = ''
+    await loadUomPrices()
+  } catch (err) {
+    uomPriceError.value = apiErrorMessage(err)
+  } finally {
+    addingUomPrice.value = false
+  }
+}
+
+async function onDeleteUomPrice(row: ProductUomPrice) {
+  if (!uomProduct.value || !uomPricesRow.value) return
+  deletingUomPriceId.value = row.id
+  try {
+    await removeUomPrice(uomProduct.value.id, uomPricesRow.value.id, row.id)
+    toast.add({ title: 'Price removed', color: 'success' })
+    await loadUomPrices()
+  } catch (err) {
+    toast.add({ title: 'Could not remove price', description: apiErrorMessage(err), color: 'error' })
+  } finally {
+    deletingUomPriceId.value = null
+  }
+}
+
+// ── Product variant management ──────────────────────────────────────────
+const showVariantsModal = ref(false)
+const variantsProduct = ref<Product | null>(null)
+const variantRows = ref<ProductVariant[]>([])
+const loadingVariants = ref(false)
+
+async function openVariantsModal(row: Product) {
+  variantsProduct.value = row
+  showVariantsModal.value = true
+  await loadVariants()
+}
+
+async function loadVariants() {
+  if (!variantsProduct.value) return
+  loadingVariants.value = true
+  try {
+    const res = await listVariants({ productId: variantsProduct.value.id, size: 200 })
+    variantRows.value = res.data
+  } finally {
+    loadingVariants.value = false
+  }
+}
+
+const variantUnitOptions = computed(() => [
+  { label: `Inherit product's unit (${variantsProduct.value?.unitOfMeasureAbbreviation ?? '—'})`, value: undefined },
+  ...unitOptionsFor()
+])
+
+const variantFields = computed<FieldDef[]>(() => [
+  { name: 'name', required: true, hint: 'e.g. Red / Large.' },
+  { name: 'sku', label: 'SKU', required: true },
+  { name: 'barcode' },
+  {
+    name: 'unitOfMeasureId',
+    label: 'Unit of measure',
+    type: 'select',
+    options: variantUnitOptions.value,
+    hint: "Leave as inherited to use the product's own unit."
+  },
+  { name: 'costPrice', label: 'Cost price', type: 'currency', hint: "Leave blank to inherit the product's cost price." },
+  { name: 'sellingPrice', label: 'Selling price', type: 'currency', hint: "Leave blank to inherit the product's selling price." },
+  { name: 'active', type: 'switch', onLabel: 'Active', offLabel: 'Inactive', default: true }
+])
+
+const {
+  showCreate: showVariantCreate,
+  creating: creatingVariant,
+  error: createVariantError,
+  createForm: variantCreateForm,
+  openCreate: openVariantCreate,
+  onCreate: onVariantCreate,
+  showEdit: showVariantEdit,
+  editing: editingVariant,
+  editError: editVariantError,
+  editingRow: editingVariantRow,
+  editForm: variantEditForm,
+  openEdit: openVariantEdit,
+  onEdit: onVariantEdit,
+  deleting: deletingVariant,
+  confirmDelete: confirmDeleteVariant,
+  onDelete: onVariantDelete
+} = useCrudModals<ProductVariant, ProductVariantPayload>(
+  {
+    create: (payload) => createVariant({ ...payload, productId: variantsProduct.value!.id }),
+    update: (row, payload) => updateVariant(row.id, { ...payload, productId: variantsProduct.value!.id }),
+    remove: (row) => removeVariant(row.id)
+  },
+  loadVariants,
+  {
+    entityName: 'Variant',
+    createDefaults: () => ({ active: true }),
+    toForm: (row) => ({
+      name: row.name,
+      sku: row.sku,
+      barcode: row.barcode ?? '',
+      unitOfMeasureId: row.unitOfMeasureId ?? undefined,
+      costPrice: row.costPrice ?? undefined,
+      sellingPrice: row.sellingPrice ?? undefined,
+      imageUrl: row.imageUrl ?? '',
+      active: row.active
+    }),
+    toPayload: (values) => ({
+      productId: variantsProduct.value!.id,
+      name: values.name,
+      sku: values.sku,
+      barcode: values.barcode || undefined,
+      unitOfMeasureId: values.unitOfMeasureId || undefined,
+      costPrice: values.costPrice ?? undefined,
+      sellingPrice: values.sellingPrice ?? undefined,
+      imageUrl: values.imageUrl || undefined,
+      active: values.active ?? true
+    })
+  }
+)
+
+const variantImageInputRef = ref<HTMLInputElement | null>(null)
+const uploadingVariantImage = ref(false)
+const variantImageUploadTarget = ref<'create' | 'edit'>('create')
+
+function triggerVariantImageUpload(target: 'create' | 'edit') {
+  variantImageUploadTarget.value = target
+  variantImageInputRef.value?.click()
+}
+
+async function onVariantImageFileChange(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  uploadingVariantImage.value = true
+  try {
+    const uploaded = await uploadFile(file, 'products')
+    if (variantImageUploadTarget.value === 'create') variantCreateForm.value.imageUrl = uploaded.url
+    else variantEditForm.value.imageUrl = uploaded.url
+  } catch (err) {
+    toast.add({ title: 'Could not upload image', description: apiErrorMessage(err), color: 'error' })
+  } finally {
+    uploadingVariantImage.value = false
+    if (variantImageInputRef.value) variantImageInputRef.value.value = ''
   }
 }
 </script>

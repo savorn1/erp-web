@@ -83,7 +83,6 @@ const items = computed<NavigationMenuItem[]>(() => [
 
         { label: 'Master Data', type: 'label' as const },
         { label: 'Products', to: '/products', icon: 'i-lucide-package' },
-        { label: 'Product variants', to: '/product-variants', icon: 'i-lucide-boxes' },
         { label: 'Categories', to: '/product-categories', icon: 'i-lucide-tags' },
         { label: 'Brands', to: '/product-brands', icon: 'i-lucide-badge' },
         { label: 'Types', to: '/product-types', icon: 'i-lucide-shapes' },

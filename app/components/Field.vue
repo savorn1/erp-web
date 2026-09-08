@@ -24,6 +24,7 @@ import FieldNumber from './fields/FieldNumber.vue'
 import FieldCurrency from './fields/FieldCurrency.vue'
 import FieldTextarea from './fields/FieldTextarea.vue'
 import FieldSelect from './fields/FieldSelect.vue'
+import FieldCombobox from './fields/FieldCombobox.vue'
 import FieldRadio from './fields/FieldRadio.vue'
 import FieldCheckbox from './fields/FieldCheckbox.vue'
 import FieldSwitch from './fields/FieldSwitch.vue'
@@ -43,6 +44,7 @@ const CONTROLS: Record<Exclude<FieldType, 'hidden'>, Component> = {
   currency: FieldCurrency,
   textarea: FieldTextarea,
   select: FieldSelect,
+  combobox: FieldCombobox,
   radio: FieldRadio,
   checkbox: FieldCheckbox,
   switch: FieldSwitch,

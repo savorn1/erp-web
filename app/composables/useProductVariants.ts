@@ -1,7 +1,8 @@
 // Wraps the backend's admin-only ProductVariantController
-// (/api/admin/product-variants/**, requires ROLE_ADMIN). costPrice/sellingPrice
-// being null means "inherit the parent product's price" — this composable
-// doesn't resolve that; the page falls back to the product's own price for display.
+// (/api/admin/product-variants/**, requires ROLE_ADMIN). costPrice/sellingPrice/
+// unitOfMeasureId being null means "inherit the parent product's own value" —
+// this composable doesn't resolve that; the page falls back to the product's
+// own value for display.
 
 import type { ApiEnvelope, PageEnvelope } from '#shared/types'
 
@@ -13,6 +14,9 @@ export interface ProductVariant {
   name: string
   sku: string
   barcode: string | null
+  unitOfMeasureId: number | null
+  unitOfMeasureName: string | null
+  unitOfMeasureAbbreviation: string | null
   costPrice: number | null
   sellingPrice: number | null
   imageUrl: string | null
@@ -35,6 +39,7 @@ export interface ProductVariantPayload {
   name: string
   sku: string
   barcode?: string
+  unitOfMeasureId?: number
   costPrice?: number
   sellingPrice?: number
   imageUrl?: string

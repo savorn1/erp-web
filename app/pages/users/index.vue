@@ -186,8 +186,8 @@ const loading = ref(false)
 const error = ref('')
 
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
-const branches = ref<{ id: number; name: string; companyId: number; active: boolean }[]>([])
-const departments = ref<{ id: number; name: string; companyId: number; active: boolean }[]>([])
+const branches = ref<{ id: number; name: string; active: boolean }[]>([])
+const departments = ref<{ id: number; name: string; active: boolean }[]>([])
 
 async function loadLookups() {
   const [companiesRes, branchesRes, departmentsRes] = await Promise.all([
@@ -203,11 +203,11 @@ async function loadLookups() {
 const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
 const companyFilterOptions = computed(() => [{ label: 'All companies', value: undefined }, ...companies.value.map((c) => ({ label: c.name, value: c.id }))])
 const branchFilterOptions = computed(() => [{ label: 'All branches', value: undefined }, ...branches.value.map((b) => ({ label: b.name, value: b.id }))])
-function branchOptionsFor(companyId: number | undefined) {
-  return branches.value.filter((b) => b.active && (companyId === undefined || b.companyId === companyId)).map((b) => ({ label: b.name, value: b.id }))
+function branchOptionsFor() {
+  return branches.value.filter((b) => b.active).map((b) => ({ label: b.name, value: b.id }))
 }
-function departmentOptionsFor(companyId: number | undefined) {
-  return departments.value.filter((d) => d.active && (companyId === undefined || d.companyId === companyId)).map((d) => ({ label: d.name, value: d.id }))
+function departmentOptionsFor() {
+  return departments.value.filter((d) => d.active).map((d) => ({ label: d.name, value: d.id }))
 }
 
 const filter = reactive<{
@@ -313,8 +313,8 @@ const createFields = computed<FieldDef[]>(() => [
   { name: 'role', type: 'select', required: true, options: roleOptions },
   { name: 'enabled', type: 'switch', onLabel: 'Enabled', offLabel: 'Disabled', default: true },
   { name: 'companyId', label: 'Company', type: 'select', options: activeCompanyOptions.value, hint: 'Optional — can be assigned later.' },
-  { name: 'branchId', label: 'Branch', type: 'select', options: branchOptionsFor(createForm.value.companyId) },
-  { name: 'departmentId', label: 'Department', type: 'select', options: departmentOptionsFor(createForm.value.companyId) }
+  { name: 'branchId', label: 'Branch', type: 'select', options: branchOptionsFor() },
+  { name: 'departmentId', label: 'Department', type: 'select', options: departmentOptionsFor() }
 ])
 
 const editFields = computed<FieldDef[]>(() => [
@@ -322,8 +322,8 @@ const editFields = computed<FieldDef[]>(() => [
   { name: 'enabled', type: 'switch', onLabel: 'Enabled', offLabel: 'Disabled' },
   { name: 'email', type: 'email' },
   { name: 'companyId', label: 'Company', type: 'select', options: activeCompanyOptions.value },
-  { name: 'branchId', label: 'Branch', type: 'select', options: branchOptionsFor(editForm.value.companyId) },
-  { name: 'departmentId', label: 'Department', type: 'select', options: departmentOptionsFor(editForm.value.companyId) }
+  { name: 'branchId', label: 'Branch', type: 'select', options: branchOptionsFor() },
+  { name: 'departmentId', label: 'Department', type: 'select', options: departmentOptionsFor() }
 ])
 
 interface UserEditPayload {

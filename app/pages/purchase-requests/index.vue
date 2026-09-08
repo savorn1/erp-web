@@ -125,7 +125,7 @@
               <USelect v-model="form.companyId" :items="activeCompanyOptions" :disabled="!formEditable || editingId !== null" class="w-full" />
             </UFormField>
             <UFormField label="Department" required>
-              <USelect v-model="form.departmentId" :items="departmentOptionsFor(form.companyId)" :disabled="!formEditable" class="w-full" />
+              <USelect v-model="form.departmentId" :items="departmentOptionsFor()" :disabled="!formEditable" class="w-full" />
             </UFormField>
             <UFormField label="Request date" required>
               <UInput v-model="form.requestDate" type="date" :disabled="!formEditable" class="w-full" />
@@ -138,9 +138,19 @@
             </UFormField>
           </div>
 
-          <div class="mb-2 flex items-center justify-between">
-            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Requested products</p>
-            <UButton v-if="formEditable" size="xs" variant="soft" icon="i-lucide-plus" @click="addLine">Add line</UButton>
+          <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Requested products</p>
+
+          <div v-if="formEditable" class="flex flex-wrap items-end gap-2 mb-3">
+            <UFormField label="Product" class="flex-1 min-w-[240px]">
+              <USelectMenu
+                v-model="addLineProductId"
+                :items="productOptionsFor(form.companyId)"
+                value-key="value"
+                placeholder="Search products…"
+                class="w-full"
+              />
+            </UFormField>
+            <UButton icon="i-lucide-plus" :disabled="!addLineProductId" @click="addLine">Add line</UButton>
           </div>
 
           <div class="space-y-2 mb-4">
@@ -151,7 +161,7 @@
               No line items yet
             </div>
             <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center">
-              <USelect v-model="line.productId" :items="productOptionsFor(form.companyId)" placeholder="Product" :disabled="!formEditable" class="col-span-5" />
+              <div class="col-span-5 text-sm text-gray-900 dark:text-white truncate">{{ productLabel(line.productId) }}</div>
               <UInput v-model.number="line.quantity" type="number" min="0.0001" step="0.0001" placeholder="Qty" :disabled="!formEditable" class="col-span-2" />
               <UInput v-model="line.notes" placeholder="Notes (optional)" :disabled="!formEditable" class="col-span-4" />
               <UButton v-if="formEditable" size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-1" @click="form.lines.splice(i, 1)" />
@@ -216,7 +226,7 @@ const loading = ref(false)
 const error = ref('')
 
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
-const departments = ref<{ id: number; name: string; companyId: number; active: boolean }[]>([])
+const departments = ref<{ id: number; name: string; active: boolean }[]>([])
 const products = ref<{ id: number; name: string; sku: string; companyId: number; status: string }[]>([])
 const loadingLookups = ref(false)
 
@@ -246,13 +256,17 @@ const statusFilterOptions = [
   { label: 'Rejected', value: 'REJECTED' }
 ]
 
-function departmentOptionsFor(companyId: number | undefined) {
-  return departments.value.filter((d) => d.active && (companyId === undefined || d.companyId === companyId)).map((d) => ({ label: d.name, value: d.id }))
+function departmentOptionsFor() {
+  return departments.value.filter((d) => d.active).map((d) => ({ label: d.name, value: d.id }))
 }
 function productOptionsFor(companyId: number | undefined) {
   return products.value
     .filter((p) => p.status === 'ACTIVE' && (companyId === undefined || p.companyId === companyId))
     .map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
+}
+function productLabel(productId: number | undefined) {
+  const product = products.value.find((p) => p.id === productId)
+  return product ? `${product.name} (${product.sku})` : '—'
 }
 
 const filter = reactive<{
@@ -326,8 +340,11 @@ const form = reactive<{
 const formEditable = computed(() => editingStatus.value === null || editingStatus.value === 'DRAFT')
 const formTitle = computed(() => (editingId.value === null ? 'New purchase request' : formEditable.value ? 'Edit purchase request' : 'View purchase request'))
 
+const addLineProductId = ref<number | undefined>(undefined)
 function addLine() {
-  form.lines.push({ productId: undefined, quantity: undefined, notes: '' })
+  if (!addLineProductId.value) return
+  form.lines.push({ productId: addLineProductId.value, quantity: undefined, notes: '' })
+  addLineProductId.value = undefined
 }
 
 function resetForm() {
@@ -345,7 +362,6 @@ function openCreate() {
   editingStatus.value = null
   formError.value = ''
   resetForm()
-  addLine()
   showForm.value = true
 }
 

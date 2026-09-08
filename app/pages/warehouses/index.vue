@@ -161,6 +161,7 @@ async function loadLookups() {
 const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
 const companyFilterOptions = computed(() => [{ label: 'All companies', value: undefined }, ...companies.value.map((c) => ({ label: c.name, value: c.id }))])
 const managerOptions = computed(() => users.value.map((u) => ({ label: u.username, value: u.id })))
+const timezoneOptions = Intl.supportedValuesOf('timeZone').map((tz) => ({ label: tz, value: tz }))
 
 const filter = reactive<{ companyId: number | undefined; active: boolean | undefined }>({ companyId: undefined, active: undefined })
 const statusFilterOptions = [
@@ -201,26 +202,27 @@ async function load() {
   }
 }
 
-const warehouseFields: FieldDef[] = [
+const warehouseFields = computed<FieldDef[]>(() => [
   { name: 'companyId', label: 'Company', type: 'select', required: true, options: activeCompanyOptions.value },
   { name: 'name', required: true },
   {
     name: 'managerId',
     label: 'Warehouse manager',
-    type: 'select',
+    type: 'combobox',
     options: managerOptions.value,
+    placeholder: 'Search users…',
     hint: "Optional — assign a user as this warehouse's manager."
   },
   { name: 'phone' },
   { name: 'email', type: 'email' },
-  { name: 'timezone', hint: 'IANA timezone, e.g. Asia/Phnom_Penh.' },
+  { name: 'timezone', type: 'combobox', options: timezoneOptions, placeholder: 'Search timezones…', hint: 'IANA timezone, e.g. Asia/Phnom_Penh.' },
   { name: 'addressLine1', label: 'Address line 1', wrapper: 'full' },
   { name: 'addressLine2', label: 'Address line 2', wrapper: 'full' },
   { name: 'city' },
   { name: 'state', label: 'State / province' },
   { name: 'postalCode', label: 'Postal code' },
   { name: 'country' }
-]
+])
 
 const {
   showCreate,

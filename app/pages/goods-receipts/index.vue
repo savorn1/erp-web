@@ -106,7 +106,7 @@
               <div v-for="line in createLines" :key="line.purchaseOrderLineId" class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 space-y-2">
                 <div class="flex items-center justify-between gap-2">
                   <span class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ line.productName }} ({{ line.productSku }})</span>
-                  <span class="text-xs text-gray-400 shrink-0">Remaining: {{ line.remaining }}</span>
+                  <span class="text-xs text-gray-400 shrink-0">Remaining: {{ line.remaining }} {{ line.unitOfMeasureAbbreviation ?? '' }}</span>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                   <UInput v-model.number="line.quantityReceived" type="number" min="0" :max="line.remaining" step="0.0001" placeholder="Quantity to receive" />
@@ -170,7 +170,10 @@
               <div class="flex items-center justify-between gap-2">
                 <span>{{ line.productName }} ({{ line.productSku }})</span>
                 <span class="text-gray-500 dark:text-gray-400 shrink-0"
-                  >{{ line.quantityReceived }}<span v-if="line.binName"> — {{ line.binName }}</span></span
+                  >{{ line.quantityReceived }} {{ line.unitOfMeasureAbbreviation ?? '' }}<span
+                    v-if="line.conversionFactor !== 1"
+                  > (= {{ line.baseQuantityReceived }} base)</span
+                  ><span v-if="line.binName"> — {{ line.binName }}</span></span
                 >
               </div>
               <p v-if="line.batchNumber" class="text-xs text-gray-400 mt-0.5">
@@ -328,6 +331,7 @@ interface ReceiveLine {
   productId: number
   productName: string
   productSku: string
+  unitOfMeasureAbbreviation: string | null
   trackingType: string
   remaining: number
   quantityReceived: number
@@ -382,6 +386,7 @@ async function onPoSelected(poId: number | undefined) {
         productId: l.productId,
         productName: l.productName ?? '',
         productSku: l.productSku ?? '',
+        unitOfMeasureAbbreviation: l.unitOfMeasureAbbreviation,
         trackingType: products.value.find((p) => p.id === l.productId)?.trackingType ?? 'NONE',
         remaining: l.quantityOrdered - l.quantityReceived,
         quantityReceived: l.quantityOrdered - l.quantityReceived,

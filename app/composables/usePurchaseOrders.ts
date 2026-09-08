@@ -14,6 +14,9 @@ export interface PurchaseOrderLine {
   productId: number
   productName: string | null
   productSku: string | null
+  unitOfMeasureId: number | null
+  unitOfMeasureAbbreviation: string | null
+  conversionFactor: number
   quantityOrdered: number
   unitCost: number
   discountPercent: number
@@ -21,6 +24,8 @@ export interface PurchaseOrderLine {
   taxRate: number
   taxAmount: number
   quantityReceived: number
+  baseQuantityOrdered: number
+  baseQuantityReceived: number
   lineTotal: number
 }
 
@@ -59,6 +64,8 @@ export interface PurchaseOrderFilter {
 
 export interface PurchaseOrderLinePayload {
   productId: number
+  // Optional — omit to order in the product's own base unit.
+  unitOfMeasureId?: number
   quantityOrdered: number
   unitCost: number
   discountPercent?: number

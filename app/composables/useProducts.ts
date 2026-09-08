@@ -21,6 +21,13 @@ export interface Product {
   unitOfMeasureId: number
   unitOfMeasureName: string | null
   unitOfMeasureAbbreviation: string | null
+  // The unit this product's defaultPurchase/defaultSales ProductUom row
+  // points to — falls back to unitOfMeasureId/Abbreviation when no
+  // ProductUom rows have been configured for it yet.
+  purchaseUnitOfMeasureId: number | null
+  purchaseUnitOfMeasureAbbreviation: string | null
+  salesUnitOfMeasureId: number | null
+  salesUnitOfMeasureAbbreviation: string | null
   supplierId: number | null
   supplierName: string | null
   name: string

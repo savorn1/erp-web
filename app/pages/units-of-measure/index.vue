@@ -161,6 +161,7 @@ const columns: ColumnDef<UnitOfMeasure>[] = [
     label: 'Base unit',
     value: (row) => (row.categoryId ? (row.baseUnit ? 'Yes' : 'No') : '—')
   },
+  { key: 'decimalAllowed', label: 'Decimals', type: 'boolean', trueLabel: 'Allowed', trueColor: 'neutral', falseLabel: 'Whole only', falseColor: 'neutral' },
   { key: 'active', type: 'boolean', trueLabel: 'Active', trueColor: 'success', falseLabel: 'Inactive', falseColor: 'neutral' },
   { key: 'actions', label: '' }
 ]
@@ -198,6 +199,16 @@ const formFields = computed<FieldDef[]>(() => [
     showIf: (v) => !!v.categoryId,
     hint: 'Setting this unsets whichever unit was previously the base for this category. Set conversion factors on the UOM conversions page.'
   },
+  {
+    name: 'decimalAllowed',
+    label: 'Allow decimal quantities',
+    type: 'switch',
+    onLabel: 'Yes',
+    offLabel: 'No',
+    default: true,
+    hint: 'Turn off for whole-number-only units like Piece or Box.'
+  },
+  { name: 'description', type: 'textarea', wrapper: 'full' },
   { name: 'active', type: 'switch', onLabel: 'Active', offLabel: 'Inactive', default: true }
 ])
 
@@ -231,6 +242,8 @@ const {
     toForm: (row) => ({
       name: row.name,
       abbreviation: row.abbreviation,
+      description: row.description ?? '',
+      decimalAllowed: row.decimalAllowed,
       categoryId: row.categoryId ?? undefined,
       baseUnit: row.baseUnit,
       active: row.active
@@ -238,6 +251,8 @@ const {
     toPayload: (values) => ({
       name: values.name,
       abbreviation: values.abbreviation,
+      description: values.description || undefined,
+      decimalAllowed: values.decimalAllowed ?? true,
       categoryId: values.categoryId || undefined,
       baseUnit: values.categoryId ? (values.baseUnit ?? false) : false,
       active: values.active ?? true

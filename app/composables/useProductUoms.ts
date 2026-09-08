@@ -22,8 +22,13 @@ export interface ProductUom {
   defaultPurchase: boolean
   defaultSales: boolean
   barcode: string | null
-  // (variant's or product's) sellingPrice * conversionFactor when price is unset.
+  // Resolution order: an active, currently-effective ProductUomPrice for the
+  // requested priceGroupId (see list's own param), else this row's own flat
+  // price override, else (variant's or product's) sellingPrice * conversionFactor.
   effectivePrice: number
+  // Non-null only when effectivePrice came from a ProductUomPrice match.
+  priceGroupId: number | null
+  priceGroupName: string | null
   price: number | null
   active: boolean
 }
@@ -69,8 +74,8 @@ function uomsPath(productId: number, variantId?: number) {
 export function useProductUoms() {
   const api = useApi()
 
-  async function list(productId: number, variantId?: number) {
-    const res = await api<ApiEnvelope<ProductUom[]>>(uomsPath(productId, variantId))
+  async function list(productId: number, variantId?: number, priceGroupId?: number) {
+    const res = await api<ApiEnvelope<ProductUom[]>>(uomsPath(productId, variantId), { query: { priceGroupId } })
     return res.data
   }
 
