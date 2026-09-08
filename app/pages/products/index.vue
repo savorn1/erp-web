@@ -156,7 +156,9 @@
             <div v-for="row in uomRows" :key="row.id" class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 space-y-2">
               <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2 min-w-0">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ row.unitOfMeasureName }} ({{ row.unitOfMeasureAbbreviation }})</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white truncate"
+                    >{{ row.unitOfMeasureName }} ({{ row.unitOfMeasureAbbreviation }})</span
+                  >
                   <UBadge v-if="row.baseUnit" color="info" variant="subtle" size="xs">Base unit</UBadge>
                 </div>
                 <div class="flex items-center gap-1 shrink-0">
@@ -180,9 +182,7 @@
 
               <p class="text-xs text-gray-500 dark:text-gray-400">
                 <template v-if="row.baseUnit">Every other unit's conversion factor is expressed relative to this one.</template>
-                <template v-else>
-                  1 {{ row.unitOfMeasureAbbreviation }} = {{ row.conversionFactor }} {{ uomProduct?.unitOfMeasureAbbreviation }}
-                </template>
+                <template v-else> 1 {{ row.unitOfMeasureAbbreviation }} = {{ row.conversionFactor }} {{ uomProduct?.unitOfMeasureAbbreviation }} </template>
               </p>
 
               <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
@@ -553,7 +553,14 @@ const productFields = computed<FieldDef[]>(() => [
     ],
     hint: 'Determines what a goods receipt must capture when receiving this product.'
   },
-  { name: 'reorderPoint', label: 'Reorder point', type: 'number', min: 0, default: 0, hint: 'Flag this product on the Low Stock report once available stock falls below this. Leave at 0 to never flag it.' },
+  {
+    name: 'reorderPoint',
+    label: 'Reorder point',
+    type: 'number',
+    min: 0,
+    default: 0,
+    hint: 'Flag this product on the Low Stock report once available stock falls below this. Leave at 0 to never flag it.'
+  },
   { name: 'description', type: 'textarea', wrapper: 'full' }
 ])
 

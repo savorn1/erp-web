@@ -170,9 +170,8 @@
               <div class="flex items-center justify-between gap-2">
                 <span>{{ line.productName }} ({{ line.productSku }})</span>
                 <span class="text-gray-500 dark:text-gray-400 shrink-0"
-                  >{{ line.quantityReceived }} {{ line.unitOfMeasureAbbreviation ?? '' }}<span
-                    v-if="line.conversionFactor !== 1"
-                  > (= {{ line.baseQuantityReceived }} base)</span
+                  >{{ line.quantityReceived }} {{ line.unitOfMeasureAbbreviation ?? ''
+                  }}<span v-if="line.conversionFactor !== 1"> (= {{ line.baseQuantityReceived }} base)</span
                   ><span v-if="line.binName"> — {{ line.binName }}</span></span
                 >
               </div>

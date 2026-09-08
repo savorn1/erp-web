@@ -28,8 +28,7 @@
       </div>
       <p v-if="glReportNote" class="text-xs text-gray-400 mt-3">
         Reflects only what's been manually posted in
-        <NuxtLink to="/journal-entries" class="underline">Journal Entries</NuxtLink> — nothing else in the system posts to the general ledger
-        automatically yet.
+        <NuxtLink to="/journal-entries" class="underline">Journal Entries</NuxtLink> — nothing else in the system posts to the general ledger automatically yet.
       </p>
     </UCard>
 
@@ -89,7 +88,11 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="line in generalLedger.lines" :key="line.journalEntryId + '-' + line.debit + '-' + line.credit" class="border-b border-gray-100 dark:border-gray-800/60">
+            <tr
+              v-for="line in generalLedger.lines"
+              :key="line.journalEntryId + '-' + line.debit + '-' + line.credit"
+              class="border-b border-gray-100 dark:border-gray-800/60"
+            >
               <td class="py-1.5 pr-3 text-gray-600 dark:text-gray-300">{{ formatDate(line.entryDate) }}</td>
               <td class="py-1.5 pr-3 text-gray-600 dark:text-gray-300">{{ line.journalNumber }}</td>
               <td class="py-1.5 pr-3 text-gray-900 dark:text-white">{{ line.description ?? '—' }}</td>
@@ -185,7 +188,7 @@
           <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">Revenue</h2></template>
           <EmptyState v-if="profitAndLoss.revenue.length === 0" icon="i-lucide-check-circle" title="No revenue posted in this period" />
           <ul v-else class="space-y-1 text-sm">
-            <li v-for="line in profitAndLoss.revenue" :key="line.accountId" class="flex justify-between">
+            <li v-for="line in profitAndLoss.revenue" :key="line.accountId ?? line.accountName" class="flex justify-between">
               <span class="text-gray-600 dark:text-gray-300">{{ line.accountName }}</span>
               <span class="text-gray-900 dark:text-white">{{ formatCurrency(line.amount) }}</span>
             </li>
@@ -195,7 +198,7 @@
           <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">Expenses</h2></template>
           <EmptyState v-if="profitAndLoss.expenses.length === 0" icon="i-lucide-check-circle" title="No expenses posted in this period" />
           <ul v-else class="space-y-1 text-sm">
-            <li v-for="line in profitAndLoss.expenses" :key="line.accountId" class="flex justify-between">
+            <li v-for="line in profitAndLoss.expenses" :key="line.accountId ?? line.accountName" class="flex justify-between">
               <span class="text-gray-600 dark:text-gray-300">{{ line.accountName }}</span>
               <span class="text-gray-900 dark:text-white">{{ formatCurrency(line.amount) }}</span>
             </li>
@@ -244,13 +247,13 @@
     <!-- AR aging -->
     <UCard v-else-if="activeTab === 'ar-aging' && arAging">
       <EmptyState v-if="arAging.rows.length === 0" icon="i-lucide-check-circle" title="Nothing outstanding" />
-      <AgingTable v-else :report="arAging" :entity-label="'Customer'" />
+      <AgingTable v-else :report="arAging!" :entity-label="'Customer'" />
     </UCard>
 
     <!-- AP aging -->
     <UCard v-else-if="activeTab === 'ap-aging' && apAging">
       <EmptyState v-if="apAging.rows.length === 0" icon="i-lucide-check-circle" title="Nothing outstanding" />
-      <AgingTable v-else :report="apAgingAsGeneric" :entity-label="'Supplier'" />
+      <AgingTable v-else :report="apAgingAsGeneric!" :entity-label="'Supplier'" />
     </UCard>
   </div>
 </template>
@@ -263,8 +266,13 @@ import type { PurchaseInvoiceAgingReport } from '~/composables/usePurchaseInvoic
 
 definePageMeta({ middleware: 'admin' })
 
-const { trialBalance: fetchTrialBalance, generalLedger: fetchGeneralLedger, balanceSheet: fetchBalanceSheet, profitAndLoss: fetchProfitAndLoss, cashFlow: fetchCashFlow } =
-  useFinancialReports()
+const {
+  trialBalance: fetchTrialBalance,
+  generalLedger: fetchGeneralLedger,
+  balanceSheet: fetchBalanceSheet,
+  profitAndLoss: fetchProfitAndLoss,
+  cashFlow: fetchCashFlow
+} = useFinancialReports()
 const { agingReport: fetchArAging } = useInvoices()
 const { agingReport: fetchApAging } = usePurchaseInvoices()
 const { list: listCompanies } = useCompanies()
@@ -282,7 +290,9 @@ const tabs: TabsItem[] = [
   { label: 'AP aging', value: 'ap-aging' }
 ]
 
-const usesAsOfDate = computed(() => activeTab.value === 'trial-balance' || activeTab.value === 'balance-sheet' || activeTab.value === 'ar-aging' || activeTab.value === 'ap-aging')
+const usesAsOfDate = computed(
+  () => activeTab.value === 'trial-balance' || activeTab.value === 'balance-sheet' || activeTab.value === 'ar-aging' || activeTab.value === 'ap-aging'
+)
 const usesDateRange = computed(() => activeTab.value === 'profit-and-loss' || activeTab.value === 'cash-flow' || activeTab.value === 'general-ledger')
 const glReportNote = computed(() => ['trial-balance', 'general-ledger', 'balance-sheet', 'profit-and-loss'].includes(activeTab.value))
 

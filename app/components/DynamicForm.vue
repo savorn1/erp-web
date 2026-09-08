@@ -1,7 +1,7 @@
 <template>
   <UForm novalidate :state="model" class="space-y-4" @submit="onSubmit">
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div v-for="field in visibleFields" :key="field.name" :class="(field.wrapper ?? 'half') === 'full' ? 'sm:col-span-2' : 'sm:col-span-1'">
+    <div class="grid grid-cols-1 sm:grid-cols-6 gap-4">
+      <div v-for="field in visibleFields" :key="field.name" :class="wrapperClass(field.wrapper)">
         <Field v-model="model[field.name]" :field="field" />
       </div>
     </div>
@@ -48,6 +48,14 @@ for (const field of props.fields) {
 }
 
 const visibleFields = computed(() => props.fields.filter((field) => !field.showIf || field.showIf(model.value)))
+
+// 6 columns is the LCM of 2 and 3, so 'half' (3/6) and 'full' (6/6) render at
+// the same width as before a 'third' (2/6) option existed.
+function wrapperClass(wrapper: FieldDef['wrapper']) {
+  if (wrapper === 'full') return 'sm:col-span-6'
+  if (wrapper === 'third') return 'sm:col-span-2'
+  return 'sm:col-span-3'
+}
 
 function onSubmit() {
   // Required fields rendered by non-native controls (select, date, radio)

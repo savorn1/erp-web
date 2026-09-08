@@ -24,7 +24,8 @@
         <UButton :loading="calculating" @click="onCalculate">Convert</UButton>
       </div>
       <p v-if="calcResult !== null" class="text-sm text-gray-900 dark:text-white mt-3">
-        {{ calc.quantity }} {{ unitAbbr(calc.fromUnitOfMeasureId) }} = <span class="font-semibold">{{ calcResult }} {{ unitAbbr(calc.toUnitOfMeasureId) }}</span>
+        {{ calc.quantity }} {{ unitAbbr(calc.fromUnitOfMeasureId) }} =
+        <span class="font-semibold">{{ calcResult }} {{ unitAbbr(calc.toUnitOfMeasureId) }}</span>
       </p>
       <UAlert v-if="calcError" color="error" variant="subtle" class="mt-3" :title="calcError" />
     </UCard>
@@ -220,7 +221,9 @@ async function load() {
 }
 
 const activeFormTarget = ref<'create' | 'edit'>('create')
-const currentFormFromUnitId = computed(() => (activeFormTarget.value === 'create' ? createForm.value?.fromUnitOfMeasureId : editForm.value?.fromUnitOfMeasureId))
+const currentFormFromUnitId = computed(() =>
+  activeFormTarget.value === 'create' ? createForm.value?.fromUnitOfMeasureId : editForm.value?.fromUnitOfMeasureId
+)
 const currentFromCategoryId = computed(() => units.value.find((u) => u.id === currentFormFromUnitId.value)?.categoryId ?? undefined)
 
 const formFields = computed<FieldDef[]>(() => [

@@ -98,12 +98,7 @@
             <UInput v-model.number="form.openingBalance" type="number" step="0.01" :disabled="editingId !== null" class="w-full" />
           </UFormField>
           <UFormField label="Linked GL account" class="sm:col-span-2">
-            <USelect
-              v-model="form.accountId"
-              :items="glAccountOptionsFor(form.companyId)"
-              placeholder="No linked account"
-              class="w-full"
-            />
+            <USelect v-model="form.accountId" :items="glAccountOptionsFor(form.companyId)" placeholder="No linked account" class="w-full" />
           </UFormField>
           <UFormField label="Active">
             <USwitch v-model="form.active" />
@@ -257,8 +252,12 @@
           </label>
         </div>
         <div v-if="reconcileResult" class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 mb-4 text-sm">
-          <div class="flex justify-between"><span class="text-gray-400">Reconciled balance</span><span>{{ formatCurrency(reconcileResult.reconciledBalance) }}</span></div>
-          <div class="flex justify-between"><span class="text-gray-400">Statement balance</span><span>{{ formatCurrency(reconcileResult.statementBalance) }}</span></div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">Reconciled balance</span><span>{{ formatCurrency(reconcileResult.reconciledBalance) }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">Statement balance</span><span>{{ formatCurrency(reconcileResult.statementBalance) }}</span>
+          </div>
           <div class="flex justify-between font-medium" :class="reconcileResult.difference === 0 ? 'text-success' : 'text-error'">
             <span>Difference</span><span>{{ formatCurrency(reconcileResult.difference) }}</span>
           </div>
@@ -275,14 +274,7 @@
 
 <script setup lang="ts">
 import type { ColumnDef } from '#shared/types'
-import type {
-  BankAccount,
-  BankAccountPayload,
-  BankAccountType,
-  BankReconciliation,
-  BankTransaction,
-  BankTransactionType
-} from '~/composables/useBankAccounts'
+import type { BankAccount, BankAccountPayload, BankAccountType, BankReconciliation, BankTransaction, BankTransactionType } from '~/composables/useBankAccounts'
 
 definePageMeta({ middleware: 'admin' })
 
@@ -327,7 +319,14 @@ function glAccountOptionsFor(companyId: number | undefined) {
 const filter = reactive<{ companyId: number | undefined; type: BankAccountType | undefined }>({ companyId: undefined, type: undefined })
 
 const sort = ref<{ column: string; direction: 'asc' | 'desc' } | undefined>({ column: 'id', direction: 'desc' })
-const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientTable(rows, { pageSize: 10, searchFields: ['name', 'bankName', 'accountNumber'] })
+const {
+  page,
+  pageSize,
+  total,
+  rows: pagedRows,
+  truncated,
+  search
+} = useClientTable(rows, { pageSize: 10, searchFields: ['name', 'bankName', 'accountNumber'] })
 
 const columns: ColumnDef<BankAccount>[] = [
   { key: 'name', label: 'Name', sortable: true },
@@ -563,7 +562,13 @@ async function onSaveTxn() {
 
 // ── Transfer ─────────────────────────────────────────────────────────────
 const showTransferForm = ref(false)
-const transferForm = reactive<{ toBankAccountId: number | undefined; transactionDate: string; amount: number | undefined; reference: string; description: string }>({
+const transferForm = reactive<{
+  toBankAccountId: number | undefined
+  transactionDate: string
+  amount: number | undefined
+  reference: string
+  description: string
+}>({
   toBankAccountId: undefined,
   transactionDate: new Date().toISOString().slice(0, 10),
   amount: undefined,
@@ -574,10 +579,12 @@ const savingTransfer = ref(false)
 const transferFormError = ref('')
 
 const transferOptions = computed(() =>
-  rows.value.filter((r) => ledgerAccount.value && r.id !== ledgerAccount.value.id && r.companyId === ledgerAccount.value.companyId).map((r) => ({
-    label: r.name,
-    value: r.id
-  }))
+  rows.value
+    .filter((r) => ledgerAccount.value && r.id !== ledgerAccount.value.id && r.companyId === ledgerAccount.value.companyId)
+    .map((r) => ({
+      label: r.name,
+      value: r.id
+    }))
 )
 
 function openTransferForm() {
@@ -627,7 +634,11 @@ const reconcileError = ref('')
 const reconcileResult = ref<BankReconciliation | null>(null)
 
 const unreconciledTransactions = computed(() => ledgerTransactions.value.filter((t) => !t.reconciled))
-const selectedReconcileIds = computed(() => Object.entries(reconcileSelection).filter(([, v]) => v).map(([k]) => Number(k)))
+const selectedReconcileIds = computed(() =>
+  Object.entries(reconcileSelection)
+    .filter(([, v]) => v)
+    .map(([k]) => Number(k))
+)
 
 function openReconcile() {
   reconcileForm.statementDate = new Date().toISOString().slice(0, 10)

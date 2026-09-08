@@ -149,12 +149,7 @@ watch(sort, load)
 watch(() => [filter.warehouseId, filter.productId, filter.type, filter.dateFrom, filter.dateTo], load)
 
 const hasActiveFilter = computed(
-  () =>
-    filter.warehouseId !== undefined ||
-    filter.productId !== undefined ||
-    filter.type !== undefined ||
-    filter.dateFrom !== '' ||
-    filter.dateTo !== ''
+  () => filter.warehouseId !== undefined || filter.productId !== undefined || filter.type !== undefined || filter.dateFrom !== '' || filter.dateTo !== ''
 )
 function clearFilters() {
   filter.warehouseId = undefined

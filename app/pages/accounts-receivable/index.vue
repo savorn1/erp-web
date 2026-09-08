@@ -150,10 +150,7 @@ import type { CollectionActivity, CollectionContactMethod } from '~/composables/
 definePageMeta({ middleware: 'admin' })
 
 const { list: listInvoices, agingReport } = useInvoices()
-const {
-  list: listCollectionActivities,
-  create: createCollectionActivity
-} = useCollectionActivities()
+const { list: listCollectionActivities, create: createCollectionActivity } = useCollectionActivities()
 const { list: listCompanies } = useCompanies()
 const toast = useToast()
 

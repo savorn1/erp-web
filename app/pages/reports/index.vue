@@ -469,8 +469,12 @@ import type { LowStock, StockValuation } from '~/composables/useInventoryReports
 
 definePageMeta({ middleware: 'admin' })
 
-const { summary: fetchSalesSummary, byProduct: fetchSalesByProduct, byCustomer: fetchSalesByCustomer, bySalesperson: fetchSalesBySalesperson } =
-  useSalesReports()
+const {
+  summary: fetchSalesSummary,
+  byProduct: fetchSalesByProduct,
+  byCustomer: fetchSalesByCustomer,
+  bySalesperson: fetchSalesBySalesperson
+} = useSalesReports()
 const { summary: fetchPurchaseSummary, bySupplier: fetchPurchaseBySupplier, byProduct: fetchPurchaseByProduct } = usePurchaseReports()
 const { get: fetchInventoryOverview } = useInventoryOverview()
 const { list: fetchStockMovements } = useStockMovements()
@@ -629,8 +633,5 @@ onMounted(async () => {
   warehouses.value = w.data
   await load()
 })
-watch(
-  [section, salesTab, purchaseTab, inventoryTab, companyId, warehouseId, dateFrom, dateTo, salesStatus, purchaseStatus, movementType],
-  load
-)
+watch([section, salesTab, purchaseTab, inventoryTab, companyId, warehouseId, dateFrom, dateTo, salesStatus, purchaseStatus, movementType], load)
 </script>

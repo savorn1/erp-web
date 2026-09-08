@@ -194,8 +194,8 @@ const loading = ref(false)
 const error = ref('')
 
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
-const types = ref<{ id: number; name: string; companyId: number; active: boolean }[]>([])
-const groups = ref<{ id: number; name: string; companyId: number; active: boolean }[]>([])
+const types = ref<{ id: number; name: string; active: boolean }[]>([])
+const groups = ref<{ id: number; name: string; active: boolean }[]>([])
 const loadingLookups = ref(false)
 
 async function loadLookups() {
@@ -229,8 +229,8 @@ const paymentTermsOptions = [
   { label: 'Cash on delivery', value: 'COD' }
 ]
 
-function optionsFor(list: { id: number; name: string; companyId: number; active: boolean }[], companyId: number | undefined) {
-  return list.filter((item) => item.active && (companyId === undefined || item.companyId === companyId)).map((item) => ({ label: item.name, value: item.id }))
+function optionsFor(list: { id: number; name: string; active: boolean }[]) {
+  return list.filter((item) => item.active).map((item) => ({ label: item.name, value: item.id }))
 }
 
 const filter = reactive<{
@@ -277,18 +277,17 @@ async function load() {
 }
 
 const activeFormTarget = ref<'create' | 'edit'>('create')
-const currentFormCompanyId = computed(() => (activeFormTarget.value === 'create' ? createForm.value?.companyId : editForm.value?.companyId))
 
 const customerFields = computed<FieldDef[]>(() => [
   { name: 'companyId', label: 'Company', type: 'select', required: true, options: activeCompanyOptions.value },
-  { name: 'name', required: true, wrapper: 'full' },
-  { name: 'customerTypeId', label: 'Customer type', type: 'select', options: optionsFor(types.value, currentFormCompanyId.value) },
-  { name: 'customerGroupId', label: 'Customer group', type: 'select', options: optionsFor(groups.value, currentFormCompanyId.value) },
+  { name: 'name', type: 'text', required: true },
+  { name: 'customerTypeId', label: 'Customer type', type: 'select', options: optionsFor(types.value) },
+  { name: 'customerGroupId', label: 'Customer group', type: 'select', options: optionsFor(groups.value) },
   { name: 'contactName', label: 'Contact name' },
   { name: 'phone' },
-  { name: 'email', type: 'email' },
-  { name: 'creditLimit', label: 'Credit limit', type: 'currency', required: true },
-  { name: 'paymentTerms', label: 'Payment terms', type: 'select', required: true, options: paymentTermsOptions },
+  { name: 'email', type: 'email', wrapper: 'third' },
+  { name: 'creditLimit', label: 'Credit limit', type: 'currency', required: true, wrapper: 'third' },
+  { name: 'paymentTerms', label: 'Payment terms', type: 'select', required: true, options: paymentTermsOptions, wrapper: 'third' },
 
   { name: 'billingAddressLine1', label: 'Billing address line 1', wrapper: 'full' },
   { name: 'billingAddressLine2', label: 'Billing address line 2', wrapper: 'full' },

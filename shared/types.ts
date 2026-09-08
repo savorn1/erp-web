@@ -37,7 +37,21 @@ export interface PageEnvelope<T> {
 // Lean subset of loan-frontend's FieldType — add more `fields/Field*.vue`
 // components and wire them into Field.vue's CONTROLS map to extend this.
 export type FieldType =
-  'text' | 'textarea' | 'number' | 'currency' | 'email' | 'password' | 'url' | 'select' | 'combobox' | 'radio' | 'checkbox' | 'switch' | 'date' | 'datetime' | 'hidden'
+  | 'text'
+  | 'textarea'
+  | 'number'
+  | 'currency'
+  | 'email'
+  | 'password'
+  | 'url'
+  | 'select'
+  | 'combobox'
+  | 'radio'
+  | 'checkbox'
+  | 'switch'
+  | 'date'
+  | 'datetime'
+  | 'hidden'
 
 export interface FieldOption {
   label: string
@@ -79,8 +93,8 @@ export interface FieldDef {
   offLabel?: string
   /** Initial value applied by DynamicForm when the model has none. */
   default?: unknown
-  /** Layout in DynamicForm's 2-column grid. Defaults to 'half'. */
-  wrapper?: 'full' | 'half'
+  /** Layout in DynamicForm's row grid — full row, half a row, or a third of a row. Defaults to 'half'. */
+  wrapper?: 'full' | 'half' | 'third'
   /** Hide the field (and skip its `required` check) when this returns false for the current form values. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   showIf?: (values: Record<string, any>) => boolean

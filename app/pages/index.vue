@@ -32,73 +32,73 @@
         <DashboardSectionHeader icon="i-lucide-bar-chart-3" label="Financial overview" />
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <StatTile
-          label="Revenue"
-          :value="formatCurrency(summary?.revenue ?? 0)"
-          icon="i-lucide-trending-up"
-          color="success"
-          :loading="loading"
-          to="/invoices"
-        />
-        <StatTile
-          label="Expense"
-          :value="formatCurrency(summary?.expense ?? 0)"
-          icon="i-lucide-trending-down"
-          color="error"
-          :loading="loading"
-          to="/purchase-invoices"
-        />
-        <StatTile
-          label="Profit"
-          :value="formatCurrency(summary?.profit ?? 0)"
-          icon="i-lucide-circle-dollar-sign"
-          :color="(summary?.profit ?? 0) >= 0 ? 'success' : 'error'"
-          :loading="loading"
-          to="/financial-reports"
-        />
-        <StatTile label="Cash" :value="formatCurrency(summary?.cash ?? 0)" icon="i-lucide-landmark" color="info" :loading="loading" to="/bank-accounts" />
-        <StatTile
-          label="Receivable"
-          :value="formatCurrency(summary?.receivable ?? 0)"
-          icon="i-lucide-hand-coins"
-          color="warning"
-          :loading="loading"
-          to="/accounts-receivable"
-        />
-        <StatTile
-          label="Payable"
-          :value="formatCurrency(summary?.payable ?? 0)"
-          icon="i-lucide-credit-card"
-          color="warning"
-          :loading="loading"
-          to="/accounts-payable"
-        />
-        <StatTile
-          label="Inventory value"
-          :value="formatCurrency(summary?.inventoryValue ?? 0)"
-          icon="i-lucide-boxes"
-          color="neutral"
-          :loading="loading"
-          to="/inventory-overview"
-        />
-        <StatTile
-          label="Sales"
-          :value="formatCurrency(summary?.sales ?? 0)"
-          icon="i-lucide-file-text"
-          color="primary"
-          sublabel="Booked orders"
-          :loading="loading"
-          to="/sales-orders"
-        />
-        <StatTile
-          label="Purchase"
-          :value="formatCurrency(summary?.purchase ?? 0)"
-          icon="i-lucide-shopping-cart"
-          color="primary"
-          sublabel="Booked orders"
-          :loading="loading"
-          to="/purchase-orders"
-        />
-      </div>
+            label="Revenue"
+            :value="formatCurrency(summary?.revenue ?? 0)"
+            icon="i-lucide-trending-up"
+            color="success"
+            :loading="loading"
+            to="/invoices"
+          />
+          <StatTile
+            label="Expense"
+            :value="formatCurrency(summary?.expense ?? 0)"
+            icon="i-lucide-trending-down"
+            color="error"
+            :loading="loading"
+            to="/purchase-invoices"
+          />
+          <StatTile
+            label="Profit"
+            :value="formatCurrency(summary?.profit ?? 0)"
+            icon="i-lucide-circle-dollar-sign"
+            :color="(summary?.profit ?? 0) >= 0 ? 'success' : 'error'"
+            :loading="loading"
+            to="/financial-reports"
+          />
+          <StatTile label="Cash" :value="formatCurrency(summary?.cash ?? 0)" icon="i-lucide-landmark" color="info" :loading="loading" to="/bank-accounts" />
+          <StatTile
+            label="Receivable"
+            :value="formatCurrency(summary?.receivable ?? 0)"
+            icon="i-lucide-hand-coins"
+            color="warning"
+            :loading="loading"
+            to="/accounts-receivable"
+          />
+          <StatTile
+            label="Payable"
+            :value="formatCurrency(summary?.payable ?? 0)"
+            icon="i-lucide-credit-card"
+            color="warning"
+            :loading="loading"
+            to="/accounts-payable"
+          />
+          <StatTile
+            label="Inventory value"
+            :value="formatCurrency(summary?.inventoryValue ?? 0)"
+            icon="i-lucide-boxes"
+            color="neutral"
+            :loading="loading"
+            to="/inventory-overview"
+          />
+          <StatTile
+            label="Sales"
+            :value="formatCurrency(summary?.sales ?? 0)"
+            icon="i-lucide-file-text"
+            color="primary"
+            sublabel="Booked orders"
+            :loading="loading"
+            to="/sales-orders"
+          />
+          <StatTile
+            label="Purchase"
+            :value="formatCurrency(summary?.purchase ?? 0)"
+            icon="i-lucide-shopping-cart"
+            color="primary"
+            sublabel="Booked orders"
+            :loading="loading"
+            to="/purchase-orders"
+          />
+        </div>
       </section>
     </template>
   </div>

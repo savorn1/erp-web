@@ -66,11 +66,7 @@
             </template>
           </EmptyState>
           <div v-else class="space-y-1">
-            <div
-              v-for="row in pagedRows"
-              :key="row.id"
-              class="flex items-center justify-between gap-2 py-1.5 border-b border-gray-100 dark:border-gray-800/60"
-            >
+            <div v-for="row in pagedRows" :key="row.id" class="flex items-center justify-between gap-2 py-1.5 border-b border-gray-100 dark:border-gray-800/60">
               <div class="flex items-center gap-2 min-w-0">
                 <span class="text-sm font-mono text-gray-400 shrink-0">{{ row.accountCode }}</span>
                 <span class="text-sm text-gray-900 dark:text-white truncate">{{ row.name }}</span>
@@ -80,14 +76,7 @@
               <div class="flex items-center gap-2 shrink-0">
                 <StatusBadge :status="row.accountType" />
                 <UButton size="xs" color="primary" variant="soft" icon="i-lucide-pencil" @click="openEdit(row)">Edit</UButton>
-                <UButton
-                  size="xs"
-                  color="error"
-                  variant="ghost"
-                  icon="i-lucide-trash-2"
-                  :disabled="row.hasChildren"
-                  @click="confirmDelete = row"
-                />
+                <UButton size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" :disabled="row.hasChildren" @click="confirmDelete = row" />
               </div>
             </div>
           </div>
@@ -124,12 +113,7 @@
             <USelect v-model="form.accountType" :items="typeOptions" class="w-full" />
           </UFormField>
           <UFormField label="Parent account" :hint="form.accountType ? undefined : 'Pick a type first'">
-            <USelect
-              v-model="form.parentAccountId"
-              :items="parentOptionsFor(form.accountType, editingId)"
-              placeholder="No parent (top-level)"
-              class="w-full"
-            />
+            <USelect v-model="form.parentAccountId" :items="parentOptionsFor(form.accountType, editingId)" placeholder="No parent (top-level)" class="w-full" />
           </UFormField>
           <UFormField label="Description">
             <UTextarea v-model="form.description" class="w-full" />
@@ -217,7 +201,14 @@ const preFiltered = computed(() =>
     (a) => (filter.accountType === undefined || a.accountType === filter.accountType) && (filter.active === undefined || a.active === filter.active)
   )
 )
-const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientTable(preFiltered, {
+const {
+  page,
+  pageSize,
+  total,
+  rows: pagedRows,
+  truncated,
+  search
+} = useClientTable(preFiltered, {
   pageSize: 15,
   searchFields: ['accountCode', 'name'],
   cap: 500

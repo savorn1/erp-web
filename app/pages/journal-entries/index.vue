@@ -142,13 +142,7 @@
               No lines yet
             </div>
             <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center">
-              <USelect
-                v-model="line.accountId"
-                :items="accountOptionsFor(form.companyId)"
-                placeholder="Account"
-                :disabled="!formEditable"
-                class="col-span-5"
-              />
+              <USelect v-model="line.accountId" :items="accountOptionsFor(form.companyId)" placeholder="Account" :disabled="!formEditable" class="col-span-5" />
               <UInput v-model.number="line.debit" type="number" min="0" step="0.01" placeholder="Debit" :disabled="!formEditable" class="col-span-2" />
               <UInput v-model.number="line.credit" type="number" min="0" step="0.01" placeholder="Credit" :disabled="!formEditable" class="col-span-2" />
               <UInput v-model="line.description" placeholder="Memo (optional)" :disabled="!formEditable" class="col-span-2" />
@@ -164,9 +158,7 @@
             <span v-if="formTotalDebit === formTotalCredit && formTotalDebit > 0" class="text-sm text-success flex items-center gap-1">
               <UIcon name="i-lucide-check-circle" class="w-4 h-4" /> Balanced
             </span>
-            <span v-else class="text-sm text-error flex items-center gap-1">
-              <UIcon name="i-lucide-triangle-alert" class="w-4 h-4" /> Not balanced
-            </span>
+            <span v-else class="text-sm text-error flex items-center gap-1"> <UIcon name="i-lucide-triangle-alert" class="w-4 h-4" /> Not balanced </span>
           </div>
 
           <UAlert v-if="formError" color="error" variant="subtle" class="mb-3" :title="formError" />
@@ -339,7 +331,12 @@ async function openView(row: JournalEntry) {
     form.companyId = full.companyId
     form.entryDate = full.entryDate
     form.description = full.description ?? ''
-    form.lines = (full.lines ?? []).map((l) => ({ accountId: l.accountId, debit: l.debit || undefined, credit: l.credit || undefined, description: l.description ?? '' }))
+    form.lines = (full.lines ?? []).map((l) => ({
+      accountId: l.accountId,
+      debit: l.debit || undefined,
+      credit: l.credit || undefined,
+      description: l.description ?? ''
+    }))
   } catch (err) {
     formError.value = apiErrorMessage(err)
   } finally {

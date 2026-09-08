@@ -143,9 +143,19 @@
             </UFormField>
           </div>
 
-          <div class="mb-2 flex items-center justify-between">
-            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Line items</p>
-            <UButton v-if="formEditable" size="xs" variant="soft" icon="i-lucide-plus" @click="addLine">Add line</UButton>
+          <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Line items</p>
+
+          <div v-if="formEditable" class="flex flex-wrap items-end gap-2 mb-3">
+            <UFormField label="Product" class="flex-1 min-w-[240px]">
+              <USelectMenu
+                v-model="addLineProductId"
+                :items="productOptionsFor(form.companyId)"
+                value-key="value"
+                placeholder="Search products…"
+                class="w-full"
+              />
+            </UFormField>
+            <UButton icon="i-lucide-plus" :disabled="!addLineProductId" @click="addLine">Add line</UButton>
           </div>
 
           <div class="space-y-2 mb-4">
@@ -156,7 +166,7 @@
               No line items yet
             </div>
             <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center">
-              <USelect v-model="line.productId" :items="productOptionsFor(form.companyId)" placeholder="Product" :disabled="!formEditable" class="col-span-4" />
+              <div class="col-span-4 text-sm text-gray-900 dark:text-white truncate">{{ productLabel(line.productId) }}</div>
               <UInput
                 v-model.number="line.quantityOrdered"
                 type="number"
@@ -305,6 +315,10 @@ function productOptionsFor(companyId: number | undefined) {
     .filter((p) => p.status === 'ACTIVE' && (companyId === undefined || p.companyId === companyId))
     .map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
 }
+function productLabel(productId: number | undefined) {
+  const product = products.value.find((p) => p.id === productId)
+  return product ? `${product.name} (${product.sku})` : '—'
+}
 
 const filter = reactive<{
   companyId: number | undefined
@@ -399,8 +413,17 @@ const formDiscountTotal = computed(() => form.lines.reduce((sum, l) => sum + lin
 const formTaxTotal = computed(() => form.lines.reduce((sum, l) => sum + lineTax(l), 0))
 const formTotal = computed(() => form.lines.reduce((sum, l) => sum + lineTotal(l), 0))
 
+const addLineProductId = ref<number | undefined>(undefined)
 function addLine() {
-  form.lines.push({ productId: undefined, quantityOrdered: undefined, unitPrice: undefined, discountPercent: undefined, taxRate: undefined })
+  if (!addLineProductId.value) return
+  form.lines.push({
+    productId: addLineProductId.value,
+    quantityOrdered: undefined,
+    unitPrice: undefined,
+    discountPercent: undefined,
+    taxRate: undefined
+  })
+  addLineProductId.value = undefined
 }
 
 function resetForm() {
@@ -419,7 +442,6 @@ function openCreate() {
   editingStatus.value = null
   formError.value = ''
   resetForm()
-  addLine()
   showForm.value = true
 }
 

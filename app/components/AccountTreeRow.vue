@@ -14,14 +14,7 @@
         <StatusBadge :status="node.accountType" />
         <UButton size="xs" variant="soft" icon="i-lucide-plus" @click="$emit('add-child', node)">Add child</UButton>
         <UButton size="xs" color="primary" variant="soft" icon="i-lucide-pencil" @click="$emit('edit', node)">Edit</UButton>
-        <UButton
-          size="xs"
-          color="error"
-          variant="ghost"
-          icon="i-lucide-trash-2"
-          :disabled="node.children.length > 0"
-          @click="$emit('delete', node)"
-        />
+        <UButton size="xs" color="error" variant="ghost" icon="i-lucide-trash-2" :disabled="node.children.length > 0" @click="$emit('delete', node)" />
       </div>
     </div>
     <AccountTreeRow

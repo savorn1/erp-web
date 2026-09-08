@@ -186,7 +186,7 @@ const loading = ref(false)
 const error = ref('')
 
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
-const types = ref<{ id: number; name: string; companyId: number; active: boolean }[]>([])
+const types = ref<{ id: number; name: string; active: boolean }[]>([])
 const loadingLookups = ref(false)
 
 async function loadLookups() {
@@ -218,8 +218,8 @@ const paymentTermsOptions = [
   { label: 'Cash on delivery', value: 'COD' }
 ]
 
-function optionsFor(list: { id: number; name: string; companyId: number; active: boolean }[], companyId: number | undefined) {
-  return list.filter((item) => item.active && (companyId === undefined || item.companyId === companyId)).map((item) => ({ label: item.name, value: item.id }))
+function optionsFor(list: { id: number; name: string; active: boolean }[]) {
+  return list.filter((item) => item.active).map((item) => ({ label: item.name, value: item.id }))
 }
 
 const filter = reactive<{
@@ -263,12 +263,11 @@ async function load() {
 }
 
 const activeFormTarget = ref<'create' | 'edit'>('create')
-const currentFormCompanyId = computed(() => (activeFormTarget.value === 'create' ? createForm.value?.companyId : editForm.value?.companyId))
 
 const supplierFields = computed<FieldDef[]>(() => [
   { name: 'companyId', label: 'Company', type: 'select', required: true, options: activeCompanyOptions.value },
   { name: 'name', required: true },
-  { name: 'supplierTypeId', label: 'Supplier type', type: 'select', options: optionsFor(types.value, currentFormCompanyId.value) },
+  { name: 'supplierTypeId', label: 'Supplier type', type: 'select', options: optionsFor(types.value) },
   { name: 'contactName', label: 'Contact name' },
   { name: 'phone' },
   { name: 'email', type: 'email' },

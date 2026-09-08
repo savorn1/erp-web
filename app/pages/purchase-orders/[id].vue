@@ -119,15 +119,7 @@
                   <div class="col-span-2 text-sm text-gray-500 dark:text-gray-400 text-right">
                     {{ formatCurrency(lineTotal(line)) }}
                   </div>
-                  <UButton
-                    v-if="formEditable"
-                    size="xs"
-                    color="error"
-                    variant="ghost"
-                    icon="i-lucide-x"
-                    class="col-span-1"
-                    @click="form.lines.splice(i, 1)"
-                  />
+                  <UButton v-if="formEditable" size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-1" @click="form.lines.splice(i, 1)" />
                   <span v-else-if="viewingLineReceived[i]" class="col-span-1 text-xs text-gray-400 text-right">{{ viewingLineReceived[i] }} recv'd</span>
                 </div>
               </div>
@@ -200,9 +192,9 @@ const toast = useToast()
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
 const suppliers = ref<{ id: number; name: string; companyId: number; status: string }[]>([])
 const warehouses = ref<{ id: number; name: string; companyId: number; active: boolean }[]>([])
-const products = ref<{ id: number; name: string; sku: string; companyId: number; status: string; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]>(
-  []
-)
+const products = ref<
+  { id: number; name: string; sku: string; companyId: number; status: string; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]
+>([])
 
 const productUomOptions = ref<Record<number, { label: string; value: number }[]>>({})
 async function ensureProductUomOptions(productId: number) {

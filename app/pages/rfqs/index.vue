@@ -136,9 +136,19 @@
             </UFormField>
           </div>
 
-          <div class="mb-2 flex items-center justify-between">
-            <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Requested products</p>
-            <UButton v-if="formEditable" size="xs" variant="soft" icon="i-lucide-plus" @click="addLine">Add line</UButton>
+          <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Requested products</p>
+
+          <div v-if="formEditable" class="flex flex-wrap items-end gap-2 mb-3">
+            <UFormField label="Product" class="flex-1 min-w-[240px]">
+              <USelectMenu
+                v-model="addLineProductId"
+                :items="productOptionsFor(form.companyId)"
+                value-key="value"
+                placeholder="Search products…"
+                class="w-full"
+              />
+            </UFormField>
+            <UButton icon="i-lucide-plus" :disabled="!addLineProductId" @click="addLine">Add line</UButton>
           </div>
 
           <div class="space-y-2 mb-4">
@@ -149,7 +159,7 @@
               No line items yet
             </div>
             <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center">
-              <USelect v-model="line.productId" :items="productOptionsFor(form.companyId)" placeholder="Product" :disabled="!formEditable" class="col-span-8" />
+              <div class="col-span-8 text-sm text-gray-900 dark:text-white truncate">{{ productLabel(line.productId) }}</div>
               <UInput v-model.number="line.quantity" type="number" min="0.0001" step="0.0001" placeholder="Qty" :disabled="!formEditable" class="col-span-3" />
               <UButton v-if="formEditable" size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-1" @click="form.lines.splice(i, 1)" />
             </div>
@@ -332,6 +342,10 @@ function productOptionsFor(companyId: number | undefined) {
     .filter((p) => p.status === 'ACTIVE' && (companyId === undefined || p.companyId === companyId))
     .map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
 }
+function productLabel(productId: number | undefined) {
+  const product = products.value.find((p) => p.id === productId)
+  return product ? `${product.name} (${product.sku})` : '—'
+}
 
 const filter = reactive<{ companyId: number | undefined; status: RfqStatus | undefined }>({ companyId: undefined, status: undefined })
 
@@ -400,8 +414,11 @@ const form = reactive<{
 const formEditable = computed(() => editingStatus.value === null || editingStatus.value === 'DRAFT')
 const formTitle = computed(() => (editingId.value === null ? 'New RFQ' : formEditable.value ? 'Edit RFQ' : 'View RFQ'))
 
+const addLineProductId = ref<number | undefined>(undefined)
 function addLine() {
-  form.lines.push({ productId: undefined, quantity: undefined })
+  if (!addLineProductId.value) return
+  form.lines.push({ productId: addLineProductId.value, quantity: undefined })
+  addLineProductId.value = undefined
 }
 
 function resetForm() {
@@ -420,7 +437,6 @@ function openCreate() {
   editingStatus.value = null
   formError.value = ''
   resetForm()
-  addLine()
   showForm.value = true
 }
 
@@ -622,7 +638,6 @@ async function prefillFromPurchaseRequest(id: number) {
     form.purchaseRequestId = pr.id
     form.notes = `From purchase request ${pr.requestNumber}`
     form.lines = (pr.lines ?? []).map((l) => ({ productId: l.productId, quantity: l.quantity }))
-    if (form.lines.length === 0) addLine()
     showForm.value = true
   } catch (err) {
     toast.add({ title: 'Could not load purchase request', description: apiErrorMessage(err), color: 'error' })

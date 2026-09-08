@@ -12,8 +12,8 @@
 
     <UCard class="mb-4">
       <span class="text-sm text-gray-500 dark:text-gray-400">
-        Edit any cell to set a per-product price override for that price group. Leave a cell blank to fall back to the price group's default discount (if
-        any), then the product's own selling price.
+        Edit any cell to set a per-product price override for that price group. Leave a cell blank to fall back to the price group's default discount (if any),
+        then the product's own selling price.
       </span>
     </UCard>
 
