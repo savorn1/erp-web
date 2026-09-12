@@ -93,6 +93,10 @@
             <ColumnValue :column="column" :row="row.original" />
           </slot>
         </template>
+
+        <template v-for="column in visibleColumns" :key="column.key" #[`${column.key}-footer`]>
+          <span v-if="column.footer" class="font-semibold" :class="footerClass(column)">{{ footerText(column) }}</span>
+        </template>
       </UTable>
 
       <!-- Mobile fallback: a horizontally-scrolling table is unreadable on narrow
@@ -113,6 +117,15 @@
               </slot>
             </span>
           </div>
+        </div>
+      </div>
+
+      <!-- Mobile fallback has no native tfoot to piggyback on — surface the
+           same totals as a small summary card below the stacked rows. -->
+      <div v-if="hasFooterColumns" class="sm:hidden rounded-lg border border-gray-200 dark:border-gray-800 p-3 mt-3 space-y-1">
+        <div v-for="column in visibleColumns.filter((c) => c.footer)" :key="column.key" class="flex items-center justify-between gap-3 text-sm">
+          <span class="text-gray-500 dark:text-gray-400">{{ column.label ?? humanize(column.key) }}</span>
+          <span class="font-semibold" :class="footerClass(column)">{{ footerText(column) }}</span>
         </div>
       </div>
     </template>
@@ -179,6 +192,18 @@ const hiddenColumnKeys = ref<Set<string>>(new Set())
 const showColumnToggle = computed(() => props.columnsToggleable && props.columns.length > 1)
 
 const visibleColumns = computed(() => props.columns.filter((c) => !hiddenColumnKeys.value.has(c.key)))
+
+const hasFooterColumns = computed(() => visibleColumns.value.some((c) => c.footer))
+function footerText(column: ColumnDef<T>): string {
+  if (!column.footer) return ''
+  const footerFn = column.footer
+  return formatColumnText({ ...column, value: () => footerFn(props.rows) }, {} as T)
+}
+// A function-typed `class` needs a row to evaluate against, which a totals
+// row doesn't have one representative of — fall back to the default color.
+function footerClass(column: ColumnDef<T>): string {
+  return typeof column.class === 'string' ? column.class : 'text-gray-900 dark:text-white'
+}
 
 // Capped so a table with many columns doesn't render a wall of skeleton
 // slivers — enough segments to read as "a row of data," no more.
@@ -343,7 +368,8 @@ const uColumns = computed<TableColumn<T>[]>(() => {
   if (props.selectable) cols.push({ id: SELECT_KEY })
   if (props.numbered) cols.push({ id: ROW_NUMBER_KEY })
   for (const c of visibleColumns.value) {
-    cols.push({ id: c.key, meta: { class: { td: c.class } } })
+    const tdClass = typeof c.class === 'function' ? (cell: { row: { original: T } }) => (c.class as (row: T) => string)(cell.row.original) : c.class
+    cols.push({ id: c.key, meta: { class: { td: tdClass } }, ...(c.footer ? { footer: () => '' } : {}) })
   }
   return cols
 })

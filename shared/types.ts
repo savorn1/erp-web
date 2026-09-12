@@ -118,7 +118,8 @@ export interface ColumnDef<T = any> {
   /** Defaults to 'text'. */
   type?: ColumnType
   sortable?: boolean
-  class?: string
+  /** Cell CSS class, or a function of the row for per-row conditional styling (e.g. sign-based color). */
+  class?: string | ((row: T) => string)
   /** Derives the cell's value instead of reading row[key]. */
   value?: (row: T) => unknown
   /** Combines with `key` into a "from – to" range, e.g. key: 'minAmount', to: 'maxAmount'. */
@@ -139,6 +140,9 @@ export interface ColumnDef<T = any> {
   falseColor?: string
   /** link: destination path for the row. */
   href?: (row: T) => string
+  /** Shows a totals/footer row for this column, computed from every currently-loaded row
+   * (not just the visible page) — formatted the same way `type`/`prefix`/`suffix` format a cell. */
+  footer?: (rows: T[]) => unknown
 }
 
 // ── Row actions ────────────────────────────────────────────────────────────

@@ -144,8 +144,6 @@ const items = computed<NavigationMenuItem[]>(() => [
         { label: 'Accounts payable', to: '/accounts-payable', icon: 'i-lucide-credit-card' },
         { label: 'Bank & cash', to: '/bank-accounts', icon: 'i-lucide-landmark' },
         { label: 'Tax rates', to: '/tax-rates', icon: 'i-lucide-percent' },
-        { label: 'Tax report', to: '/tax-report', icon: 'i-lucide-file-bar-chart' },
-        { label: 'Financial reports', to: '/financial-reports', icon: 'i-lucide-bar-chart-3' },
 
         { label: 'Reports', type: 'label' as const },
         { label: 'Reports', to: '/reports', icon: 'i-lucide-file-bar-chart-2' },

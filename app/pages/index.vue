@@ -53,7 +53,7 @@
             icon="i-lucide-circle-dollar-sign"
             :color="(summary?.profit ?? 0) >= 0 ? 'success' : 'error'"
             :loading="loading"
-            to="/financial-reports"
+            to="/reports?section=accounting&tab=profit-and-loss"
           />
           <StatTile label="Cash" :value="formatCurrency(summary?.cash ?? 0)" icon="i-lucide-landmark" color="info" :loading="loading" to="/bank-accounts" />
           <StatTile
