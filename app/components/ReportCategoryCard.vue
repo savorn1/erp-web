@@ -1,14 +1,27 @@
 <template>
-  <UCard>
+  <UCard :id="id" class="scroll-mt-20">
     <template #header>
       <div class="flex flex-wrap items-center justify-between gap-3">
-        <span class="font-semibold text-gray-900 dark:text-white">{{ title }}</span>
+        <div class="flex items-center gap-2">
+          <span class="font-semibold text-gray-900 dark:text-white">{{ title }}</span>
+          <UButton v-if="clearable" variant="link" color="neutral" size="xs" class="px-0" @click="emit('clear')"> Clear </UButton>
+        </div>
         <UInput v-model="search" icon="i-lucide-search" size="sm" placeholder="Search…" class="w-full sm:w-56" />
       </div>
     </template>
     <DataTable :rows="filteredTiles" :columns="columns" :exportable="false" @select="onSelect">
       <template #label-data="{ row }">
         <div class="flex items-center gap-3">
+          <UButton
+            v-if="mode === 'route'"
+            icon="i-lucide-star"
+            :class="isPinned(row.to) ? 'text-warning' : 'text-gray-300 dark:text-gray-600'"
+            variant="ghost"
+            color="neutral"
+            size="xs"
+            aria-label="Toggle pin"
+            @click.stop="togglePin(row.to)"
+          />
           <div class="shrink-0 rounded-lg p-2 bg-primary-50 dark:bg-primary-400/10 text-primary-500 dark:text-primary-300">
             <UIcon :name="row.icon" class="w-5 h-5" />
           </div>
@@ -37,9 +50,21 @@ export interface ReportTile {
   description: string
 }
 
-const props = withDefaults(defineProps<{ title: string; tiles: ReportTile[]; mode?: 'route' | 'select' }>(), { mode: 'route' })
-const emit = defineEmits<{ select: [value: string] }>()
+const props = withDefaults(
+  defineProps<{
+    title: string
+    tiles: ReportTile[]
+    mode?: 'route' | 'select'
+    /** Anchor id, e.g. for linking straight to a category. */
+    id?: string
+    /** Shows a "Clear" action next to the title — for Pinned/Recent sections. */
+    clearable?: boolean
+  }>(),
+  { mode: 'route' }
+)
+const emit = defineEmits<{ select: [value: string]; clear: [] }>()
 const router = useRouter()
+const { isPinned, togglePin } = usePinnedReports()
 
 function onSelect(row: ReportTile) {
   if (props.mode === 'select') emit('select', row.to)

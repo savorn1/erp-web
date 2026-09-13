@@ -65,7 +65,7 @@
               <UButton color="neutral" variant="soft" icon="i-lucide-x" @click="clearFilters">Clear filters</UButton>
             </template>
           </EmptyState>
-          <EmptyState v-else icon="i-lucide-sitemap" title="No departments yet" description="Create the first department to get started.">
+          <EmptyState v-else icon="i-lucide-network" title="No departments yet" description="Create the first department to get started.">
             <template #action>
               <UButton icon="i-lucide-plus" @click="openCreate">New department</UButton>
             </template>

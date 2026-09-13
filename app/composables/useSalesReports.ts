@@ -78,6 +78,147 @@ export interface SalesBySalesperson {
   totalRevenue: number
 }
 
+export interface SalesDetailRow {
+  orderId: number
+  soNumber: string | null
+  orderDate: string
+  status: string
+  customerId: number
+  customerName: string | null
+  productId: number
+  productName: string | null
+  productSku: string | null
+  quantity: number
+  unitPrice: number
+  discountPercent: number
+  discountAmount: number
+  taxRate: number
+  taxAmount: number
+  lineTotal: number
+}
+
+export interface SalesDetail {
+  dateFrom: string | null
+  dateTo: string | null
+  rows: SalesDetailRow[]
+  truncated: boolean
+  totalQuantity: number
+  totalAmount: number
+}
+
+export interface SalesByDateRow {
+  date: string
+  orderCount: number
+  revenue: number
+}
+
+export interface SalesByDate {
+  dateFrom: string | null
+  dateTo: string | null
+  rows: SalesByDateRow[]
+  totalRevenue: number
+}
+
+export interface SalesByCategoryRow {
+  categoryId: number | null
+  categoryName: string | null
+  quantity: number
+  revenue: number
+}
+
+export interface SalesByCategory {
+  dateFrom: string | null
+  dateTo: string | null
+  rows: SalesByCategoryRow[]
+  totalQuantity: number
+  totalRevenue: number
+}
+
+export interface SalesByCustomerGroupRow {
+  customerGroupId: number | null
+  customerGroupName: string | null
+  orderCount: number
+  revenue: number
+}
+
+export interface SalesByCustomerGroup {
+  dateFrom: string | null
+  dateTo: string | null
+  rows: SalesByCustomerGroupRow[]
+  totalRevenue: number
+}
+
+export interface SalesByWarehouseRow {
+  warehouseId: number
+  warehouseName: string | null
+  orderCount: number
+  revenue: number
+}
+
+export interface SalesByWarehouse {
+  dateFrom: string | null
+  dateTo: string | null
+  rows: SalesByWarehouseRow[]
+  totalRevenue: number
+}
+
+export interface SalesCancellationRow {
+  orderId: number
+  soNumber: string | null
+  orderDate: string
+  customerId: number
+  customerName: string | null
+  amount: number
+}
+
+export interface SalesCancellation {
+  dateFrom: string | null
+  dateTo: string | null
+  rows: SalesCancellationRow[]
+  orderCount: number
+  totalAmount: number
+}
+
+export interface SalesDiscountRow {
+  orderId: number
+  soNumber: string | null
+  orderDate: string
+  customerId: number
+  customerName: string | null
+  productId: number
+  productName: string | null
+  productSku: string | null
+  quantity: number
+  unitPrice: number
+  discountPercent: number
+  discountAmount: number
+}
+
+export interface SalesDiscount {
+  dateFrom: string | null
+  dateTo: string | null
+  rows: SalesDiscountRow[]
+  totalDiscountAmount: number
+}
+
+export interface SalesOutstandingRow {
+  orderId: number
+  soNumber: string | null
+  orderDate: string
+  expectedDate: string | null
+  status: string
+  customerId: number
+  customerName: string | null
+  outstandingQuantity: number
+  outstandingValue: number
+}
+
+export interface SalesOutstanding {
+  rows: SalesOutstandingRow[]
+  orderCount: number
+  totalOutstandingValue: number
+}
+
 export function useSalesReports() {
   const api = useApi()
 
@@ -101,5 +242,58 @@ export function useSalesReports() {
     return res.data
   }
 
-  return { summary, byProduct, byCustomer, bySalesperson }
+  async function detail(filter: SalesReportFilter = {}) {
+    const res = await api<ApiEnvelope<SalesDetail>>('/api/admin/sales-reports/detail', { query: filter })
+    return res.data
+  }
+
+  async function byDate(filter: SalesReportFilter = {}) {
+    const res = await api<ApiEnvelope<SalesByDate>>('/api/admin/sales-reports/by-date', { query: filter })
+    return res.data
+  }
+
+  async function byCategory(filter: SalesReportFilter = {}) {
+    const res = await api<ApiEnvelope<SalesByCategory>>('/api/admin/sales-reports/by-category', { query: filter })
+    return res.data
+  }
+
+  async function byCustomerGroup(filter: SalesReportFilter = {}) {
+    const res = await api<ApiEnvelope<SalesByCustomerGroup>>('/api/admin/sales-reports/by-customer-group', { query: filter })
+    return res.data
+  }
+
+  async function byWarehouse(filter: SalesReportFilter = {}) {
+    const res = await api<ApiEnvelope<SalesByWarehouse>>('/api/admin/sales-reports/by-warehouse', { query: filter })
+    return res.data
+  }
+
+  async function cancellations(filter: SalesReportFilter = {}) {
+    const res = await api<ApiEnvelope<SalesCancellation>>('/api/admin/sales-reports/cancellations', { query: filter })
+    return res.data
+  }
+
+  async function discounts(filter: SalesReportFilter = {}) {
+    const res = await api<ApiEnvelope<SalesDiscount>>('/api/admin/sales-reports/discounts', { query: filter })
+    return res.data
+  }
+
+  async function outstanding(filter: Pick<SalesReportFilter, 'companyId'> = {}) {
+    const res = await api<ApiEnvelope<SalesOutstanding>>('/api/admin/sales-reports/outstanding', { query: filter })
+    return res.data
+  }
+
+  return {
+    summary,
+    byProduct,
+    byCustomer,
+    bySalesperson,
+    detail,
+    byDate,
+    byCategory,
+    byCustomerGroup,
+    byWarehouse,
+    cancellations,
+    discounts,
+    outstanding
+  }
 }

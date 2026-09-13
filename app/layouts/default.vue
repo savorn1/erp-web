@@ -69,103 +69,120 @@ const profileItems = computed<DropdownMenuItem[][]>(() => [
   [{ label: 'Log out', icon: 'i-lucide-log-out', color: 'error', onSelect: () => logout() }]
 ])
 
-// Starter nav — add feature groups here the same way (a `type: 'label'`
-// header followed by its items), gating admin-only items behind `isAdmin`.
+// Starter nav — add feature groups here the same way (a top-level item with
+// `children`), gating admin-only items behind `isAdmin`. Organization and
+// Master Data stay open by default since they're small/frequently used;
+// the rest start collapsed to keep the sidebar from being one long list.
 const items = computed<NavigationMenuItem[]>(() => [
   { label: 'Dashboard', to: '/', icon: 'i-lucide-layout-dashboard' },
 
   ...(isAdmin.value
     ? [
-        { label: 'Setup', type: 'label' as const },
-        { label: 'Companies', to: '/companies', icon: 'i-lucide-building-2' },
-        { label: 'Branches', to: '/branches', icon: 'i-lucide-map-pin' },
-        { label: 'Departments', to: '/departments', icon: 'i-lucide-sitemap' },
-
-        { label: 'Master Data', type: 'label' as const },
-        { label: 'Products', to: '/products', icon: 'i-lucide-package' },
-        { label: 'Categories', to: '/product-categories', icon: 'i-lucide-tags' },
-        { label: 'Brands', to: '/product-brands', icon: 'i-lucide-badge' },
-        { label: 'Types', to: '/product-types', icon: 'i-lucide-shapes' },
-        { label: 'Units of measure', to: '/units-of-measure', icon: 'i-lucide-ruler' },
-        { label: 'UOM categories', to: '/uom-categories', icon: 'i-lucide-shapes' },
-        { label: 'UOM conversions', to: '/uom-conversions', icon: 'i-lucide-arrow-left-right' },
-        { label: 'Suppliers', to: '/suppliers', icon: 'i-lucide-truck' },
-        { label: 'Supplier types', to: '/supplier-types', icon: 'i-lucide-shapes' },
-        { label: 'Customers', to: '/customers', icon: 'i-lucide-contact' },
-        { label: 'Customer types', to: '/customer-types', icon: 'i-lucide-shapes' },
-        { label: 'Customer groups', to: '/customer-groups', icon: 'i-lucide-users-round' },
-        { label: 'Price groups', to: '/price-groups', icon: 'i-lucide-tags' },
-        { label: 'Product prices', to: '/product-prices', icon: 'i-lucide-tag' },
-        { label: 'Price lookup', to: '/pricing-lookup', icon: 'i-lucide-search' },
-
-        { label: 'Warehouses', type: 'label' as const },
-        { label: 'Warehouses', to: '/warehouses', icon: 'i-lucide-warehouse' },
-        { label: 'Zones', to: '/warehouse-zones', icon: 'i-lucide-layout-grid' },
-        { label: 'Shelves / bins', to: '/warehouse-bins', icon: 'i-lucide-package-2' },
-
-        { label: 'Purchasing', type: 'label' as const },
-        { label: 'Purchase requests', to: '/purchase-requests', icon: 'i-lucide-clipboard-list' },
-        { label: 'RFQs', to: '/rfqs', icon: 'i-lucide-send' },
-        { label: 'Purchase orders', to: '/purchase-orders', icon: 'i-lucide-shopping-cart' },
-
-        { label: 'Stock Receiving', type: 'label' as const },
-        { label: 'Goods receipts', to: '/goods-receipts', icon: 'i-lucide-package-check' },
-        { label: 'Purchase invoices', to: '/purchase-invoices', icon: 'i-lucide-receipt' },
-        { label: 'Supplier payments', to: '/supplier-payments', icon: 'i-lucide-banknote' },
-        { label: 'Stock levels', to: '/stock-levels', icon: 'i-lucide-boxes' },
-        { label: 'Stock movements', to: '/stock-movements', icon: 'i-lucide-history' },
-        { label: 'Serial numbers', to: '/serial-numbers', icon: 'i-lucide-scan-barcode' },
-
-        { label: 'Stock Issue', type: 'label' as const },
-        { label: 'Sales orders', to: '/sales-orders', icon: 'i-lucide-file-text' },
-        { label: 'Deliveries', to: '/deliveries', icon: 'i-lucide-truck' },
-        { label: 'Invoices', to: '/invoices', icon: 'i-lucide-receipt' },
-        { label: 'Payments', to: '/payments', icon: 'i-lucide-banknote' },
-
-        { label: 'Stock Transfer', type: 'label' as const },
-        { label: 'Stock transfers', to: '/stock-transfers', icon: 'i-lucide-repeat' },
-
-        { label: 'Stock Adjustment', type: 'label' as const },
-        { label: 'Stock adjustments', to: '/stock-adjustments', icon: 'i-lucide-scale' },
-
-        { label: 'Inventory Control', type: 'label' as const },
-        { label: 'Inventory overview', to: '/inventory-overview', icon: 'i-lucide-layout-dashboard' },
-        { label: 'Stock counts', to: '/stock-counts', icon: 'i-lucide-clipboard-check' },
-
-        { label: 'CRM', type: 'label' as const },
-        { label: 'Leads', to: '/leads', icon: 'i-lucide-user-plus' },
-        { label: 'Opportunities', to: '/opportunities', icon: 'i-lucide-target' },
-        { label: 'Quotations', to: '/quotations', icon: 'i-lucide-file-text' },
-
-        { label: 'Accounting', type: 'label' as const },
-        { label: 'Chart of accounts', to: '/chart-of-accounts', icon: 'i-lucide-book-open' },
-        { label: 'Journal entries', to: '/journal-entries', icon: 'i-lucide-book-text' },
-        { label: 'Accounts receivable', to: '/accounts-receivable', icon: 'i-lucide-hand-coins' },
-        { label: 'Accounts payable', to: '/accounts-payable', icon: 'i-lucide-credit-card' },
-        { label: 'Bank & cash', to: '/bank-accounts', icon: 'i-lucide-landmark' },
-        { label: 'Tax rates', to: '/tax-rates', icon: 'i-lucide-percent' },
-
-        { label: 'Reports', type: 'label' as const },
         { label: 'Reports', to: '/reports', icon: 'i-lucide-file-bar-chart-2' },
 
-        { label: 'Administration', type: 'label' as const },
-        { label: 'Users', to: '/users', icon: 'i-lucide-users' }
+        {
+          label: 'Organization',
+          icon: 'i-lucide-building-2',
+          defaultOpen: true,
+          children: [
+            { label: 'Companies', to: '/companies', icon: 'i-lucide-building-2' },
+            { label: 'Branches', to: '/branches', icon: 'i-lucide-map-pin' },
+            { label: 'Departments', to: '/departments', icon: 'i-lucide-network' }
+          ]
+        },
+        {
+          label: 'Master Data',
+          icon: 'i-lucide-database',
+          defaultOpen: true,
+          children: [
+            { label: 'Products', to: '/products', icon: 'i-lucide-package' },
+            { label: 'Categories', to: '/product-categories', icon: 'i-lucide-tags' },
+            { label: 'Brands', to: '/product-brands', icon: 'i-lucide-badge' },
+            { label: 'Types', to: '/product-types', icon: 'i-lucide-shapes' },
+            { label: 'Units of measure', to: '/units-of-measure', icon: 'i-lucide-ruler' },
+            { label: 'UOM categories', to: '/uom-categories', icon: 'i-lucide-shapes' },
+            { label: 'UOM conversions', to: '/uom-conversions', icon: 'i-lucide-arrow-left-right' },
+            { label: 'Suppliers', to: '/suppliers', icon: 'i-lucide-truck' },
+            { label: 'Supplier types', to: '/supplier-types', icon: 'i-lucide-shapes' },
+            { label: 'Customers', to: '/customers', icon: 'i-lucide-contact' },
+            { label: 'Customer types', to: '/customer-types', icon: 'i-lucide-shapes' },
+            { label: 'Customer groups', to: '/customer-groups', icon: 'i-lucide-users-round' },
+            { label: 'Price groups', to: '/price-groups', icon: 'i-lucide-tags' },
+            { label: 'Product prices', to: '/product-prices', icon: 'i-lucide-tag' },
+            { label: 'Price lookup', to: '/pricing-lookup', icon: 'i-lucide-search' }
+          ]
+        },
+        {
+          label: 'Inventory',
+          icon: 'i-lucide-warehouse',
+          children: [
+            { label: 'Warehouses', to: '/warehouses', icon: 'i-lucide-warehouse' },
+            { label: 'Zones', to: '/warehouse-zones', icon: 'i-lucide-layout-grid' },
+            { label: 'Shelves / bins', to: '/warehouse-bins', icon: 'i-lucide-package-2' },
+            { label: 'Stock levels', to: '/stock-levels', icon: 'i-lucide-boxes' },
+            { label: 'Stock movements', to: '/stock-movements', icon: 'i-lucide-history' },
+            { label: 'Serial numbers', to: '/serial-numbers', icon: 'i-lucide-scan-barcode' },
+            { label: 'Stock transfers', to: '/stock-transfers', icon: 'i-lucide-repeat' },
+            { label: 'Stock adjustments', to: '/stock-adjustments', icon: 'i-lucide-scale' },
+            { label: 'Inventory overview', to: '/inventory-overview', icon: 'i-lucide-layout-dashboard' },
+            { label: 'Stock counts', to: '/stock-counts', icon: 'i-lucide-clipboard-check' }
+          ]
+        },
+        {
+          label: 'Purchasing',
+          icon: 'i-lucide-shopping-cart',
+          children: [
+            { label: 'Purchase requests', to: '/purchase-requests', icon: 'i-lucide-clipboard-list' },
+            { label: 'RFQs', to: '/rfqs', icon: 'i-lucide-send' },
+            { label: 'Purchase orders', to: '/purchase-orders', icon: 'i-lucide-shopping-cart' },
+            { label: 'Goods receipts', to: '/goods-receipts', icon: 'i-lucide-package-check' },
+            { label: 'Purchase invoices', to: '/purchase-invoices', icon: 'i-lucide-receipt' },
+            { label: 'Supplier payments', to: '/supplier-payments', icon: 'i-lucide-banknote' }
+          ]
+        },
+        {
+          label: 'Sales',
+          icon: 'i-lucide-file-text',
+          children: [
+            { label: 'Leads', to: '/leads', icon: 'i-lucide-user-plus' },
+            { label: 'Opportunities', to: '/opportunities', icon: 'i-lucide-target' },
+            { label: 'Quotations', to: '/quotations', icon: 'i-lucide-file-text' },
+            { label: 'Sales orders', to: '/sales-orders', icon: 'i-lucide-file-text' },
+            { label: 'Deliveries', to: '/deliveries', icon: 'i-lucide-truck' },
+            { label: 'Invoices', to: '/invoices', icon: 'i-lucide-receipt' },
+            { label: 'Payments', to: '/payments', icon: 'i-lucide-banknote' }
+          ]
+        },
+        {
+          label: 'Accounting',
+          icon: 'i-lucide-landmark',
+          children: [
+            { label: 'Chart of accounts', to: '/chart-of-accounts', icon: 'i-lucide-book-open' },
+            { label: 'Journal entries', to: '/journal-entries', icon: 'i-lucide-book-text' },
+            { label: 'Accounts receivable', to: '/accounts-receivable', icon: 'i-lucide-hand-coins' },
+            { label: 'Accounts payable', to: '/accounts-payable', icon: 'i-lucide-credit-card' },
+            { label: 'Bank & cash', to: '/bank-accounts', icon: 'i-lucide-landmark' },
+            { label: 'Tax rates', to: '/tax-rates', icon: 'i-lucide-percent' }
+          ]
+        },
+        {
+          label: 'Administration',
+          icon: 'i-lucide-shield',
+          children: [{ label: 'Users', to: '/users', icon: 'i-lucide-users' }]
+        }
       ]
     : [])
 ])
 
 // Derived from the same nav list so it can never drift out of sync with the
-// sidebar — walks `items` tracking the last `type: 'label'` group seen (e.g.
-// "Administration") as the section a page belongs to.
+// sidebar — each top-level item is now a collapsible group with `children`,
+// so a page's section is whichever group's children contains its route.
 const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
-  let section: string | undefined
   for (const item of items.value) {
-    if (item.type === 'label') {
-      section = item.label
-      continue
+    if (item.to === route.path) return [{ label: item.label, icon: item.icon }]
+    for (const child of item.children ?? []) {
+      if (child.to === route.path) return [{ label: item.label }, { label: child.label, icon: child.icon }]
     }
-    if (item.to !== route.path) continue
-    return section ? [{ label: section }, { label: item.label, icon: item.icon }] : [{ label: item.label, icon: item.icon }]
   }
   // Routes outside the sidebar nav (e.g. /profile) fall back to the last path segment.
   const segment = route.path.split('/').filter(Boolean).pop()
