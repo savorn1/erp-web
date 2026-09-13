@@ -16,7 +16,7 @@
       </template>
 
       <template #default="{ collapsed }">
-        <UNavigationMenu :collapsed="collapsed" :tooltip="collapsed" :items="items" orientation="vertical" />
+        <SidebarNav :items="items" :collapsed="collapsed" />
       </template>
 
       <template #footer>
@@ -51,7 +51,8 @@
 </template>
 
 <script setup lang="ts">
-import type { BreadcrumbItem, DropdownMenuItem, NavigationMenuItem } from '@nuxt/ui'
+import type { BreadcrumbItem, DropdownMenuItem } from '@nuxt/ui'
+import type { SidebarItem } from '~/components/SidebarNav.vue'
 
 const { username, role, isAdmin, logout } = useAuth()
 const route = useRoute()
@@ -73,7 +74,9 @@ const profileItems = computed<DropdownMenuItem[][]>(() => [
 // `children`), gating admin-only items behind `isAdmin`. Organization and
 // Master Data stay open by default since they're small/frequently used;
 // the rest start collapsed to keep the sidebar from being one long list.
-const items = computed<NavigationMenuItem[]>(() => [
+// Each group's `color` picks its accent hue in SidebarNav (header icon,
+// active-item background/border) so groups stay visually distinct at a glance.
+const items = computed<SidebarItem[]>(() => [
   { label: 'Dashboard', to: '/', icon: 'i-lucide-layout-dashboard' },
 
   ...(isAdmin.value
@@ -83,6 +86,7 @@ const items = computed<NavigationMenuItem[]>(() => [
         {
           label: 'Organization',
           icon: 'i-lucide-building-2',
+          color: 'sky',
           defaultOpen: true,
           children: [
             { label: 'Companies', to: '/companies', icon: 'i-lucide-building-2' },
@@ -93,6 +97,7 @@ const items = computed<NavigationMenuItem[]>(() => [
         {
           label: 'Master Data',
           icon: 'i-lucide-database',
+          color: 'violet',
           defaultOpen: true,
           children: [
             { label: 'Products', to: '/products', icon: 'i-lucide-package' },
@@ -115,6 +120,7 @@ const items = computed<NavigationMenuItem[]>(() => [
         {
           label: 'Inventory',
           icon: 'i-lucide-warehouse',
+          color: 'teal',
           children: [
             { label: 'Warehouses', to: '/warehouses', icon: 'i-lucide-warehouse' },
             { label: 'Zones', to: '/warehouse-zones', icon: 'i-lucide-layout-grid' },
@@ -131,6 +137,7 @@ const items = computed<NavigationMenuItem[]>(() => [
         {
           label: 'Purchasing',
           icon: 'i-lucide-shopping-cart',
+          color: 'orange',
           children: [
             { label: 'Purchase requests', to: '/purchase-requests', icon: 'i-lucide-clipboard-list' },
             { label: 'RFQs', to: '/rfqs', icon: 'i-lucide-send' },
@@ -143,6 +150,7 @@ const items = computed<NavigationMenuItem[]>(() => [
         {
           label: 'Sales',
           icon: 'i-lucide-file-text',
+          color: 'emerald',
           children: [
             { label: 'Leads', to: '/leads', icon: 'i-lucide-user-plus' },
             { label: 'Opportunities', to: '/opportunities', icon: 'i-lucide-target' },
@@ -156,6 +164,7 @@ const items = computed<NavigationMenuItem[]>(() => [
         {
           label: 'Accounting',
           icon: 'i-lucide-landmark',
+          color: 'indigo',
           children: [
             { label: 'Chart of accounts', to: '/chart-of-accounts', icon: 'i-lucide-book-open' },
             { label: 'Journal entries', to: '/journal-entries', icon: 'i-lucide-book-text' },
@@ -168,6 +177,7 @@ const items = computed<NavigationMenuItem[]>(() => [
         {
           label: 'Administration',
           icon: 'i-lucide-shield',
+          color: 'rose',
           children: [{ label: 'Users', to: '/users', icon: 'i-lucide-users' }]
         }
       ]
@@ -179,8 +189,11 @@ const items = computed<NavigationMenuItem[]>(() => [
 // so a page's section is whichever group's children contains its route.
 const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
   for (const item of items.value) {
-    if (item.to === route.path) return [{ label: item.label, icon: item.icon }]
-    for (const child of item.children ?? []) {
+    if ('to' in item) {
+      if (item.to === route.path) return [{ label: item.label, icon: item.icon }]
+      continue
+    }
+    for (const child of item.children) {
       if (child.to === route.path) return [{ label: item.label }, { label: child.label, icon: child.icon }]
     }
   }

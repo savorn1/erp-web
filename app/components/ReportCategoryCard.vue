@@ -15,14 +15,14 @@
           <UButton
             v-if="mode === 'route'"
             icon="i-lucide-star"
-            :class="isPinned(row.to) ? 'text-warning' : 'text-gray-300 dark:text-gray-600'"
+            :class="isPinned(row.to) ? 'text-warning' : 'text-gray-400 dark:text-gray-500'"
             variant="ghost"
             color="neutral"
             size="xs"
             aria-label="Toggle pin"
             @click.stop="togglePin(row.to)"
           />
-          <div class="shrink-0 rounded-lg p-2 bg-primary-50 dark:bg-primary-400/10 text-primary-500 dark:text-primary-300">
+          <div class="shrink-0 rounded-lg p-2" :class="tileIconClasses(row.color)">
             <UIcon :name="row.icon" class="w-5 h-5" />
           </div>
           <span class="font-medium text-gray-900 dark:text-white">{{ row.label }}</span>
@@ -48,6 +48,8 @@ export interface ReportTile {
   icon: string
   label: string
   description: string
+  /** One of reportTileColors.ts's accent hues (mirrors SidebarNav's group colors). Falls back to primary. */
+  color?: string
 }
 
 const props = withDefaults(

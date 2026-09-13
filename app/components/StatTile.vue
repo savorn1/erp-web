@@ -8,8 +8,8 @@
           <p v-else class="text-2xl font-semibold text-gray-900 dark:text-white mt-1 truncate">{{ value }}</p>
           <p v-if="sublabel && !loading" class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ sublabel }}</p>
         </div>
-        <div class="shrink-0 rounded-xl p-2.5 ring-1 ring-inset" :class="[colorClasses.bg, colorClasses.ring]">
-          <UIcon :name="icon" class="w-5 h-5" :class="colorClasses.text" />
+        <div class="shrink-0 rounded-xl p-2.5 text-white shadow-sm" :class="colorClasses">
+          <UIcon :name="icon" class="w-5 h-5" />
         </div>
       </div>
     </UCard>
@@ -34,13 +34,19 @@ const props = withDefaults(
   { color: 'primary' }
 )
 
-const COLOR_CLASSES: Record<StatColor, { bg: string; text: string; ring: string }> = {
-  primary: { bg: 'bg-primary-50 dark:bg-primary-400/10', text: 'text-primary-500 dark:text-primary-400', ring: 'ring-primary-100 dark:ring-primary-400/10' },
-  success: { bg: 'bg-success/10', text: 'text-success', ring: 'ring-success/15' },
-  warning: { bg: 'bg-warning/10', text: 'text-warning', ring: 'ring-warning/15' },
-  error: { bg: 'bg-error/10', text: 'text-error', ring: 'ring-error/15' },
-  info: { bg: 'bg-info/10', text: 'text-info', ring: 'ring-info/15' },
-  neutral: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-500 dark:text-gray-400', ring: 'ring-gray-200 dark:ring-gray-700' }
+// A solid gradient block with a white icon reads as more "alive" than a
+// flat tinted tile — each semantic color gets its own two-stop gradient
+// rather than a single flat shade, still drawn from the same design-token
+// scale (primary/success/warning/error/info/neutral) so it stays consistent
+// with the rest of the app's Blueprint palette instead of introducing new
+// arbitrary hues.
+const COLOR_CLASSES: Record<StatColor, string> = {
+  primary: 'bg-gradient-to-br from-primary-400 to-primary-600',
+  success: 'bg-gradient-to-br from-success-400 to-success-600',
+  warning: 'bg-gradient-to-br from-warning-400 to-warning-600',
+  error: 'bg-gradient-to-br from-error-400 to-error-600',
+  info: 'bg-gradient-to-br from-info-400 to-info-600',
+  neutral: 'bg-gradient-to-br from-gray-400 to-gray-600'
 }
 
 const colorClasses = computed(() => COLOR_CLASSES[props.color])

@@ -25,6 +25,22 @@ export interface DashboardSummary {
   purchase: number
 }
 
+export interface DashboardTrendFilter {
+  companyId?: number
+  /** Trailing calendar months to return, oldest first, ending with the current month. Defaults to 6. */
+  months?: number
+}
+
+export interface DashboardTrendPoint {
+  month: string
+  sales: number
+  purchase: number
+}
+
+export interface DashboardTrend {
+  months: DashboardTrendPoint[]
+}
+
 export function useDashboard() {
   const api = useApi()
 
@@ -33,5 +49,10 @@ export function useDashboard() {
     return res.data
   }
 
-  return { summary }
+  async function trend(filter: DashboardTrendFilter = {}) {
+    const res = await api<ApiEnvelope<DashboardTrend>>('/api/admin/dashboard/trend', { query: filter })
+    return res.data
+  }
+
+  return { summary, trend }
 }

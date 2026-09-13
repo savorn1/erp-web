@@ -296,6 +296,14 @@ async function onDelete() {
   }
 }
 
+// Deep-linkable, e.g. the dashboard's "Awaiting approval" tile links to
+// `/purchase-orders?status=SUBMITTED`.
+const route = useRoute()
+const VALID_STATUSES = statusFilterOptions.map((o) => o.value).filter((v): v is PurchaseOrderStatus => v !== undefined)
+if (typeof route.query.status === 'string' && VALID_STATUSES.includes(route.query.status as PurchaseOrderStatus)) {
+  filter.status = route.query.status as PurchaseOrderStatus
+}
+
 onMounted(async () => {
   await loadLookups()
   await load()

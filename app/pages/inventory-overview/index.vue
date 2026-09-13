@@ -14,22 +14,10 @@
     </UCard>
 
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-      <UCard>
-        <p class="text-xs text-gray-400">Total on hand</p>
-        <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ formatNumber(totals.current) }}</p>
-      </UCard>
-      <UCard>
-        <p class="text-xs text-gray-400">Total available</p>
-        <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ formatNumber(totals.available) }}</p>
-      </UCard>
-      <UCard>
-        <p class="text-xs text-gray-400">Total incoming</p>
-        <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ formatNumber(totals.incoming) }}</p>
-      </UCard>
-      <UCard>
-        <p class="text-xs text-gray-400">Total valuation</p>
-        <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ formatCurrency(totals.valuation) }}</p>
-      </UCard>
+      <StatTile label="Total on hand" :value="formatNumber(totals.current)" icon="i-lucide-boxes" color="primary" :loading="loading" />
+      <StatTile label="Total available" :value="formatNumber(totals.available)" icon="i-lucide-check-circle" color="success" :loading="loading" />
+      <StatTile label="Total incoming" :value="formatNumber(totals.incoming)" icon="i-lucide-truck" color="info" :loading="loading" />
+      <StatTile label="Total valuation" :value="formatCurrency(totals.valuation)" icon="i-lucide-circle-dollar-sign" color="neutral" :loading="loading" />
     </div>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />

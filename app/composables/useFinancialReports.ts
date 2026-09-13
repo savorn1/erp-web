@@ -124,6 +124,21 @@ export interface CashFlow {
   totalClosingBalance: number
 }
 
+export interface StatementOfChangesInEquityLine {
+  label: string
+  amount: number
+}
+
+export interface StatementOfChangesInEquity {
+  dateFrom: string
+  dateTo: string
+  lines: StatementOfChangesInEquityLine[]
+  beginningEquity: number
+  netIncome: number
+  otherEquityChanges: number
+  endingEquity: number
+}
+
 export function useFinancialReports() {
   const api = useApi()
 
@@ -152,5 +167,10 @@ export function useFinancialReports() {
     return res.data
   }
 
-  return { trialBalance, generalLedger, balanceSheet, profitAndLoss, cashFlow }
+  async function statementOfChangesInEquity(filter: ProfitAndLossFilter = {}) {
+    const res = await api<ApiEnvelope<StatementOfChangesInEquity>>('/api/admin/financial-reports/statement-of-changes-in-equity', { query: filter })
+    return res.data
+  }
+
+  return { trialBalance, generalLedger, balanceSheet, profitAndLoss, cashFlow, statementOfChangesInEquity }
 }

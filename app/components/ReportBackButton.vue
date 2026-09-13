@@ -1,5 +1,5 @@
 <template>
-  <UButton variant="link" color="neutral" icon="i-lucide-arrow-left" size="xs" class="mb-1 px-0" @click="goBack"> Back to reports </UButton>
+  <UButton variant="link" color="primary" icon="i-lucide-arrow-left" size="xs" class="mb-1 px-0" @click="goBack"> Back to reports </UButton>
 </template>
 
 <script setup lang="ts">
