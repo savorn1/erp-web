@@ -180,10 +180,14 @@ const items = computed<SidebarItem[]>(() => [
           color: 'indigo',
           children: [
             { label: 'Chart of accounts', to: '/chart-of-accounts', icon: 'i-lucide-book-open' },
+            { label: 'Journals', to: '/journals', icon: 'i-lucide-book-text' },
             { label: 'Journal entries', to: '/journal-entries', icon: 'i-lucide-book-text' },
+            { label: 'Posting rules', to: '/posting-rules', icon: 'i-lucide-sliders-horizontal' },
             { label: 'Accounts receivable', to: '/accounts-receivable', icon: 'i-lucide-hand-coins' },
             { label: 'Accounts payable', to: '/accounts-payable', icon: 'i-lucide-credit-card' },
             { label: 'Bank & cash', to: '/bank-accounts', icon: 'i-lucide-landmark' },
+            { label: 'Cost centers', to: '/cost-centers', icon: 'i-lucide-building-2' },
+            { label: 'Fiscal years', to: '/fiscal-years', icon: 'i-lucide-calendar' },
             { label: 'Tax rates', to: '/tax-rates', icon: 'i-lucide-percent' }
           ]
         },

@@ -521,6 +521,68 @@ export function useReportCatalog() {
     { to: '/work-orders', icon: 'i-lucide-list-ordered', label: 'Work order report', description: 'Every shop-floor operation step, across all orders.' }
   ])
 
+  // Cross-ledger payment reports (customer + supplier payments + bank).
+  // Indigo like AR — they sit under Accounting in the sidebar.
+  const paymentReportTiles: ReportTile[] = withColor('indigo', [
+    { to: '/reports/payments/summary', icon: 'i-lucide-bar-chart-3', label: 'Summary', description: 'Received, paid out, refunded, and net cash flow for a period.' },
+    { to: '/reports/payments/detail', icon: 'i-lucide-list', label: 'Detail', description: 'Every customer and supplier payment, merged into one ledger.' },
+    {
+      to: '/reports/payments/detail?party=CUSTOMER&type=PAYMENT',
+      icon: 'i-lucide-hand-coins',
+      label: 'Receipts',
+      description: 'Money received from customers (refunds excluded).'
+    },
+    { to: '/reports/payments/detail?method=CASH', icon: 'i-lucide-wallet', label: 'Cash payments', description: 'Both ledgers, cash method only.' },
+    {
+      to: '/reports/payments/detail?method=BANK_TRANSFER',
+      icon: 'i-lucide-landmark',
+      label: 'Bank payments',
+      description: 'Both ledgers, bank transfer method only.'
+    },
+    { to: '/reports/payments/by-method', icon: 'i-lucide-credit-card', label: 'By method', description: 'Count and net amount per payment method.' },
+    {
+      to: '/reports/payments/by-branch',
+      icon: 'i-lucide-map-pin',
+      label: 'By branch',
+      description: 'Attributed to the branch of the user who recorded each payment.'
+    },
+    { to: '/reports/payments/refunds', icon: 'i-lucide-undo-2', label: 'Refunds', description: 'Refunds issued to customers and received from suppliers.' },
+    { to: '/reports/payments/transfers', icon: 'i-lucide-arrow-left-right', label: 'Transfers', description: 'Money moved between bank and cash accounts.' },
+    {
+      to: '/reports/payments/collection-by-customer',
+      icon: 'i-lucide-users',
+      label: 'Collection by customer',
+      description: 'Received, refunded, and net per customer.'
+    },
+    {
+      to: '/reports/payments/collection-by-salesperson',
+      icon: 'i-lucide-user',
+      label: 'Collection by salesperson',
+      description: 'Collected amounts attributed to whoever created the underlying order.'
+    },
+    {
+      to: '/reports/payments/reconciliation',
+      icon: 'i-lucide-git-compare',
+      label: 'Payment reconciliation',
+      description: 'Bank-method payments vs. bank deposits/withdrawals, plus reconciled status per account.'
+    }
+  ])
+
+  const paymentExternalReportTiles: ReportTile[] = withColor('indigo', [
+    { to: '/reports/accounts-receivable/collections', icon: 'i-lucide-hand-coins', label: 'Customer payments', description: 'The AR collections report.' },
+    { to: '/reports/accounts-payable/payments', icon: 'i-lucide-banknote', label: 'Supplier payments', description: 'The AP payments-made report.' },
+    {
+      to: '/reports/sales/outstanding-invoices',
+      icon: 'i-lucide-receipt',
+      label: 'Outstanding & overdue collection',
+      description: 'Approved invoices with a balance still owed, by days overdue.'
+    },
+    { to: '/reports/accounting/ar-aging', icon: 'i-lucide-arrow-down-to-line', label: 'Collection aging', description: 'Outstanding customer invoices by age bucket.' },
+    { to: '/payments', icon: 'i-lucide-hand-coins', label: 'Payment register', description: 'Every customer payment and refund.' },
+    { to: '/supplier-payments', icon: 'i-lucide-banknote', label: 'Supplier payment register', description: 'Every supplier payment and refund.' },
+    { to: '/bank-accounts', icon: 'i-lucide-landmark', label: 'Bank & cash', description: 'Accounts, transactions, and bank reconciliation.' }
+  ])
+
   return {
     salesReportTiles,
     salesExternalReportTiles,
@@ -534,6 +596,8 @@ export function useReportCatalog() {
     apReportTiles,
     apExternalReportTiles,
     manufacturingReportTiles,
-    manufacturingExternalReportTiles
+    manufacturingExternalReportTiles,
+    paymentReportTiles,
+    paymentExternalReportTiles
   }
 }

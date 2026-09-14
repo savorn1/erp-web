@@ -10,7 +10,7 @@ import type { ApiEnvelope, PageEnvelope } from '#shared/types'
 import type { WorkOrder } from '~/composables/useWorkOrders'
 
 export type ManufacturingOrderStatus = 'DRAFT' | 'RELEASED' | 'IN_PROGRESS' | 'PENDING_QC' | 'COMPLETED' | 'CANCELLED'
-export type QualityCheckStatus = 'PENDING' | 'PASSED' | 'FAILED'
+export type MoQualityCheckStatus = 'PENDING' | 'PASSED' | 'FAILED'
 
 export interface ManufacturingOrderMaterial {
   id: number
@@ -44,7 +44,7 @@ export interface ManufacturingOrder {
   scrapQuantity: number
   scrapReason: string | null
   status: ManufacturingOrderStatus
-  qualityStatus: QualityCheckStatus | null
+  qualityStatus: MoQualityCheckStatus | null
   qualityNotes: string | null
   qualityCheckedBy: string | null
   qualityCheckedAt: string | null
@@ -97,7 +97,7 @@ export interface CompleteManufacturingOrderPayload {
   overheadCost?: number
 }
 
-export interface QualityCheckPayload {
+export interface MoQualityCheckPayload {
   status: 'PASSED' | 'FAILED'
   notes?: string
 }
@@ -150,7 +150,7 @@ export function useManufacturingOrders() {
     return res.data
   }
 
-  async function qualityCheck(id: number, payload: QualityCheckPayload) {
+  async function qualityCheck(id: number, payload: MoQualityCheckPayload) {
     const res = await api<ApiEnvelope<ManufacturingOrder>>(`/api/admin/manufacturing-orders/${id}/quality-check`, { method: 'POST', body: payload })
     return res.data
   }

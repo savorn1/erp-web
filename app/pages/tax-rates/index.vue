@@ -126,23 +126,35 @@ definePageMeta({ middleware: 'admin' })
 
 const { list, create, update, remove } = useTaxRates()
 const { list: listCompanies } = useCompanies()
+const { list: listAccounts } = useAccounts()
 
 const rows = ref<TaxRate[]>([])
 const loading = ref(false)
 const error = ref('')
 
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
+const accounts = ref<{ id: number; accountCode: string; name: string; companyId: number; active: boolean }[]>([])
 const loadingLookups = ref(false)
 async function loadLookups() {
   loadingLookups.value = true
   try {
-    companies.value = (await listCompanies({ size: 200 })).data
+    const [c, a] = await Promise.all([listCompanies({ size: 200 }), listAccounts({ size: 1000 })])
+    companies.value = c.data
+    accounts.value = a.data
   } finally {
     loadingLookups.value = false
   }
 }
 const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
 const companyFilterOptions = computed(() => [{ label: 'All companies', value: undefined }, ...companies.value.map((c) => ({ label: c.name, value: c.id }))])
+function accountOptionsFor(companyId: number | undefined) {
+  return [
+    { label: 'None', value: undefined },
+    ...accounts.value
+      .filter((a) => a.active && (companyId === undefined || a.companyId === companyId))
+      .map((a) => ({ label: `${a.accountCode} — ${a.name}`, value: a.id }))
+  ]
+}
 
 const typeOptions = [
   { label: 'VAT', value: 'VAT' },
@@ -201,6 +213,13 @@ const formFields = computed<FieldDef[]>(() => [
   { name: 'name', required: true, hint: 'e.g. VAT 10%, Withholding tax 5%.' },
   { name: 'type', type: 'select', required: true, options: typeOptions },
   { name: 'ratePercent', label: 'Rate (%)', type: 'number', required: true, min: 0, step: 0.01 },
+  {
+    name: 'accountId',
+    label: 'Tax account',
+    type: 'select',
+    options: accountOptionsFor(createForm.value.companyId ?? editForm.value.companyId),
+    hint: 'Optional — the GL account this tax posts to when auto-posting can attribute it directly.'
+  },
   { name: 'active', type: 'switch', onLabel: 'Active', offLabel: 'Inactive', default: true }
 ])
 
@@ -231,14 +250,23 @@ const {
   {
     entityName: 'Tax rate',
     createDefaults: () => ({ active: true, type: 'VAT' }),
-    toForm: (row) => ({ companyId: row.companyId, code: row.code, name: row.name, type: row.type, ratePercent: row.ratePercent, active: row.active }),
+    toForm: (row) => ({
+      companyId: row.companyId,
+      code: row.code,
+      name: row.name,
+      type: row.type,
+      ratePercent: row.ratePercent,
+      active: row.active,
+      accountId: row.accountId ?? undefined
+    }),
     toPayload: (values) => ({
       companyId: values.companyId,
       code: values.code,
       name: values.name,
       type: values.type,
       ratePercent: values.ratePercent,
-      active: values.active ?? true
+      active: values.active ?? true,
+      accountId: values.accountId || undefined
     })
   }
 )

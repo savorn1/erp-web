@@ -17,6 +17,8 @@ export interface TaxRate {
   type: TaxType
   ratePercent: number
   active: boolean
+  accountId: number | null
+  accountLabel: string | null
 }
 
 export interface TaxRateFilter {
@@ -37,6 +39,7 @@ export interface TaxRatePayload {
   type: TaxType
   ratePercent: number
   active: boolean
+  accountId?: number
 }
 
 export function useTaxRates() {

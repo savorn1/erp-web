@@ -4,7 +4,7 @@
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Chart of accounts</h1>
       <div class="flex items-center gap-2">
         <UButton v-if="filter.companyId" color="neutral" variant="soft" icon="i-lucide-sparkles" :loading="seeding" @click="onSeedSample">
-          Seed sample data
+          Seed standard chart
         </UButton>
         <UButton icon="i-lucide-plus" :disabled="!filter.companyId" @click="openCreate()"> New account </UButton>
       </div>
@@ -44,11 +44,11 @@
           v-if="allAccounts.length === 0"
           icon="i-lucide-book-open"
           title="No accounts yet"
-          description="Create the first account, or seed the standard demo chart of accounts."
+          description="Create the first account, or seed the standard chart (Assets, Liabilities, Equity, Revenue, Expenses)."
         >
           <template #action>
             <div class="flex items-center gap-2">
-              <UButton color="neutral" variant="soft" icon="i-lucide-sparkles" :loading="seeding" @click="onSeedSample">Seed sample data</UButton>
+              <UButton color="neutral" variant="soft" icon="i-lucide-sparkles" :loading="seeding" @click="onSeedSample">Seed standard chart</UButton>
               <UButton icon="i-lucide-plus" @click="openCreate()">New account</UButton>
             </div>
           </template>
@@ -379,10 +379,10 @@ async function onSeedSample() {
   seeding.value = true
   try {
     await seedSample(filter.companyId)
-    toast.add({ title: 'Sample chart of accounts created', color: 'success' })
+    toast.add({ title: 'Standard chart of accounts seeded', color: 'success' })
     await load()
   } catch (err) {
-    toast.add({ title: 'Could not seed sample data', description: apiErrorMessage(err), color: 'error' })
+    toast.add({ title: 'Could not seed chart of accounts', description: apiErrorMessage(err), color: 'error' })
   } finally {
     seeding.value = false
   }

@@ -115,6 +115,10 @@
               <dt class="text-gray-400">Posted by</dt>
               <dd class="text-gray-900 dark:text-white">{{ detail.postedBy }} · {{ formatDate(detail.postedAt!) }}</dd>
             </div>
+            <div v-if="detail.sourceType">
+              <dt class="text-gray-400">Source</dt>
+              <dd class="text-gray-900 dark:text-white">Auto-posted from {{ detail.sourceType }} #{{ detail.sourceId }}</dd>
+            </div>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -124,7 +128,10 @@
             <UFormField label="Entry date" required>
               <UInput v-model="form.entryDate" type="date" :disabled="!formEditable" class="w-full" />
             </UFormField>
-            <UFormField label="Description" class="sm:col-span-2">
+            <UFormField label="Journal">
+              <USelect v-model="form.journalId" :items="journalOptionsFor(form.companyId)" placeholder="None" :disabled="!formEditable" class="w-full" />
+            </UFormField>
+            <UFormField label="Description">
               <UTextarea v-model="form.description" :disabled="!formEditable" class="w-full" />
             </UFormField>
           </div>
@@ -141,10 +148,17 @@
             >
               No lines yet
             </div>
-            <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center">
-              <USelect v-model="line.accountId" :items="accountOptionsFor(form.companyId)" placeholder="Account" :disabled="!formEditable" class="col-span-5" />
+            <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-14 gap-2 items-center">
+              <USelect v-model="line.accountId" :items="accountOptionsFor(form.companyId)" placeholder="Account" :disabled="!formEditable" class="col-span-4" />
               <UInput v-model.number="line.debit" type="number" min="0" step="0.01" placeholder="Debit" :disabled="!formEditable" class="col-span-2" />
               <UInput v-model.number="line.credit" type="number" min="0" step="0.01" placeholder="Credit" :disabled="!formEditable" class="col-span-2" />
+              <USelect
+                v-model="line.costCenterId"
+                :items="costCenterOptionsFor(form.companyId)"
+                placeholder="Cost center"
+                :disabled="!formEditable"
+                class="col-span-3"
+              />
               <UInput v-model="line.description" placeholder="Memo (optional)" :disabled="!formEditable" class="col-span-2" />
               <UButton v-if="formEditable" size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-1" @click="form.lines.splice(i, 1)" />
             </div>
@@ -197,6 +211,8 @@ definePageMeta({ middleware: 'admin' })
 const { list, get, create, update, remove, post, reverse } = useJournalEntries()
 const { list: listCompanies } = useCompanies()
 const { list: listAccounts } = useAccounts()
+const { list: listJournals } = useJournals()
+const { list: listCostCenters } = useCostCenters()
 const toast = useToast()
 
 const rows = ref<JournalEntry[]>([])
@@ -205,14 +221,23 @@ const error = ref('')
 
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
 const accounts = ref<{ id: number; accountCode: string; name: string; companyId: number; active: boolean }[]>([])
+const journals = ref<{ id: number; code: string; name: string; companyId: number; active: boolean }[]>([])
+const costCenters = ref<{ id: number; code: string; name: string; companyId: number; active: boolean }[]>([])
 const loadingLookups = ref(false)
 
 async function loadLookups() {
   loadingLookups.value = true
   try {
-    const [c, a] = await Promise.all([listCompanies({ size: 200 }), listAccounts({ size: 1000 })])
+    const [c, a, j, cc] = await Promise.all([
+      listCompanies({ size: 200 }),
+      listAccounts({ size: 1000 }),
+      listJournals({ size: 200 }),
+      listCostCenters({ size: 200 })
+    ])
     companies.value = c.data
     accounts.value = a.data
+    journals.value = j.data
+    costCenters.value = cc.data
   } finally {
     loadingLookups.value = false
   }
@@ -230,6 +255,22 @@ function accountOptionsFor(companyId: number | undefined) {
   return accounts.value
     .filter((a) => a.active && (companyId === undefined || a.companyId === companyId))
     .map((a) => ({ label: `${a.accountCode} — ${a.name}`, value: a.id }))
+}
+function journalOptionsFor(companyId: number | undefined) {
+  return [
+    { label: 'None', value: undefined },
+    ...journals.value
+      .filter((j) => j.active && (companyId === undefined || j.companyId === companyId))
+      .map((j) => ({ label: `${j.code} — ${j.name}`, value: j.id }))
+  ]
+}
+function costCenterOptionsFor(companyId: number | undefined) {
+  return [
+    { label: 'None', value: undefined },
+    ...costCenters.value
+      .filter((cc) => cc.active && (companyId === undefined || cc.companyId === companyId))
+      .map((cc) => ({ label: `${cc.code} — ${cc.name}`, value: cc.id }))
+  ]
 }
 
 const filter = reactive<{ companyId: number | undefined; status: JournalEntryStatus | undefined }>({ companyId: undefined, status: undefined })
@@ -270,6 +311,7 @@ interface LineForm {
   debit: number | undefined
   credit: number | undefined
   description: string
+  costCenterId: number | undefined
 }
 
 const showForm = ref(false)
@@ -284,11 +326,13 @@ const form = reactive<{
   companyId: number | undefined
   entryDate: string
   description: string
+  journalId: number | undefined
   lines: LineForm[]
 }>({
   companyId: undefined,
   entryDate: new Date().toISOString().slice(0, 10),
   description: '',
+  journalId: undefined,
   lines: []
 })
 
@@ -298,13 +342,14 @@ const formTotalDebit = computed(() => form.lines.reduce((sum, l) => sum + (l.deb
 const formTotalCredit = computed(() => form.lines.reduce((sum, l) => sum + (l.credit || 0), 0))
 
 function addLine() {
-  form.lines.push({ accountId: undefined, debit: undefined, credit: undefined, description: '' })
+  form.lines.push({ accountId: undefined, debit: undefined, credit: undefined, description: '', costCenterId: undefined })
 }
 
 function resetForm() {
   form.companyId = activeCompanyOptions.value[0]?.value
   form.entryDate = new Date().toISOString().slice(0, 10)
   form.description = ''
+  form.journalId = undefined
   form.lines = []
   detail.value = null
 }
@@ -331,11 +376,13 @@ async function openView(row: JournalEntry) {
     form.companyId = full.companyId
     form.entryDate = full.entryDate
     form.description = full.description ?? ''
+    form.journalId = full.journalId ?? undefined
     form.lines = (full.lines ?? []).map((l) => ({
       accountId: l.accountId,
       debit: l.debit || undefined,
       credit: l.credit || undefined,
-      description: l.description ?? ''
+      description: l.description ?? '',
+      costCenterId: l.costCenterId ?? undefined
     }))
   } catch (err) {
     formError.value = apiErrorMessage(err)
@@ -362,7 +409,14 @@ async function onSaveForm() {
     companyId: form.companyId,
     entryDate: form.entryDate,
     description: form.description || undefined,
-    lines: form.lines.map((l) => ({ accountId: l.accountId!, debit: l.debit || 0, credit: l.credit || 0, description: l.description || undefined }))
+    journalId: form.journalId || undefined,
+    lines: form.lines.map((l) => ({
+      accountId: l.accountId!,
+      debit: l.debit || 0,
+      credit: l.credit || 0,
+      description: l.description || undefined,
+      costCenterId: l.costCenterId || undefined
+    }))
   }
   saving.value = true
   try {

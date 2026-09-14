@@ -17,6 +17,8 @@ export interface JournalEntryLine {
   debit: number
   credit: number
   description: string | null
+  costCenterId: number | null
+  costCenterName: string | null
 }
 
 export interface JournalEntry {
@@ -37,6 +39,12 @@ export interface JournalEntry {
   createdAt: string
   postedBy: string | null
   postedAt: string | null
+  journalId: number | null
+  journalCode: string | null
+  journalName: string | null
+  // Set only on auto-generated entries — e.g. "INVOICE", "PAYMENT".
+  sourceType: string | null
+  sourceId: number | null
   lines: JournalEntryLine[] | null
 }
 
@@ -45,6 +53,8 @@ export interface JournalEntryFilter {
   companyId?: number
   status?: JournalEntryStatus
   accountId?: number
+  journalId?: number
+  sourceType?: string
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
   page?: number
@@ -56,12 +66,14 @@ export interface JournalEntryLinePayload {
   debit: number
   credit: number
   description?: string
+  costCenterId?: number
 }
 
 export interface JournalEntryPayload {
   companyId: number
   entryDate: string
   description?: string
+  journalId?: number
   lines: JournalEntryLinePayload[]
 }
 
