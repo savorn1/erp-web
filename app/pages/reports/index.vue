@@ -114,7 +114,9 @@
       <ReportCategoryCard id="ar" title="Accounts receivable reports" :tiles="arReportTiles" class="mb-4" />
       <ReportCategoryCard id="more-ar" title="More accounts receivable reports" :tiles="arExternalReportTiles" class="mb-4" />
       <ReportCategoryCard id="ap" title="Accounts payable reports" :tiles="apReportTiles" class="mb-4" />
-      <ReportCategoryCard id="more-ap" title="More accounts payable reports" :tiles="apExternalReportTiles" />
+      <ReportCategoryCard id="more-ap" title="More accounts payable reports" :tiles="apExternalReportTiles" class="mb-4" />
+      <ReportCategoryCard id="manufacturing" title="Manufacturing reports" :tiles="manufacturingReportTiles" class="mb-4" />
+      <ReportCategoryCard id="more-manufacturing" title="More manufacturing reports" :tiles="manufacturingExternalReportTiles" />
     </template>
   </div>
 </template>
@@ -142,7 +144,9 @@ const {
   arReportTiles,
   arExternalReportTiles,
   apReportTiles,
-  apExternalReportTiles
+  apExternalReportTiles,
+  manufacturingReportTiles,
+  manufacturingExternalReportTiles
 } = useReportCatalog()
 const { pinned, isPinned, togglePin, clearAll: clearPinned } = usePinnedReports()
 const { recent, clearAll: clearRecent } = useRecentReports()
@@ -160,7 +164,9 @@ const jumpNavSections = [
   { id: 'ar', label: 'Accounts receivable reports', color: 'indigo' },
   { id: 'more-ar', label: 'More accounts receivable reports', color: 'indigo' },
   { id: 'ap', label: 'Accounts payable reports', color: 'orange' },
-  { id: 'more-ap', label: 'More accounts payable reports', color: 'orange' }
+  { id: 'more-ap', label: 'More accounts payable reports', color: 'orange' },
+  { id: 'manufacturing', label: 'Manufacturing reports', color: 'amber' },
+  { id: 'more-manufacturing', label: 'More manufacturing reports', color: 'amber' }
 ]
 
 const HINT_STORAGE_KEY = 'erp-reports-hint-dismissed'
@@ -278,7 +284,9 @@ const allTiles = computed<ReportTile[]>(() => [
   ...arReportTiles,
   ...arExternalReportTiles,
   ...apReportTiles,
-  ...apExternalReportTiles
+  ...apExternalReportTiles,
+  ...manufacturingReportTiles,
+  ...manufacturingExternalReportTiles
 ])
 
 // Order follows the stored pin/visit order (most recently pinned/visited

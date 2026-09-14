@@ -496,9 +496,24 @@ async function onDelete() {
   }
 }
 
+// Deep-linkable, e.g. a manufacturing order's material availability check
+// links here with a shortfall pre-filled as the first line — company and
+// quantity are known, but department is still the requester's call.
+const route = useRoute()
+function applyPrefillFromQuery() {
+  const productId = Number(route.query.prefillProductId)
+  const quantity = Number(route.query.prefillQuantity)
+  const companyId = Number(route.query.prefillCompanyId)
+  if (!productId || !quantity) return
+  openCreate()
+  if (companyId) form.companyId = companyId
+  form.lines = [{ productId, quantity, notes: '' }]
+}
+
 onMounted(async () => {
   await loadLookups()
   await load()
+  applyPrefillFromQuery()
 })
 watch(sort, load)
 watch(() => [filter.companyId, filter.departmentId, filter.status], load)

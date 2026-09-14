@@ -8,7 +8,8 @@
 
 import type { ApiEnvelope, PageEnvelope } from '#shared/types'
 
-export type ManufacturingOrderStatus = 'DRAFT' | 'RELEASED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+export type ManufacturingOrderStatus = 'DRAFT' | 'RELEASED' | 'IN_PROGRESS' | 'PENDING_QC' | 'COMPLETED' | 'CANCELLED'
+export type QualityCheckStatus = 'PENDING' | 'PASSED' | 'FAILED'
 
 export interface ManufacturingOrderMaterial {
   id: number
@@ -34,12 +35,18 @@ export interface ManufacturingOrder {
   productSku: string | null
   warehouseId: number
   warehouseName: string | null
+  productionPlanId: number | null
+  planNumber: string | null
   moNumber: string
   plannedQuantity: number
   producedQuantity: number
   scrapQuantity: number
   scrapReason: string | null
   status: ManufacturingOrderStatus
+  qualityStatus: QualityCheckStatus | null
+  qualityNotes: string | null
+  qualityCheckedBy: string | null
+  qualityCheckedAt: string | null
   plannedStartDate: string | null
   plannedEndDate: string | null
   actualStartDate: string | null
@@ -60,6 +67,7 @@ export interface ManufacturingOrderFilter {
   companyId?: number
   warehouseId?: number
   productId?: number
+  productionPlanId?: number
   status?: ManufacturingOrderStatus
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
@@ -71,6 +79,7 @@ export interface ManufacturingOrderPayload {
   companyId: number
   bomId: number
   warehouseId: number
+  productionPlanId?: number
   plannedQuantity: number
   plannedStartDate?: string
   plannedEndDate?: string
@@ -83,6 +92,22 @@ export interface CompleteManufacturingOrderPayload {
   scrapReason?: string
   laborCost?: number
   overheadCost?: number
+}
+
+export interface QualityCheckPayload {
+  status: 'PASSED' | 'FAILED'
+  notes?: string
+}
+
+export interface MaterialAvailabilityRow {
+  componentProductId: number
+  componentProductName: string | null
+  componentProductSku: string | null
+  unitOfMeasureId: number | null
+  unitOfMeasureAbbreviation: string | null
+  requiredQuantity: number
+  availableQuantity: number
+  shortfallQuantity: number
 }
 
 export function useManufacturingOrders() {
@@ -122,6 +147,16 @@ export function useManufacturingOrders() {
     return res.data
   }
 
+  async function qualityCheck(id: number, payload: QualityCheckPayload) {
+    const res = await api<ApiEnvelope<ManufacturingOrder>>(`/api/admin/manufacturing-orders/${id}/quality-check`, { method: 'POST', body: payload })
+    return res.data
+  }
+
+  async function materialAvailability(id: number) {
+    const res = await api<ApiEnvelope<MaterialAvailabilityRow[]>>(`/api/admin/manufacturing-orders/${id}/material-availability`)
+    return res.data
+  }
+
   async function cancel(id: number) {
     const res = await api<ApiEnvelope<ManufacturingOrder>>(`/api/admin/manufacturing-orders/${id}/cancel`, { method: 'POST' })
     return res.data
@@ -131,5 +166,5 @@ export function useManufacturingOrders() {
     await api(`/api/admin/manufacturing-orders/${id}`, { method: 'DELETE' })
   }
 
-  return { list, get, create, update, release, start, complete, cancel, remove }
+  return { list, get, create, update, release, start, complete, qualityCheck, materialAvailability, cancel, remove }
 }

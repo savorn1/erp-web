@@ -32,6 +32,9 @@ export interface BillOfMaterial {
   unitOfMeasureId: number | null
   unitOfMeasureAbbreviation: string | null
   status: BillOfMaterialStatus
+  version: number
+  previousVersionId: number | null
+  supersededByBomId: number | null
   notes: string | null
   createdBy: string | null
   createdAt: string
@@ -62,6 +65,16 @@ export interface BillOfMaterialPayload {
   outputQuantity: number
   notes?: string
   lines: BillOfMaterialLinePayload[]
+}
+
+export interface BomVersionRow {
+  id: number
+  bomNumber: string
+  version: number
+  status: BillOfMaterialStatus
+  createdBy: string | null
+  createdAt: string
+  current: boolean
 }
 
 export function useBillOfMaterials() {
@@ -96,9 +109,19 @@ export function useBillOfMaterials() {
     return res.data
   }
 
+  async function createNewVersion(id: number) {
+    const res = await api<ApiEnvelope<BillOfMaterial>>(`/api/admin/bill-of-materials/${id}/new-version`, { method: 'POST' })
+    return res.data
+  }
+
+  async function getVersionHistory(id: number) {
+    const res = await api<ApiEnvelope<BomVersionRow[]>>(`/api/admin/bill-of-materials/${id}/versions`)
+    return res.data
+  }
+
   async function remove(id: number) {
     await api(`/api/admin/bill-of-materials/${id}`, { method: 'DELETE' })
   }
 
-  return { list, get, create, update, activate, deactivate, remove }
+  return { list, get, create, update, activate, deactivate, createNewVersion, getVersionHistory, remove }
 }

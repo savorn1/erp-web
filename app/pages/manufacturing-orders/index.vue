@@ -1,8 +1,8 @@
 <template>
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Bill of materials</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" to="/bill-of-materials/new"> New BOM </UButton>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Manufacturing orders</h1>
+      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" to="/manufacturing-orders/new"> New manufacturing order </UButton>
     </div>
 
     <UAlert
@@ -11,13 +11,13 @@
       variant="subtle"
       class="mb-4"
       title="No active companies yet"
-      description="Create a company and some products first."
+      description="Create a company, warehouse, and an active BOM first."
       icon="i-lucide-triangle-alert"
     />
 
     <UCard class="mb-4">
       <div class="flex flex-wrap gap-3">
-        <UInput v-model="search" placeholder="Search BOM number" icon="i-lucide-search" class="w-52" />
+        <UInput v-model="search" placeholder="Search MO number" icon="i-lucide-search" class="w-52" />
         <USelect v-model="filter.companyId" :items="companyFilterOptions" placeholder="Company" class="w-44" />
         <USelect v-model="filter.status" :items="statusFilterOptions" placeholder="Status" class="w-40" />
         <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
@@ -30,41 +30,45 @@
       <DataTable v-model:sort="sort" :rows="pagedRows" :columns="columns" :loading="loading" refreshable numbered @refresh="load">
         <template #actions-data="{ row }">
           <div class="flex items-center gap-2">
-            <UButton size="xs" color="primary" variant="soft" icon="i-lucide-eye" :to="`/bill-of-materials/${row.id}`">View</UButton>
-            <UButton
-              v-if="row.status === 'ACTIVE'"
-              size="xs"
-              color="warning"
-              variant="soft"
-              icon="i-lucide-pause"
-              :loading="actingId === row.id"
-              @click="onDeactivate(row)"
-            >
-              Deactivate
+            <UButton size="xs" color="primary" variant="soft" icon="i-lucide-eye" :to="`/manufacturing-orders/${row.id}`">
+              {{ row.status === 'DRAFT' ? 'Edit' : 'View' }}
             </UButton>
             <UButton
-              v-else
+              v-if="row.status === 'DRAFT'"
               size="xs"
               color="success"
               variant="soft"
-              icon="i-lucide-play"
+              icon="i-lucide-check"
               :loading="actingId === row.id"
-              @click="onActivate(row)"
+              @click="onRelease(row)"
             >
-              Activate
+              Release
             </UButton>
             <UButton
-              v-if="row.status === 'ACTIVE'"
+              v-if="row.status === 'RELEASED'"
               size="xs"
               color="info"
               variant="soft"
-              icon="i-lucide-git-branch-plus"
+              icon="i-lucide-play"
               :loading="actingId === row.id"
-              @click="onNewVersion(row)"
+              @click="onStart(row)"
             >
-              New version
+              Start
             </UButton>
-            <UButton size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="confirmDelete = row">Delete</UButton>
+            <UButton
+              v-if="row.status === 'DRAFT' || row.status === 'RELEASED'"
+              size="xs"
+              color="warning"
+              variant="soft"
+              icon="i-lucide-ban"
+              :loading="actingId === row.id"
+              @click="onCancel(row)"
+            >
+              Cancel
+            </UButton>
+            <UButton v-if="row.status === 'DRAFT'" size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="confirmDelete = row">
+              Delete
+            </UButton>
           </div>
         </template>
 
@@ -72,16 +76,16 @@
           <EmptyState
             v-if="hasActiveFilter"
             icon="i-lucide-search-x"
-            title="No BOMs match your filters"
+            title="No manufacturing orders match your filters"
             description="Try a different search or clear your filters."
           >
             <template #action>
               <UButton color="neutral" variant="soft" icon="i-lucide-x" @click="clearFilters">Clear filters</UButton>
             </template>
           </EmptyState>
-          <EmptyState v-else icon="i-lucide-list-tree" title="No bills of materials yet" description="Create the first recipe to get started.">
+          <EmptyState v-else icon="i-lucide-cog" title="No manufacturing orders yet" description="Create the first one to get started.">
             <template #action>
-              <UButton :disabled="activeCompanyOptions.length === 0" icon="i-lucide-plus" to="/bill-of-materials/new">New BOM</UButton>
+              <UButton :disabled="activeCompanyOptions.length === 0" icon="i-lucide-plus" to="/manufacturing-orders/new">New manufacturing order</UButton>
             </template>
           </EmptyState>
         </template>
@@ -94,8 +98,8 @@
 
     <ConfirmModal
       :model-value="confirmDelete !== null"
-      title="Delete bill of materials"
-      :description="`Delete BOM '${confirmDelete?.bomNumber ?? ''}'? This cannot be undone.`"
+      title="Delete manufacturing order"
+      :description="`Delete manufacturing order '${confirmDelete?.moNumber ?? ''}'? This cannot be undone.`"
       confirm-label="Delete"
       color="error"
       :loading="deleting"
@@ -111,15 +115,15 @@
 
 <script setup lang="ts">
 import type { ColumnDef } from '#shared/types'
-import type { BillOfMaterial, BillOfMaterialStatus } from '~/composables/useBillOfMaterials'
+import type { ManufacturingOrder, ManufacturingOrderStatus } from '~/composables/useManufacturingOrders'
 
 definePageMeta({ middleware: 'admin' })
 
-const { list, activate, deactivate, createNewVersion, remove } = useBillOfMaterials()
+const { list, release, start, cancel, remove } = useManufacturingOrders()
 const { list: listCompanies } = useCompanies()
 const toast = useToast()
 
-const rows = ref<BillOfMaterial[]>([])
+const rows = ref<ManufacturingOrder[]>([])
 const loading = ref(false)
 const error = ref('')
 
@@ -140,24 +144,33 @@ const activeCompanyOptions = computed(() => companies.value.filter((c) => c.acti
 const companyFilterOptions = computed(() => [{ label: 'All companies', value: undefined }, ...companies.value.map((c) => ({ label: c.name, value: c.id }))])
 const statusFilterOptions = [
   { label: 'All statuses', value: undefined },
-  { label: 'Active', value: 'ACTIVE' },
-  { label: 'Inactive', value: 'INACTIVE' }
+  { label: 'Draft', value: 'DRAFT' },
+  { label: 'Released', value: 'RELEASED' },
+  { label: 'In progress', value: 'IN_PROGRESS' },
+  { label: 'Pending QC', value: 'PENDING_QC' },
+  { label: 'Completed', value: 'COMPLETED' },
+  { label: 'Cancelled', value: 'CANCELLED' }
 ]
 
-const filter = reactive<{ companyId: number | undefined; status: BillOfMaterialStatus | undefined }>({ companyId: undefined, status: undefined })
+const filter = reactive<{ companyId: number | undefined; status: ManufacturingOrderStatus | undefined }>({ companyId: undefined, status: undefined })
 
 const sort = ref<{ column: string; direction: 'asc' | 'desc' } | undefined>({ column: 'id', direction: 'desc' })
-const { page, pageSize, total, rows: pagedRows, search } = useClientTable(rows, { pageSize: 10, searchFields: ['bomNumber'] })
+const { page, pageSize, total, rows: pagedRows, search } = useClientTable(rows, { pageSize: 10, searchFields: ['moNumber'] })
 
-const columns: ColumnDef<BillOfMaterial>[] = [
-  { key: 'bomNumber', label: 'BOM number', sortable: true },
-  { key: 'name', label: 'Name' },
+const columns: ColumnDef<ManufacturingOrder>[] = [
+  { key: 'moNumber', label: 'MO number', sortable: true },
   { key: 'productName', label: 'Finished good', value: (row) => `${row.productName ?? '—'} (${row.productSku ?? '—'})` },
-  { key: 'outputQuantity', label: 'Output qty', suffix: (row) => ` ${row.unitOfMeasureAbbreviation ?? ''}` },
-  { key: 'version', label: 'Version', value: (row) => `v${row.version}` },
+  { key: 'warehouseName', label: 'Warehouse', value: (row) => row.warehouseName ?? '—' },
+  { key: 'plannedQuantity', label: 'Planned qty' },
+  { key: 'producedQuantity', label: 'Produced qty' },
   { key: 'status', type: 'status' },
   { key: 'actions', label: '' }
 ]
+
+// Deep-linkable, e.g. a production plan's "View orders" button links here
+// with its id.
+const route = useRoute()
+const productionPlanId = route.query.productionPlanId ? Number(route.query.productionPlanId) : undefined
 
 async function load() {
   loading.value = true
@@ -165,6 +178,7 @@ async function load() {
   try {
     const res = await list({
       companyId: filter.companyId,
+      productionPlanId,
       status: filter.status,
       sortBy: sort.value?.column,
       sortOrder: sort.value?.direction,
@@ -179,51 +193,51 @@ async function load() {
 }
 
 const actingId = ref<number | null>(null)
-async function onActivate(row: BillOfMaterial) {
+async function onRelease(row: ManufacturingOrder) {
   actingId.value = row.id
   try {
-    await activate(row.id)
-    toast.add({ title: 'BOM activated', color: 'success' })
+    await release(row.id)
+    toast.add({ title: 'Manufacturing order released', color: 'success' })
     await load()
   } catch (err) {
-    toast.add({ title: 'Could not activate', description: apiErrorMessage(err), color: 'error' })
+    toast.add({ title: 'Could not release', description: apiErrorMessage(err), color: 'error' })
   } finally {
     actingId.value = null
   }
 }
-async function onDeactivate(row: BillOfMaterial) {
+async function onStart(row: ManufacturingOrder) {
   actingId.value = row.id
   try {
-    await deactivate(row.id)
-    toast.add({ title: 'BOM deactivated', color: 'success' })
+    await start(row.id)
+    toast.add({ title: 'Production started', color: 'success' })
     await load()
   } catch (err) {
-    toast.add({ title: 'Could not deactivate', description: apiErrorMessage(err), color: 'error' })
+    toast.add({ title: 'Could not start production', description: apiErrorMessage(err), color: 'error' })
   } finally {
     actingId.value = null
   }
 }
-async function onNewVersion(row: BillOfMaterial) {
+async function onCancel(row: ManufacturingOrder) {
   actingId.value = row.id
   try {
-    const created = await createNewVersion(row.id)
-    toast.add({ title: `Created ${created.bomNumber} (v${created.version})`, color: 'success' })
+    await cancel(row.id)
+    toast.add({ title: 'Manufacturing order cancelled', color: 'success' })
     await load()
   } catch (err) {
-    toast.add({ title: 'Could not create new version', description: apiErrorMessage(err), color: 'error' })
+    toast.add({ title: 'Could not cancel', description: apiErrorMessage(err), color: 'error' })
   } finally {
     actingId.value = null
   }
 }
 
 const deleting = ref(false)
-const confirmDelete = ref<BillOfMaterial | null>(null)
+const confirmDelete = ref<ManufacturingOrder | null>(null)
 async function onDelete() {
   if (!confirmDelete.value) return
   deleting.value = true
   try {
     await remove(confirmDelete.value.id)
-    toast.add({ title: 'BOM deleted', color: 'success' })
+    toast.add({ title: 'Manufacturing order deleted', color: 'success' })
     confirmDelete.value = null
     await load()
   } catch (err) {

@@ -400,6 +400,99 @@ export function useReportCatalog() {
     { to: '/supplier-payments', icon: 'i-lucide-banknote', label: 'Supplier payments', description: 'Every payment made to a supplier.' }
   ])
 
+  const manufacturingReportTiles: ReportTile[] = withColor('amber', [
+    {
+      to: '/reports/manufacturing/summary',
+      icon: 'i-lucide-bar-chart-3',
+      label: 'Summary',
+      description: 'Order count, planned/produced/scrap quantity, broken down by status.'
+    },
+    {
+      to: '/reports/manufacturing/material-consumption',
+      icon: 'i-lucide-boxes',
+      label: 'Material consumption',
+      description: 'Raw materials drawn from stock, per component.'
+    },
+    {
+      to: '/reports/manufacturing/production-output',
+      icon: 'i-lucide-package-check',
+      label: 'Production output',
+      description: 'Finished goods produced by completed orders, per product.'
+    },
+    {
+      to: '/reports/manufacturing/scrap-wastage',
+      icon: 'i-lucide-trash-2',
+      label: 'Scrap & wastage',
+      description: 'Completed orders that scrapped finished-good units.'
+    },
+    {
+      to: '/reports/manufacturing/cost',
+      icon: 'i-lucide-calculator',
+      label: 'Manufacturing cost',
+      description: 'Material, labor, and overhead cost per completed order.'
+    },
+    {
+      to: '/reports/manufacturing/rejections',
+      icon: 'i-lucide-shield-x',
+      label: 'Rejections',
+      description: 'Finished-good batches rejected at quality control.'
+    },
+    {
+      to: '/reports/manufacturing/material-requirements',
+      icon: 'i-lucide-package-search',
+      label: 'Material requirements',
+      description: 'Outstanding material needed across open orders, for procurement planning.'
+    },
+    {
+      to: '/reports/manufacturing/bom-cost',
+      icon: 'i-lucide-list-tree',
+      label: 'BOM cost',
+      description: 'Standard material cost of every active recipe, live from current component costs.'
+    },
+    {
+      to: '/reports/manufacturing/cost-variance',
+      icon: 'i-lucide-scale',
+      label: 'Cost variance',
+      description: 'Standard vs. actual material cost per order.'
+    },
+    {
+      to: '/reports/manufacturing/production-time',
+      icon: 'i-lucide-timer',
+      label: 'Production time',
+      description: 'Actual cycle time for every completed order.'
+    },
+    {
+      to: '/reports/manufacturing/quality-pass-fail',
+      icon: 'i-lucide-badge-check',
+      label: 'Quality pass/fail',
+      description: 'Inspection pass rate, per product.'
+    },
+    {
+      to: '/reports/manufacturing/plan-vs-actual',
+      icon: 'i-lucide-target',
+      label: 'Plan vs actual',
+      description: 'Planned vs produced quantity, achievement rate, and yield.'
+    },
+    {
+      to: '/reports/manufacturing/production-trend',
+      icon: 'i-lucide-trending-up',
+      label: 'Production trend',
+      description: 'Completed order count and quantity produced, by month.'
+    },
+    {
+      to: '/reports/manufacturing/profitability',
+      icon: 'i-lucide-piggy-bank',
+      label: 'Profitability',
+      description: 'Selling price vs. manufacturing cost, per product.'
+    }
+  ])
+
+  const manufacturingExternalReportTiles: ReportTile[] = withColor('amber', [
+    { to: '/bill-of-materials', icon: 'i-lucide-list-tree', label: 'Bill of materials', description: 'Every recipe, versioned, and its component list.' },
+    { to: '/production-plans', icon: 'i-lucide-calendar-range', label: 'Production plans', description: 'Groups of manufacturing orders planned over a period.' },
+    { to: '/manufacturing-orders', icon: 'i-lucide-cog', label: 'Manufacturing orders', description: 'Every manufacturing order and its status.' }
+  ])
+
   return {
     salesReportTiles,
     salesExternalReportTiles,
@@ -411,6 +504,8 @@ export function useReportCatalog() {
     arReportTiles,
     arExternalReportTiles,
     apReportTiles,
-    apExternalReportTiles
+    apExternalReportTiles,
+    manufacturingReportTiles,
+    manufacturingExternalReportTiles
   }
 }
