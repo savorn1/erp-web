@@ -1,0 +1,79 @@
+<template>
+  <div>
+    <ReportBackButton />
+    <PageHeader
+      title="Expiry stock"
+      description="Batches with an expiration date, soonest first."
+      :crumbs="[{ label: 'Reports', to: '/reports' }, { label: 'Inventory reports' }, { label: 'Expiry stock' }]"
+    />
+
+    <UCard class="mb-4">
+      <div class="flex flex-wrap items-end gap-3">
+        <UFormField label="Company">
+          <USelect v-model="companyId" :items="activeCompanyOptions" placeholder="All companies" class="w-52" />
+        </UFormField>
+      </div>
+    </UCard>
+
+    <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
+    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+
+    <UCard v-else>
+      <DataTable :rows="rows" :columns="columns" :exportable="false">
+        <template #empty-state>
+          <EmptyState icon="i-lucide-calendar-x" title="No batches with an expiration date" />
+        </template>
+      </DataTable>
+    </UCard>
+  </div>
+</template>
+
+<script setup lang="ts">
+import type { ColumnDef } from '#shared/types'
+import type { BatchLotStockRow } from '~/composables/useInventoryReports'
+
+definePageMeta({ middleware: 'admin' })
+
+const { companyId, activeCompanyOptions, ensureLoaded } = useReportFilters()
+const { batchLotStock } = useInventoryReports()
+
+const loading = ref(false)
+const error = ref('')
+const rows = ref<BatchLotStockRow[]>([])
+
+function daysUntil(date: string) {
+  return Math.ceil((new Date(date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+}
+
+const columns: ColumnDef<BatchLotStockRow>[] = [
+  { key: 'productName', label: 'Product', value: (row) => `${row.productName ?? '—'} (${row.productSku ?? '—'})` },
+  { key: 'batchNumber', label: 'Batch / lot' },
+  { key: 'currentQuantity', label: 'Current qty' },
+  { key: 'expirationDate', label: 'Expiration', type: 'date' },
+  {
+    key: 'daysUntilExpiry',
+    label: 'Days until expiry',
+    value: (row) => (row.expirationDate ? daysUntil(row.expirationDate) : '—'),
+    class: (row) => (row.expirationDate && daysUntil(row.expirationDate) <= 30 ? 'text-error' : '')
+  }
+]
+
+async function load() {
+  loading.value = true
+  error.value = ''
+  try {
+    const result = await batchLotStock({ companyId: companyId.value, includeDepleted: false })
+    rows.value = result.rows.filter((r) => r.expirationDate)
+  } catch (err) {
+    error.value = apiErrorMessage(err)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(async () => {
+  await ensureLoaded()
+  await load()
+})
+watch(companyId, load)
+</script>

@@ -42,6 +42,8 @@ export interface Product {
   imageUrl: string | null
   // Zero means no threshold configured — never flagged by the Low Stock report.
   reorderPoint: number
+  // Zero means no threshold configured — never flagged by the Overstock report.
+  maxStock: number
 }
 
 export interface ProductFilter {
@@ -76,6 +78,7 @@ export interface ProductPayload {
   trackingType?: ProductTrackingType
   imageUrl?: string
   reorderPoint?: number
+  maxStock?: number
 }
 
 export function useProducts() {

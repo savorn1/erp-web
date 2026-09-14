@@ -208,8 +208,14 @@ export function useReportCatalog() {
     {
       to: '/reports/inventory/stock-report',
       icon: 'i-lucide-boxes',
-      label: 'Stock report',
+      label: 'Stock summary',
       description: 'On hand, available, and incoming quantity per product and warehouse.'
+    },
+    {
+      to: '/reports/inventory/stock-detail',
+      icon: 'i-lucide-package-2',
+      label: 'Stock detail',
+      description: 'Bin-level on-hand quantity per product and warehouse.'
     },
     {
       to: '/reports/inventory/stock-movement',
@@ -218,12 +224,191 @@ export function useReportCatalog() {
       description: 'Every stock change — receipts, issues, transfers, and adjustments.'
     },
     {
+      to: '/reports/inventory/stock-ledger',
+      icon: 'i-lucide-book-text',
+      label: 'Stock ledger',
+      description: 'Chronological stock movements for a product, with a running balance.'
+    },
+    { to: '/reports/inventory/stock-in', icon: 'i-lucide-log-in', label: 'Stock in', description: 'Inbound quantity per product and warehouse.' },
+    { to: '/reports/inventory/stock-out', icon: 'i-lucide-log-out', label: 'Stock out', description: 'Outbound quantity per product and warehouse.' },
+    {
+      to: '/reports/inventory/stock-transfer',
+      icon: 'i-lucide-repeat',
+      label: 'Stock transfer',
+      description: 'Every stock transfer between warehouses and its status.'
+    },
+    {
+      to: '/reports/inventory/stock-adjustment',
+      icon: 'i-lucide-scale',
+      label: 'Stock adjustment',
+      description: 'Every stock adjustment request and its approval status.'
+    },
+    {
+      to: '/reports/inventory/stock-opening',
+      icon: 'i-lucide-log-in',
+      label: 'Stock opening',
+      description: 'Quantity on hand at the start of a date range.'
+    },
+    { to: '/reports/inventory/stock-closing', icon: 'i-lucide-log-out', label: 'Stock closing', description: 'Quantity on hand as of the end of a date.' },
+    {
       to: '/reports/inventory/stock-valuation',
       icon: 'i-lucide-landmark',
       label: 'Stock valuation',
       description: 'Total quantity and value on hand, by warehouse.'
     },
-    { to: '/reports/inventory/low-stock', icon: 'i-lucide-triangle-alert', label: 'Low stock', description: 'Products below their reorder point.' }
+    {
+      to: '/reports/inventory/stock-aging',
+      icon: 'i-lucide-clock',
+      label: 'Stock aging',
+      description: 'Current stock bucketed by days since it was last received.'
+    },
+    {
+      to: '/reports/inventory/batch-lot-stock',
+      icon: 'i-lucide-package-2',
+      label: 'Batch / lot stock',
+      description: 'Current quantity per batch/lot, aggregated across every warehouse.'
+    },
+    {
+      to: '/reports/inventory/serial-number-stock',
+      icon: 'i-lucide-scan-barcode',
+      label: 'Serial number stock',
+      description: 'Every individually-tracked unit currently in stock.'
+    },
+    {
+      to: '/reports/inventory/expiry-stock',
+      icon: 'i-lucide-calendar-x',
+      label: 'Expiry stock',
+      description: 'Batches with an expiration date, soonest first.'
+    },
+    { to: '/reports/inventory/low-stock', icon: 'i-lucide-triangle-alert', label: 'Low stock', description: 'Products below their reorder point.' },
+    {
+      to: '/reports/inventory/out-of-stock',
+      icon: 'i-lucide-package-x',
+      label: 'Out of stock',
+      description: 'Products with zero or negative on-hand quantity.'
+    },
+    { to: '/reports/inventory/overstock', icon: 'i-lucide-triangle-alert', label: 'Overstock', description: 'Products above their max stock threshold.' },
+    {
+      to: '/reports/inventory/fast-moving',
+      icon: 'i-lucide-trending-up',
+      label: 'Fast moving stock',
+      description: 'Products with the highest outbound quantity over a trailing window.'
+    },
+    {
+      to: '/reports/inventory/slow-moving',
+      icon: 'i-lucide-turtle',
+      label: 'Slow moving stock',
+      description: 'Products with the least outbound activity over a trailing window.'
+    },
+    {
+      to: '/reports/inventory/dead-stock',
+      icon: 'i-lucide-ban',
+      label: 'Dead stock',
+      description: 'Products on hand with zero outbound activity over a trailing window.'
+    },
+    {
+      to: '/reports/inventory/negative-stock',
+      icon: 'i-lucide-circle-alert',
+      label: 'Negative stock',
+      description: 'A data-integrity check — should normally be empty.'
+    },
+    {
+      to: '/reports/inventory/inventory-count',
+      icon: 'i-lucide-clipboard-check',
+      label: 'Inventory count',
+      description: 'Every physical stock count, with how many lines had a variance.'
+    },
+    {
+      to: '/reports/inventory/stock-variance',
+      icon: 'i-lucide-git-compare',
+      label: 'Stock variance',
+      description: 'Counted lines where the physical count differed from the system quantity.'
+    },
+    {
+      to: '/reports/inventory/warehouse-stock',
+      icon: 'i-lucide-warehouse',
+      label: 'Warehouse stock',
+      description: 'On-hand quantity and value totalled per warehouse.'
+    },
+    {
+      to: '/reports/inventory/location-stock',
+      icon: 'i-lucide-map-pin',
+      label: 'Location stock',
+      description: 'On-hand quantity totalled per bin/location.'
+    },
+    {
+      to: '/reports/inventory/product-stock',
+      icon: 'i-lucide-package',
+      label: 'Product stock',
+      description: 'On-hand quantity and value per product, across every warehouse.'
+    },
+    {
+      to: '/reports/inventory/product-category-stock',
+      icon: 'i-lucide-tags',
+      label: 'Product category stock',
+      description: 'On-hand quantity and value totalled per product category.'
+    },
+    {
+      to: '/reports/inventory/product-variant-stock',
+      icon: 'i-lucide-badge',
+      label: 'Product variant stock',
+      description: "Every variant alongside its parent product's total on-hand stock."
+    },
+    { to: '/reports/inventory/uom-stock', icon: 'i-lucide-ruler', label: 'UOM stock', description: 'On-hand quantity totalled per unit of measure.' },
+    {
+      to: '/reports/inventory/stock-by-customer',
+      icon: 'i-lucide-users',
+      label: 'Stock by customer',
+      description: 'Quantity on open sales orders per customer.'
+    },
+    {
+      to: '/reports/inventory/stock-by-supplier',
+      icon: 'i-lucide-truck',
+      label: 'Stock by supplier',
+      description: 'Quantity on open purchase orders per supplier.'
+    },
+    {
+      to: '/reports/inventory/stock-by-warehouse',
+      icon: 'i-lucide-warehouse',
+      label: 'Stock by warehouse',
+      description: 'Same data as Warehouse Stock.'
+    },
+    {
+      to: '/reports/inventory/stock-by-location',
+      icon: 'i-lucide-map-pin',
+      label: 'Stock by location',
+      description: 'Same data as Location Stock.'
+    },
+    {
+      to: '/reports/inventory/stock-by-batch-lot',
+      icon: 'i-lucide-package-2',
+      label: 'Stock by batch / lot',
+      description: 'Same data as Batch/Lot Stock.'
+    },
+    {
+      to: '/reports/inventory/stock-by-serial-number',
+      icon: 'i-lucide-scan-barcode',
+      label: 'Stock by serial number',
+      description: 'Same data as Serial Number Stock.'
+    },
+    {
+      to: '/reports/inventory/stock-cost',
+      icon: 'i-lucide-circle-dollar-sign',
+      label: 'Stock cost',
+      description: 'Unit cost and total inventory cost per product.'
+    },
+    {
+      to: '/reports/inventory/stock-profitability',
+      icon: 'i-lucide-piggy-bank',
+      label: 'Stock profitability',
+      description: 'Revenue, cost, and gross profit per product for a period.'
+    },
+    {
+      to: '/reports/inventory/inventory-performance',
+      icon: 'i-lucide-gauge',
+      label: 'Inventory performance',
+      description: 'Turnover ratio per product for a period.'
+    }
   ])
 
   const accountingReportTiles: ReportTile[] = withColor('indigo', [

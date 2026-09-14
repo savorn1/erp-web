@@ -561,6 +561,14 @@ const productFields = computed<FieldDef[]>(() => [
     default: 0,
     hint: 'Flag this product on the Low Stock report once available stock falls below this. Leave at 0 to never flag it.'
   },
+  {
+    name: 'maxStock',
+    label: 'Max stock',
+    type: 'number',
+    min: 0,
+    default: 0,
+    hint: 'Flag this product on the Overstock report once on-hand stock exceeds this. Leave at 0 to never flag it.'
+  },
   { name: 'description', type: 'textarea', wrapper: 'full' }
 ])
 
@@ -612,6 +620,7 @@ const {
       taxRate: row.taxRate,
       trackingType: row.trackingType,
       reorderPoint: row.reorderPoint,
+      maxStock: row.maxStock,
       description: row.description ?? '',
       imageUrl: row.imageUrl ?? ''
     }),
@@ -631,6 +640,7 @@ const {
       taxRate: values.taxRate ?? 0,
       trackingType: values.trackingType ?? 'NONE',
       reorderPoint: values.reorderPoint ?? 0,
+      maxStock: values.maxStock ?? 0,
       imageUrl: values.imageUrl || undefined
     })
   }
