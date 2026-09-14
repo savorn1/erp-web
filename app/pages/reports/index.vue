@@ -72,7 +72,9 @@
 
     <UCard v-if="search.trim()">
       <template #header>
-        <span class="font-semibold text-gray-900 dark:text-white">{{ searchResults.length }} matching {{ searchResults.length === 1 ? 'report' : 'reports' }}</span>
+        <span class="font-semibold text-gray-900 dark:text-white"
+          >{{ searchResults.length }} matching {{ searchResults.length === 1 ? 'report' : 'reports' }}</span
+        >
       </template>
       <DataTable :rows="searchResults" :columns="searchColumns" :exportable="false" @select="(row) => router.push(row.to)">
         <template #label-data="{ row }">
@@ -108,7 +110,11 @@
       <ReportCategoryCard id="more-purchase" title="More purchase reports" :tiles="purchaseExternalReportTiles" class="mb-4" />
       <ReportCategoryCard id="inventory" title="Inventory reports" :tiles="inventoryReportTiles" class="mb-4" />
       <ReportCategoryCard id="accounting" title="Accounting reports" :tiles="accountingReportTiles" class="mb-4" />
-      <ReportCategoryCard id="more-accounting" title="More accounting reports" :tiles="accountingExternalReportTiles" />
+      <ReportCategoryCard id="more-accounting" title="More accounting reports" :tiles="accountingExternalReportTiles" class="mb-4" />
+      <ReportCategoryCard id="ar" title="Accounts receivable reports" :tiles="arReportTiles" class="mb-4" />
+      <ReportCategoryCard id="more-ar" title="More accounts receivable reports" :tiles="arExternalReportTiles" class="mb-4" />
+      <ReportCategoryCard id="ap" title="Accounts payable reports" :tiles="apReportTiles" class="mb-4" />
+      <ReportCategoryCard id="more-ap" title="More accounts payable reports" :tiles="apExternalReportTiles" />
     </template>
   </div>
 </template>
@@ -132,7 +138,11 @@ const {
   purchaseExternalReportTiles,
   inventoryReportTiles,
   accountingReportTiles,
-  accountingExternalReportTiles
+  accountingExternalReportTiles,
+  arReportTiles,
+  arExternalReportTiles,
+  apReportTiles,
+  apExternalReportTiles
 } = useReportCatalog()
 const { pinned, isPinned, togglePin, clearAll: clearPinned } = usePinnedReports()
 const { recent, clearAll: clearRecent } = useRecentReports()
@@ -146,7 +156,11 @@ const jumpNavSections = [
   { id: 'more-purchase', label: 'More purchase reports', color: 'orange' },
   { id: 'inventory', label: 'Inventory reports', color: 'teal' },
   { id: 'accounting', label: 'Accounting reports', color: 'indigo' },
-  { id: 'more-accounting', label: 'More accounting reports', color: 'indigo' }
+  { id: 'more-accounting', label: 'More accounting reports', color: 'indigo' },
+  { id: 'ar', label: 'Accounts receivable reports', color: 'indigo' },
+  { id: 'more-ar', label: 'More accounts receivable reports', color: 'indigo' },
+  { id: 'ap', label: 'Accounts payable reports', color: 'orange' },
+  { id: 'more-ap', label: 'More accounts payable reports', color: 'orange' }
 ]
 
 const HINT_STORAGE_KEY = 'erp-reports-hint-dismissed'
@@ -260,7 +274,11 @@ const allTiles = computed<ReportTile[]>(() => [
   ...purchaseExternalReportTiles,
   ...inventoryReportTiles,
   ...accountingReportTiles,
-  ...accountingExternalReportTiles
+  ...accountingExternalReportTiles,
+  ...arReportTiles,
+  ...arExternalReportTiles,
+  ...apReportTiles,
+  ...apExternalReportTiles
 ])
 
 // Order follows the stored pin/visit order (most recently pinned/visited

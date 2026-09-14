@@ -113,7 +113,12 @@ export function useReportCatalog() {
     },
     { to: '/reports/purchase/by-supplier', icon: 'i-lucide-truck', label: 'By supplier', description: 'Orders and spend per supplier.' },
     { to: '/reports/purchase/by-product', icon: 'i-lucide-package', label: 'By product', description: 'Quantity purchased and spend per product.' },
-    { to: '/reports/purchase/detail', icon: 'i-lucide-list', label: 'Detail', description: 'Every purchased line, with unit cost, discount, and tax broken out.' },
+    {
+      to: '/reports/purchase/detail',
+      icon: 'i-lucide-list',
+      label: 'Detail',
+      description: 'Every purchased line, with unit cost, discount, and tax broken out.'
+    },
     { to: '/reports/purchase/by-date', icon: 'i-lucide-calendar-days', label: 'By date', description: 'Order count and spend per order date.' },
     {
       to: '/reports/purchase/by-category',
@@ -122,7 +127,12 @@ export function useReportCatalog() {
       description: 'Quantity purchased and spend per product category.'
     },
     { to: '/reports/purchase/by-brand', icon: 'i-lucide-badge', label: 'By brand', description: 'Quantity purchased and spend per product brand.' },
-    { to: '/reports/purchase/by-uom', icon: 'i-lucide-ruler', label: 'By unit of measure', description: 'Quantity purchased and spend per unit of measure ordered.' },
+    {
+      to: '/reports/purchase/by-uom',
+      icon: 'i-lucide-ruler',
+      label: 'By unit of measure',
+      description: 'Quantity purchased and spend per unit of measure ordered.'
+    },
     {
       to: '/reports/purchase/by-supplier-type',
       icon: 'i-lucide-user-check',
@@ -154,7 +164,12 @@ export function useReportCatalog() {
       label: 'Cancellations',
       description: 'Cancelled orders and the spend they would have represented.'
     },
-    { to: '/reports/purchase/discounts', icon: 'i-lucide-percent', label: 'Discounts', description: 'Every discounted line, with the discount amount received.' },
+    {
+      to: '/reports/purchase/discounts',
+      icon: 'i-lucide-percent',
+      label: 'Discounts',
+      description: 'Every discounted line, with the discount amount received.'
+    },
     { to: '/reports/purchase/monthly', icon: 'i-lucide-calendar', label: 'Monthly purchases', description: 'Order count and spend grouped by month.' },
     { to: '/reports/purchase/yearly', icon: 'i-lucide-calendar-range', label: 'Yearly purchases', description: 'Order count and spend grouped by year.' },
     {
@@ -178,7 +193,12 @@ export function useReportCatalog() {
   ])
 
   const purchaseExternalReportTiles: ReportTile[] = withColor('orange', [
-    { to: '/purchase-requests', icon: 'i-lucide-clipboard-list', label: 'Purchase requisitions', description: 'Internal requests to purchase, before an RFQ or PO exists.' },
+    {
+      to: '/purchase-requests',
+      icon: 'i-lucide-clipboard-list',
+      label: 'Purchase requisitions',
+      description: 'Internal requests to purchase, before an RFQ or PO exists.'
+    },
     { to: '/purchase-orders', icon: 'i-lucide-shopping-cart', label: 'Purchase orders', description: 'Every purchase order and its status.' },
     { to: '/goods-receipts', icon: 'i-lucide-package-check', label: 'Goods receipts', description: 'Goods received against purchase orders.' },
     { to: '/purchase-invoices', icon: 'i-lucide-receipt', label: 'Purchase invoices', description: 'Supplier invoices raised against purchase orders.' }
@@ -250,6 +270,20 @@ export function useReportCatalog() {
       description: 'Outstanding supplier bills by age bucket.'
     },
     { to: '/reports/accounting/tax-report', icon: 'i-lucide-receipt', label: 'Tax report', description: 'Output and input tax by rate, for a period.' },
+    { to: '/reports/accounting/tax-detail', icon: 'i-lucide-list-checks', label: 'Tax detail', description: 'Every taxed invoice line, output and input.' },
+    {
+      to: '/reports/accounting/tax-by-customer',
+      icon: 'i-lucide-users',
+      label: 'Tax by customer',
+      description: 'Output tax collected per customer, for a period.'
+    },
+    { to: '/reports/accounting/tax-by-supplier', icon: 'i-lucide-truck', label: 'Tax by supplier', description: 'Input tax paid per supplier, for a period.' },
+    {
+      to: '/reports/accounting/tax-by-product',
+      icon: 'i-lucide-package',
+      label: 'Tax by product',
+      description: 'Output and input tax attributed to each product.'
+    },
     {
       to: '/reports/accounting/statement-of-changes-in-equity',
       icon: 'i-lucide-trending-up',
@@ -265,6 +299,107 @@ export function useReportCatalog() {
     { to: '/accounts-payable', icon: 'i-lucide-landmark', label: 'Accounts payable', description: 'Outstanding supplier bills and balances.' }
   ])
 
+  const arReportTiles: ReportTile[] = withColor('indigo', [
+    {
+      to: '/reports/accounts-receivable/summary',
+      icon: 'i-lucide-bar-chart-3',
+      label: 'AR summary',
+      description: 'Total outstanding and overdue receivables, as of a date.'
+    },
+    { to: '/reports/accounts-receivable/detail', icon: 'i-lucide-list', label: 'AR detail', description: 'Every line of every currently-outstanding invoice.' },
+    {
+      to: '/reports/accounts-receivable/customer-balance',
+      icon: 'i-lucide-users',
+      label: 'Customer balance',
+      description: 'Outstanding balance per customer, as of a date.'
+    },
+    {
+      to: '/reports/accounts-receivable/customer-statement',
+      icon: 'i-lucide-book-text',
+      label: 'Customer statement',
+      description: "One customer's invoices, payments, and credit notes over a period, with a running balance."
+    },
+    {
+      to: '/reports/accounts-receivable/collections',
+      icon: 'i-lucide-hand-coins',
+      label: 'Collections',
+      description: 'Payments received from customers during a period.'
+    },
+    {
+      to: '/reports/accounts-receivable/bad-debt',
+      icon: 'i-lucide-triangle-alert',
+      label: 'Bad debt',
+      description: 'Outstanding invoices overdue beyond a threshold, worth reviewing for write-off.'
+    },
+    {
+      to: '/reports/accounts-receivable/credit-notes',
+      icon: 'i-lucide-receipt',
+      label: 'Credit notes',
+      description: 'Every credit note issued against a customer invoice.'
+    }
+  ])
+
+  const arExternalReportTiles: ReportTile[] = withColor('indigo', [
+    { to: '/reports/accounting/ar-aging', icon: 'i-lucide-arrow-down-to-line', label: 'AR aging', description: 'Outstanding customer invoices by age bucket.' },
+    {
+      to: '/reports/sales/outstanding-invoices',
+      icon: 'i-lucide-receipt',
+      label: 'Outstanding invoices',
+      description: 'Approved invoices with a balance still owed, by days overdue — same data as Overdue Invoice, sorted oldest-first.'
+    },
+    { to: '/payments', icon: 'i-lucide-banknote', label: 'Customer payments', description: 'Every payment received from a customer.' }
+  ])
+
+  const apReportTiles: ReportTile[] = withColor('orange', [
+    {
+      to: '/reports/accounts-payable/summary',
+      icon: 'i-lucide-bar-chart-3',
+      label: 'AP summary',
+      description: 'Total outstanding and overdue payables, as of a date.'
+    },
+    {
+      to: '/reports/accounts-payable/detail',
+      icon: 'i-lucide-list',
+      label: 'AP detail',
+      description: 'Every line of every currently-outstanding purchase invoice.'
+    },
+    {
+      to: '/reports/accounts-payable/supplier-balance',
+      icon: 'i-lucide-truck',
+      label: 'Supplier balance',
+      description: 'Outstanding balance per supplier, as of a date.'
+    },
+    {
+      to: '/reports/accounts-payable/supplier-statement',
+      icon: 'i-lucide-book-text',
+      label: 'Supplier statement',
+      description: "One supplier's invoices, payments, and credit notes over a period, with a running balance."
+    },
+    {
+      to: '/reports/accounts-payable/payments',
+      icon: 'i-lucide-banknote',
+      label: 'Payments made',
+      description: 'Payments made to suppliers during a period.'
+    },
+    {
+      to: '/reports/accounts-payable/debit-notes',
+      icon: 'i-lucide-receipt',
+      label: 'Debit notes',
+      description: 'Every credit note received from a supplier against a purchase invoice.'
+    }
+  ])
+
+  const apExternalReportTiles: ReportTile[] = withColor('orange', [
+    { to: '/reports/accounting/ap-aging', icon: 'i-lucide-arrow-up-from-line', label: 'AP aging', description: 'Outstanding supplier bills by age bucket.' },
+    {
+      to: '/reports/purchase/outstanding-invoices',
+      icon: 'i-lucide-receipt',
+      label: 'Outstanding invoices',
+      description: 'Approved supplier bills with a balance still owed, by days overdue — same data as Overdue Invoice, sorted oldest-first.'
+    },
+    { to: '/supplier-payments', icon: 'i-lucide-banknote', label: 'Supplier payments', description: 'Every payment made to a supplier.' }
+  ])
+
   return {
     salesReportTiles,
     salesExternalReportTiles,
@@ -272,6 +407,10 @@ export function useReportCatalog() {
     purchaseExternalReportTiles,
     inventoryReportTiles,
     accountingReportTiles,
-    accountingExternalReportTiles
+    accountingExternalReportTiles,
+    arReportTiles,
+    arExternalReportTiles,
+    apReportTiles,
+    apExternalReportTiles
   }
 }

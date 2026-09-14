@@ -18,8 +18,7 @@
       </div>
       <p class="text-xs text-gray-400 mt-3">
         Reflects only what's been manually posted in
-        <NuxtLink to="/journal-entries" class="underline">Journal Entries</NuxtLink> — nothing else in the system posts to the general ledger automatically
-        yet.
+        <NuxtLink to="/journal-entries" class="underline">Journal Entries</NuxtLink> — nothing else in the system posts to the general ledger automatically yet.
       </p>
     </UCard>
 

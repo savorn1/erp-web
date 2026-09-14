@@ -2,9 +2,9 @@
   <div>
     <ReportBackButton />
     <PageHeader
-      title="Supplier price history"
-      description="Every price paid to one supplier over time, across every product."
-      :crumbs="[{ label: 'Reports', to: '/reports' }, { label: 'Purchase reports' }, { label: 'Supplier price history' }]"
+      title="Supplier statement"
+      description="One supplier's invoices, payments, and credit notes over a period, with a running balance."
+      :crumbs="[{ label: 'Reports', to: '/reports' }, { label: 'Accounts payable reports' }, { label: 'Supplier statement' }]"
     />
 
     <UCard class="mb-4">
@@ -28,29 +28,30 @@
     <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else>
-      <EmptyState
-        v-if="!supplierId"
-        icon="i-lucide-history"
-        title="Select a supplier"
-        description="Choose a supplier above to see what's been paid to them over time."
-      />
-      <DataTable v-else-if="history" :rows="history.rows" :columns="columns" :exportable="false">
-        <template #empty-state>
-          <EmptyState icon="i-lucide-check-circle" title="No purchases in this period" />
-        </template>
-      </DataTable>
+      <EmptyState v-if="!supplierId" icon="i-lucide-book-text" title="Select a supplier" description="Choose a supplier above to see their statement." />
+      <template v-else-if="statement">
+        <div class="flex items-center justify-between mb-3 text-sm">
+          <span class="text-gray-900 dark:text-white font-medium">{{ statement.supplierName }}</span>
+          <span class="text-gray-400">Opening: {{ formatCurrency(statement.openingBalance) }}</span>
+        </div>
+        <DataTable :rows="statement.lines" :columns="columns" :exportable="false">
+          <template #empty-state>
+            <EmptyState icon="i-lucide-check-circle" title="No activity in this period" />
+          </template>
+        </DataTable>
+      </template>
     </UCard>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { ColumnDef } from '#shared/types'
-import type { SupplierPriceHistory, SupplierPriceHistoryRow } from '~/composables/usePurchaseReports'
+import type { SupplierStatement, SupplierStatementLine } from '~/composables/useApReports'
 
 definePageMeta({ middleware: 'admin' })
 
 const { companyId, dateFrom, dateTo, activeCompanyOptions, ensureLoaded } = useReportFilters()
-const { supplierPriceHistory: fetchHistory } = usePurchaseReports()
+const { supplierStatement: fetchStatement } = useApReports()
 const { list: listSuppliers } = useSuppliers()
 
 const suppliers = ref<{ id: number; name: string; companyId: number }[]>([])
@@ -61,25 +62,26 @@ const supplierOptions = computed(() =>
 
 const loading = ref(false)
 const error = ref('')
-const history = ref<SupplierPriceHistory | null>(null)
+const statement = ref<SupplierStatement | null>(null)
 
-const columns: ColumnDef<SupplierPriceHistoryRow>[] = [
-  { key: 'orderDate', label: 'Date', type: 'date' },
-  { key: 'poNumber', label: 'Order', value: (row) => row.poNumber ?? '—' },
-  { key: 'productName', label: 'Product', value: (row) => `${row.productName ?? '—'} (${row.productSku ?? '—'})` },
-  { key: 'quantity', label: 'Quantity' },
-  { key: 'unitCost', label: 'Unit cost', type: 'currency' }
+const columns: ColumnDef<SupplierStatementLine>[] = [
+  { key: 'date', label: 'Date', type: 'date' },
+  { key: 'type', label: 'Type', type: 'status' },
+  { key: 'reference', label: 'Reference', value: (row) => row.reference ?? '—' },
+  { key: 'debit', label: 'Debit', type: 'currency', value: (row) => (row.debit > 0 ? row.debit : null) },
+  { key: 'credit', label: 'Credit', type: 'currency', value: (row) => (row.credit > 0 ? row.credit : null) },
+  { key: 'runningBalance', label: 'Balance', type: 'currency' }
 ]
 
 async function load() {
   if (!supplierId.value) {
-    history.value = null
+    statement.value = null
     return
   }
   loading.value = true
   error.value = ''
   try {
-    history.value = await fetchHistory({
+    statement.value = await fetchStatement({
       companyId: companyId.value,
       supplierId: supplierId.value,
       dateFrom: dateFrom.value || undefined,

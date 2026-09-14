@@ -28,7 +28,12 @@
     <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else>
-      <EmptyState v-if="!productId" icon="i-lucide-history" title="Select a product" description="Choose a product above to see what's been paid for it over time." />
+      <EmptyState
+        v-if="!productId"
+        icon="i-lucide-history"
+        title="Select a product"
+        description="Choose a product above to see what's been paid for it over time."
+      />
       <DataTable v-else-if="history" :rows="history.rows" :columns="columns" :exportable="false">
         <template #empty-state>
           <EmptyState icon="i-lucide-check-circle" title="No purchases in this period" />
@@ -51,9 +56,7 @@ const { list: listProducts } = useProducts()
 const products = ref<{ id: number; name: string; sku: string; companyId: number }[]>([])
 const productId = ref<number | undefined>(undefined)
 const productOptions = computed(() =>
-  products.value
-    .filter((p) => companyId.value === undefined || p.companyId === companyId.value)
-    .map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
+  products.value.filter((p) => companyId.value === undefined || p.companyId === companyId.value).map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
 )
 
 const loading = ref(false)

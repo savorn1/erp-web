@@ -83,6 +83,8 @@ const filteredTiles = computed(() => {
 const columns = computed<ColumnDef<ReportTile>[]>(() => [
   { key: 'label', label: 'Report' },
   { key: 'description', label: 'Description' },
-  ...(props.mode === 'route' ? [{ key: 'actions', label: '', type: 'link' as const, value: () => 'Open', href: (row: ReportTile) => row.to }] : [{ key: 'actions', label: '' }])
+  ...(props.mode === 'route'
+    ? [{ key: 'actions', label: '', type: 'link' as const, value: () => 'Open', href: (row: ReportTile) => row.to }]
+    : [{ key: 'actions', label: '' }])
 ])
 </script>

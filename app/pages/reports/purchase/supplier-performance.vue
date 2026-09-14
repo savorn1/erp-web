@@ -20,8 +20,8 @@
         </UFormField>
       </div>
       <p class="text-xs text-gray-400 mt-3">
-        Only orders with an expected date and at least one goods receipt count toward the on-time rate — "On time" means the latest receipt landed on or
-        before the expected date.
+        Only orders with an expected date and at least one goods receipt count toward the on-time rate — "On time" means the latest receipt landed on or before
+        the expected date.
       </p>
     </UCard>
 

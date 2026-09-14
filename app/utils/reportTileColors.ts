@@ -10,7 +10,8 @@ const TILE_ICON_CLASSES: Record<string, string> = {
   orange: 'bg-orange-50 dark:bg-orange-400/10 text-orange-500 dark:text-orange-300',
   emerald: 'bg-emerald-50 dark:bg-emerald-400/10 text-emerald-500 dark:text-emerald-300',
   indigo: 'bg-indigo-50 dark:bg-indigo-400/10 text-indigo-500 dark:text-indigo-300',
-  rose: 'bg-rose-50 dark:bg-rose-400/10 text-rose-500 dark:text-rose-300'
+  rose: 'bg-rose-50 dark:bg-rose-400/10 text-rose-500 dark:text-rose-300',
+  amber: 'bg-amber-50 dark:bg-amber-400/10 text-amber-500 dark:text-amber-300'
 }
 const DEFAULT_TILE_ICON_CLASSES = 'bg-primary-50 dark:bg-primary-400/10 text-primary-500 dark:text-primary-300'
 
@@ -27,10 +28,10 @@ const TILE_PILL_CLASSES: Record<string, string> = {
   orange: 'text-orange-600 dark:text-orange-300 bg-orange-50 dark:bg-orange-400/10 border-orange-200 dark:border-orange-800 hover:border-orange-400',
   emerald: 'text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-400/10 border-emerald-200 dark:border-emerald-800 hover:border-emerald-400',
   indigo: 'text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-400/10 border-indigo-200 dark:border-indigo-800 hover:border-indigo-400',
-  rose: 'text-rose-600 dark:text-rose-300 bg-rose-50 dark:bg-rose-400/10 border-rose-200 dark:border-rose-800 hover:border-rose-400'
+  rose: 'text-rose-600 dark:text-rose-300 bg-rose-50 dark:bg-rose-400/10 border-rose-200 dark:border-rose-800 hover:border-rose-400',
+  amber: 'text-amber-600 dark:text-amber-300 bg-amber-50 dark:bg-amber-400/10 border-amber-200 dark:border-amber-800 hover:border-amber-400'
 }
-const DEFAULT_TILE_PILL_CLASSES =
-  'text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-primary-400'
+const DEFAULT_TILE_PILL_CLASSES = 'text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-primary-400'
 
 export function tilePillClasses(color?: string): string {
   return (color && TILE_PILL_CLASSES[color]) || DEFAULT_TILE_PILL_CLASSES

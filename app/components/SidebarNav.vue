@@ -6,7 +6,9 @@
           v-if="isLink(item)"
           :to="item.to"
           class="flex items-center gap-2.5 rounded-xl border-l-[3px] border-transparent px-3 py-2 text-sm font-medium transition-colors"
-          :class="isActive(item.to) ? 'bg-primary-400/15 border-primary-400 text-primary-400 font-semibold' : 'text-gray-300 hover:text-white hover:bg-gray-800'"
+          :class="
+            isActive(item.to) ? 'bg-primary-400/15 border-primary-400 text-primary-400 font-semibold' : 'text-gray-300 hover:text-white hover:bg-gray-800'
+          "
         >
           <UIcon :name="item.icon" class="w-5 h-5 shrink-0" />
           <span>{{ item.label }}</span>
@@ -23,11 +25,7 @@
               <UIcon v-if="item.icon" :name="item.icon" class="w-4 h-4 shrink-0" :class="accent(item.color).headerIcon" />
               <span>{{ item.label }}</span>
             </span>
-            <UIcon
-              name="i-lucide-chevron-right"
-              class="w-4 h-4 shrink-0 transition-transform duration-200"
-              :class="isOpen(item) ? 'rotate-90' : ''"
-            />
+            <UIcon name="i-lucide-chevron-right" class="w-4 h-4 shrink-0 transition-transform duration-200" :class="isOpen(item) ? 'rotate-90' : ''" />
           </button>
           <div v-show="isOpen(item)" class="space-y-0.5 mb-1">
             <NuxtLink
@@ -35,7 +33,11 @@
               :key="child.to"
               :to="child.to"
               class="flex items-center gap-2.5 rounded-xl border-l-[3px] border-transparent px-3 py-2 text-sm font-medium transition-colors"
-              :class="isActive(child.to) ? [accent(item.color).active, accent(item.color).activeBar, 'font-semibold'] : 'text-gray-400 hover:text-white hover:bg-gray-800'"
+              :class="
+                isActive(child.to)
+                  ? [accent(item.color).active, accent(item.color).activeBar, 'font-semibold']
+                  : 'text-gray-400 hover:text-white hover:bg-gray-800'
+              "
             >
               <UIcon :name="child.icon" class="w-4 h-4 shrink-0" :class="isActive(child.to) ? accent(item.color).activeIcon : 'text-gray-500'" />
               <span>{{ child.label }}</span>
@@ -160,6 +162,13 @@ const GROUP_ACCENTS: Record<string, { headerIcon: string; headerHover: string; a
     active: 'text-rose-400 bg-rose-400/10',
     activeIcon: 'text-rose-400',
     activeBar: 'border-rose-400'
+  },
+  amber: {
+    headerIcon: 'text-amber-400',
+    headerHover: 'hover:text-amber-400',
+    active: 'text-amber-400 bg-amber-400/10',
+    activeIcon: 'text-amber-400',
+    activeBar: 'border-amber-400'
   }
 }
 const DEFAULT_ACCENT = {

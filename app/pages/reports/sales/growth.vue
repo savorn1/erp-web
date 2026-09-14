@@ -71,8 +71,18 @@ interface ComparisonRow {
 const comparisonRows = computed<ComparisonRow[]>(() => {
   if (!growth.value) return []
   return [
-    { period: 'Current', range: `${growth.value.currentFrom} – ${growth.value.currentTo}`, orderCount: growth.value.currentOrderCount, revenue: growth.value.currentRevenue },
-    { period: 'Previous', range: `${growth.value.previousFrom} – ${growth.value.previousTo}`, orderCount: growth.value.previousOrderCount, revenue: growth.value.previousRevenue }
+    {
+      period: 'Current',
+      range: `${growth.value.currentFrom} – ${growth.value.currentTo}`,
+      orderCount: growth.value.currentOrderCount,
+      revenue: growth.value.currentRevenue
+    },
+    {
+      period: 'Previous',
+      range: `${growth.value.previousFrom} – ${growth.value.previousTo}`,
+      orderCount: growth.value.previousOrderCount,
+      revenue: growth.value.previousRevenue
+    }
   ]
 })
 const columns: ColumnDef<ComparisonRow>[] = [
