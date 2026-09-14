@@ -7,6 +7,7 @@
 // (via update) regenerates them.
 
 import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+import type { WorkOrder } from '~/composables/useWorkOrders'
 
 export type ManufacturingOrderStatus = 'DRAFT' | 'RELEASED' | 'IN_PROGRESS' | 'PENDING_QC' | 'COMPLETED' | 'CANCELLED'
 export type QualityCheckStatus = 'PENDING' | 'PASSED' | 'FAILED'
@@ -60,6 +61,8 @@ export interface ManufacturingOrder {
   createdBy: string | null
   createdAt: string
   materials: ManufacturingOrderMaterial[] | null
+  // Empty when the BOM has no active routing — see useRoutings.
+  workOrders: WorkOrder[] | null
 }
 
 export interface ManufacturingOrderFilter {

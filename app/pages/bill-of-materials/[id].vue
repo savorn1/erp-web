@@ -116,6 +116,9 @@
               <div class="flex items-center gap-3 text-gray-400">
                 <span>{{ v.status }}</span>
                 <NuxtLink v-if="!v.current" :to="`/bill-of-materials/${v.id}`" class="underline">View</NuxtLink>
+                <NuxtLink v-if="!v.current" :to="`/reports/manufacturing/bom-comparison?bomId=${idParam}&compareToBomId=${v.id}`" class="underline">
+                  Compare
+                </NuxtLink>
               </div>
             </div>
           </div>

@@ -267,6 +267,93 @@ export interface ManufacturingProfitability {
   totalMargin: number
 }
 
+export interface WorkCenterUtilizationRow {
+  workCenterId: number
+  workCenterName: string | null
+  operationCount: number
+  totalActualHours: number
+  averageHoursPerOperation: number
+  utilizationPercent: number | null
+}
+
+export interface WorkCenterUtilization {
+  dateFrom: string | null
+  dateTo: string | null
+  rows: WorkCenterUtilizationRow[]
+}
+
+export interface MachineUtilizationRow {
+  machineId: number
+  machineName: string | null
+  machineStatus: string | null
+  operationCount: number
+  totalActualHours: number
+  averageHoursPerOperation: number
+}
+
+export interface MachineUtilization {
+  dateFrom: string | null
+  dateTo: string | null
+  rows: MachineUtilizationRow[]
+}
+
+export interface OperationPerformanceRow {
+  operationName: string
+  workCenterName: string | null
+  executionCount: number
+  standardTimeMinutes: number
+  averageActualTimeMinutes: number
+  varianceMinutes: number
+}
+
+export interface OperationPerformance {
+  dateFrom: string | null
+  dateTo: string | null
+  rows: OperationPerformanceRow[]
+}
+
+export interface MachineCostRow {
+  machineId: number
+  machineName: string | null
+  operationCount: number
+  totalActualHours: number
+  costPerHour: number | null
+  totalCost: number | null
+}
+
+export interface MachineCost {
+  dateFrom: string | null
+  dateTo: string | null
+  rows: MachineCostRow[]
+  totalCost: number
+}
+
+export interface BomComparisonLine {
+  componentProductId: number
+  componentProductName: string | null
+  componentProductSku: string | null
+  quantity: number
+  scrapPercent: number | null
+  lineCost: number
+}
+
+export interface BomComparisonSide {
+  bomId: number
+  bomNumber: string
+  version: number
+  name: string
+  status: string
+  outputQuantity: number
+  materialCostPerBatch: number
+  materialCostPerUnit: number
+  lines: BomComparisonLine[]
+}
+
+export interface BomComparison {
+  left: BomComparisonSide
+  right: BomComparisonSide
+}
+
 export function useManufacturingReports() {
   const api = useApi()
 
@@ -340,6 +427,31 @@ export function useManufacturingReports() {
     return res.data
   }
 
+  async function workCenterUtilization(filter: ManufacturingReportFilter = {}) {
+    const res = await api<ApiEnvelope<WorkCenterUtilization>>('/api/admin/manufacturing-reports/work-center-utilization', { query: filter })
+    return res.data
+  }
+
+  async function machineUtilization(filter: ManufacturingReportFilter = {}) {
+    const res = await api<ApiEnvelope<MachineUtilization>>('/api/admin/manufacturing-reports/machine-utilization', { query: filter })
+    return res.data
+  }
+
+  async function operationPerformance(filter: ManufacturingReportFilter = {}) {
+    const res = await api<ApiEnvelope<OperationPerformance>>('/api/admin/manufacturing-reports/operation-performance', { query: filter })
+    return res.data
+  }
+
+  async function machineCost(filter: ManufacturingReportFilter = {}) {
+    const res = await api<ApiEnvelope<MachineCost>>('/api/admin/manufacturing-reports/machine-cost', { query: filter })
+    return res.data
+  }
+
+  async function bomComparison(bomId: number, compareToBomId: number) {
+    const res = await api<ApiEnvelope<BomComparison>>('/api/admin/manufacturing-reports/bom-comparison', { query: { bomId, compareToBomId } })
+    return res.data
+  }
+
   return {
     summary,
     materialConsumption,
@@ -354,6 +466,11 @@ export function useManufacturingReports() {
     qualityPassFail,
     planVsActual,
     productionTrend,
-    profitability
+    profitability,
+    workCenterUtilization,
+    machineUtilization,
+    operationPerformance,
+    machineCost,
+    bomComparison
   }
 }

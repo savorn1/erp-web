@@ -153,8 +153,11 @@ const items = computed<SidebarItem[]>(() => [
           color: 'amber',
           children: [
             { label: 'Bill of materials', to: '/bill-of-materials', icon: 'i-lucide-list-tree' },
+            { label: 'Routings', to: '/routings', icon: 'i-lucide-route' },
+            { label: 'Work centers', to: '/work-centers', icon: 'i-lucide-factory' },
+            { label: 'Machines', to: '/machines', icon: 'i-lucide-cog' },
             { label: 'Production plans', to: '/production-plans', icon: 'i-lucide-calendar-range' },
-            { label: 'Manufacturing orders', to: '/manufacturing-orders', icon: 'i-lucide-cog' }
+            { label: 'Manufacturing orders', to: '/manufacturing-orders', icon: 'i-lucide-clipboard-list' }
           ]
         },
         {

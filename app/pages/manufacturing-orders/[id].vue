@@ -72,6 +72,49 @@
           </DataTable>
         </UCard>
 
+        <UCard v-if="!isNew && detail && (detail.workOrders?.length ?? 0) > 0">
+          <template #header>
+            <div class="flex items-center gap-2">
+              <UIcon name="i-lucide-route" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
+              <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Work orders</h2>
+            </div>
+          </template>
+          <div class="divide-y divide-gray-200 dark:divide-gray-800">
+            <div v-for="wo in detail.workOrders" :key="wo.id" class="flex items-center justify-between py-2 text-sm gap-3">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="text-gray-400">#{{ wo.sequenceNumber }}</span>
+                <span class="font-medium truncate">{{ wo.name }}</span>
+                <span class="text-gray-400 truncate">{{ wo.workCenterName ?? '—' }}{{ wo.machineName ? ` / ${wo.machineName}` : '' }}</span>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <UBadge size="xs">{{ wo.status }}</UBadge>
+                <UButton
+                  v-if="wo.status === 'PENDING'"
+                  size="xs"
+                  color="info"
+                  variant="soft"
+                  icon="i-lucide-play"
+                  :loading="workOrderActingId === wo.id"
+                  @click="onStartWorkOrder(wo)"
+                >
+                  Start
+                </UButton>
+                <UButton
+                  v-if="wo.status === 'IN_PROGRESS'"
+                  size="xs"
+                  color="success"
+                  variant="soft"
+                  icon="i-lucide-check"
+                  :loading="workOrderActingId === wo.id"
+                  @click="onCompleteWorkOrder(wo)"
+                >
+                  Complete
+                </UButton>
+              </div>
+            </div>
+          </div>
+        </UCard>
+
         <UCard v-if="detail && detail.status === 'RELEASED'">
           <template #header>
             <div class="flex items-center gap-2">
@@ -201,6 +244,7 @@
 <script setup lang="ts">
 import type { ColumnDef } from '#shared/types'
 import type { ManufacturingOrder, ManufacturingOrderMaterial, MaterialAvailabilityRow } from '~/composables/useManufacturingOrders'
+import type { WorkOrder } from '~/composables/useWorkOrders'
 
 definePageMeta({ middleware: 'admin' })
 
@@ -210,6 +254,7 @@ const idParam = route.params.id as string
 const isNew = idParam === 'new'
 
 const { get, create, update, complete, qualityCheck, materialAvailability } = useManufacturingOrders()
+const { start: startWorkOrder, complete: completeWorkOrder } = useWorkOrders()
 const { list: listCompanies } = useCompanies()
 const { list: listWarehouses } = useWarehouses()
 const { list: listBoms } = useBillOfMaterials()
@@ -456,6 +501,32 @@ async function onQualityCheck(status: 'PASSED' | 'FAILED') {
     qcError.value = apiErrorMessage(err)
   } finally {
     qcSubmitting.value = false
+  }
+}
+
+const workOrderActingId = ref<number | null>(null)
+async function onStartWorkOrder(wo: WorkOrder) {
+  workOrderActingId.value = wo.id
+  try {
+    await startWorkOrder(wo.id)
+    toast.add({ title: 'Work order started', color: 'success' })
+    detail.value = await get(Number(idParam))
+  } catch (err) {
+    toast.add({ title: 'Could not start work order', description: apiErrorMessage(err), color: 'error' })
+  } finally {
+    workOrderActingId.value = null
+  }
+}
+async function onCompleteWorkOrder(wo: WorkOrder) {
+  workOrderActingId.value = wo.id
+  try {
+    await completeWorkOrder(wo.id)
+    toast.add({ title: 'Work order completed', color: 'success' })
+    detail.value = await get(Number(idParam))
+  } catch (err) {
+    toast.add({ title: 'Could not complete work order', description: apiErrorMessage(err), color: 'error' })
+  } finally {
+    workOrderActingId.value = null
   }
 }
 

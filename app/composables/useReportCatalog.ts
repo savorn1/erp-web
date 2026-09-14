@@ -484,13 +484,41 @@ export function useReportCatalog() {
       icon: 'i-lucide-piggy-bank',
       label: 'Profitability',
       description: 'Selling price vs. manufacturing cost, per product.'
+    },
+    {
+      to: '/reports/manufacturing/work-center-utilization',
+      icon: 'i-lucide-factory',
+      label: 'Work center utilization',
+      description: 'Hours logged against completed work orders, per work center.'
+    },
+    {
+      to: '/reports/manufacturing/machine-utilization',
+      icon: 'i-lucide-cog',
+      label: 'Machine utilization',
+      description: 'Hours logged against completed work orders, per machine.'
+    },
+    {
+      to: '/reports/manufacturing/operation-performance',
+      icon: 'i-lucide-route',
+      label: 'Operation performance',
+      description: 'Standard vs. actual time per operation.'
+    },
+    {
+      to: '/reports/manufacturing/machine-cost',
+      icon: 'i-lucide-cog',
+      label: 'Machine cost',
+      description: "Hours logged x each machine's cost per hour."
     }
   ])
 
   const manufacturingExternalReportTiles: ReportTile[] = withColor('amber', [
     { to: '/bill-of-materials', icon: 'i-lucide-list-tree', label: 'Bill of materials', description: 'Every recipe, versioned, and its component list.' },
+    { to: '/routings', icon: 'i-lucide-route', label: 'Routings', description: 'The shop-floor operation sequence behind each BOM.' },
+    { to: '/work-centers', icon: 'i-lucide-factory', label: 'Work centers', description: 'Production areas that routing operations run in.' },
+    { to: '/machines', icon: 'i-lucide-cog', label: 'Machines', description: 'Equipment assigned to work centers.' },
     { to: '/production-plans', icon: 'i-lucide-calendar-range', label: 'Production plans', description: 'Groups of manufacturing orders planned over a period.' },
-    { to: '/manufacturing-orders', icon: 'i-lucide-cog', label: 'Manufacturing orders', description: 'Every manufacturing order and its status.' }
+    { to: '/manufacturing-orders', icon: 'i-lucide-clipboard-list', label: 'Manufacturing orders', description: 'Every manufacturing order and its status.' },
+    { to: '/work-orders', icon: 'i-lucide-list-ordered', label: 'Work order report', description: 'Every shop-floor operation step, across all orders.' }
   ])
 
   return {
