@@ -232,6 +232,12 @@ export function useReportCatalog() {
     { to: '/reports/inventory/stock-in', icon: 'i-lucide-log-in', label: 'Stock in', description: 'Inbound quantity per product and warehouse.' },
     { to: '/reports/inventory/stock-out', icon: 'i-lucide-log-out', label: 'Stock out', description: 'Outbound quantity per product and warehouse.' },
     {
+      to: '/reports/inventory/stock-in-out-summary',
+      icon: 'i-lucide-arrow-left-right',
+      label: 'Stock in/out summary',
+      description: 'Inbound and outbound quantity side by side, with net change, per product and warehouse.'
+    },
+    {
       to: '/reports/inventory/stock-transfer',
       icon: 'i-lucide-repeat',
       label: 'Stock transfer',

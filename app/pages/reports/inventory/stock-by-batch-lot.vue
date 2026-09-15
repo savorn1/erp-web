@@ -7,6 +7,14 @@
       :crumbs="[{ label: 'Reports', to: '/reports' }, { label: 'Inventory reports' }, { label: 'Stock by batch / lot' }]"
     />
 
+    <UAlert
+      color="neutral"
+      variant="subtle"
+      class="mb-4"
+      title="Manufacturing consumption isn't tracked per batch"
+      description="Quantities here reflect goods receipts, deliveries, and approved adjustments only — a batch-tracked component consumed by a manufacturing order won't be subtracted, since Manufacturing doesn't record which batch it drew from."
+    />
+
     <UCard class="mb-4">
       <div class="flex flex-wrap items-end gap-3">
         <UFormField label="Company">
@@ -14,6 +22,9 @@
         </UFormField>
         <UFormField label="Include depleted">
           <USwitch v-model="includeDepleted" />
+        </UFormField>
+        <UFormField label="Show quantity in">
+          <USelect v-model="mode" :items="displayUnitOptions" class="w-36" />
         </UFormField>
       </div>
     </UCard>
@@ -39,24 +50,43 @@ definePageMeta({ middleware: 'admin' })
 
 const { companyId, activeCompanyOptions, ensureLoaded } = useReportFilters()
 const { batchLotStock } = useInventoryReports()
+const { list: listProducts } = useProducts()
+const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
 const includeDepleted = ref(false)
 const rows = ref<BatchLotStockRow[]>([])
+const products = ref<{ id: number; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]>([])
 
-const columns: ColumnDef<BatchLotStockRow>[] = [
+const columns = computed<ColumnDef<BatchLotStockRow>[]>(() => [
   { key: 'batchNumber', label: 'Batch / lot' },
   { key: 'productName', label: 'Product', value: (row) => `${row.productName ?? '—'} (${row.productSku ?? '—'})` },
   { key: 'expirationDate', label: 'Expiration', value: (row) => row.expirationDate ?? 'None', type: 'date' },
-  { key: 'currentQuantity', label: 'Current qty' }
-]
+  {
+    key: 'currentQuantity',
+    label: 'Current qty',
+    value: (row) => {
+      const { quantity, unit } = displayQuantity(
+        products.value.find((p) => p.id === row.productId),
+        row.currentQuantity
+      )
+      return unit ? `${quantity} ${unit}` : quantity
+    }
+  }
+])
 
 async function load() {
   loading.value = true
   error.value = ''
   try {
-    rows.value = (await batchLotStock({ companyId: companyId.value, includeDepleted: includeDepleted.value })).rows
+    const [result, productsRes] = await Promise.all([
+      batchLotStock({ companyId: companyId.value, includeDepleted: includeDepleted.value }),
+      products.value.length === 0 ? listProducts({ size: 10000 }) : Promise.resolve(null)
+    ])
+    rows.value = result.rows
+    if (productsRes) products.value = productsRes.data
+    await ensurePackUnits(rows.value.map((r) => r.productId))
   } catch (err) {
     error.value = apiErrorMessage(err)
   } finally {

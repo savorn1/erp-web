@@ -1,6 +1,6 @@
 <template>
   <div>
-    <UBreadcrumb v-if="crumbs?.length" :items="crumbs" class="mb-2" />
+    <UBreadcrumb v-if="crumbs?.length" :items="crumbs" color="success" class="mb-2" />
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <div class="min-w-0">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ title }}</h1>

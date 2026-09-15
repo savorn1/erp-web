@@ -80,7 +80,9 @@ export function useReportFilters() {
     { label: 'Issue', value: 'ISSUE' },
     { label: 'Transfer out', value: 'TRANSFER_OUT' },
     { label: 'Transfer in', value: 'TRANSFER_IN' },
-    { label: 'Adjustment', value: 'ADJUSTMENT' }
+    { label: 'Adjustment', value: 'ADJUSTMENT' },
+    { label: 'Material consumption', value: 'MATERIAL_CONSUMPTION' },
+    { label: 'Production output', value: 'PRODUCTION_OUTPUT' }
   ]
 
   return {

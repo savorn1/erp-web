@@ -18,6 +18,9 @@
         <UFormField label="As of">
           <UInput v-model="dateFrom" type="date" class="w-40" />
         </UFormField>
+        <UFormField label="Show quantity in">
+          <USelect v-model="mode" :items="displayUnitOptions" class="w-36" />
+        </UFormField>
       </div>
     </UCard>
 
@@ -42,22 +45,38 @@ definePageMeta({ middleware: 'admin' })
 
 const { companyId, warehouseId, dateFrom, activeCompanyOptions, warehouseFilterOptions, ensureLoaded } = useReportFilters()
 const { openingClosingStock } = useInventoryReports()
+const { list: listProducts } = useProducts()
+const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
 const rows = ref<StockOpeningClosingRow[]>([])
+const products = ref<{ id: number; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]>([])
 
-const columns: ColumnDef<StockOpeningClosingRow>[] = [
+const columns = computed<ColumnDef<StockOpeningClosingRow>[]>(() => [
   { key: 'productName', label: 'Product', value: (row) => `${row.productName ?? '—'} (${row.productSku ?? '—'})` },
   { key: 'warehouseName', label: 'Warehouse', value: (row) => row.warehouseName ?? '—' },
-  { key: 'openingQuantity', label: 'Opening quantity' }
-]
+  {
+    key: 'openingQuantity',
+    label: 'Opening quantity',
+    value: (row) => {
+      const { quantity, unit } = displayQuantity(products.value.find((p) => p.id === row.productId), row.openingQuantity)
+      return unit ? `${quantity} ${unit}` : quantity
+    }
+  }
+])
 
 async function load() {
   loading.value = true
   error.value = ''
   try {
-    rows.value = (await openingClosingStock({ companyId: companyId.value, warehouseId: warehouseId.value, dateFrom: dateFrom.value })).rows
+    const [res, productsRes] = await Promise.all([
+      openingClosingStock({ companyId: companyId.value, warehouseId: warehouseId.value, dateFrom: dateFrom.value }),
+      products.value.length === 0 ? listProducts({ size: 10000 }) : Promise.resolve(null)
+    ])
+    rows.value = res.rows
+    if (productsRes) products.value = productsRes.data
+    await ensurePackUnits(rows.value.map((r) => r.productId))
   } catch (err) {
     error.value = apiErrorMessage(err)
   } finally {

@@ -353,7 +353,7 @@ function purchaseRequestLink(row: MaterialAvailabilityRow) {
     prefillQuantity: String(row.shortfallQuantity),
     prefillCompanyId: String(form.companyId ?? '')
   })
-  return `/purchase-requests?${query.toString()}`
+  return `/purchase-requests/new?${query.toString()}`
 }
 
 const formSnapshot = ref('')

@@ -12,6 +12,9 @@
         <UFormField label="Company">
           <USelect v-model="companyId" :items="activeCompanyOptions" placeholder="All companies" class="w-52" />
         </UFormField>
+        <UFormField label="Show quantity in">
+          <USelect v-model="mode" :items="displayUnitOptions" class="w-36" />
+        </UFormField>
       </div>
     </UCard>
 
@@ -50,25 +53,40 @@ interface StockCostRow {
 
 const { companyId, activeCompanyOptions, ensureLoaded } = useReportFilters()
 const { get: fetchInventoryOverview } = useInventoryOverview()
+const { list: listProducts } = useProducts()
+const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
 const rows = ref<StockCostRow[]>([])
+const products = ref<{ id: number; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]>([])
 const totalQuantity = computed(() => rows.value.reduce((sum, r) => sum + r.totalQuantity, 0))
 const totalCost = computed(() => rows.value.reduce((sum, r) => sum + r.totalCost, 0))
 
-const columns: ColumnDef<StockCostRow>[] = [
+const columns = computed<ColumnDef<StockCostRow>[]>(() => [
   { key: 'productName', label: 'Product', value: (row) => `${row.productName ?? '—'} (${row.productSku ?? '—'})` },
   { key: 'unitCost', label: 'Unit cost', type: 'currency' },
-  { key: 'totalQuantity', label: 'Total quantity' },
+  {
+    key: 'totalQuantity',
+    label: 'Total quantity',
+    value: (row) => {
+      const { quantity, unit } = displayQuantity(products.value.find((p) => p.id === row.productId), row.totalQuantity)
+      return unit ? `${quantity} ${unit}` : quantity
+    }
+  },
   { key: 'totalCost', label: 'Total cost', type: 'currency' }
-]
+])
 
 async function load() {
   loading.value = true
   error.value = ''
   try {
-    const overview = (await fetchInventoryOverview({ companyId: companyId.value, size: 100000 })).data
+    const [overviewRes, productsRes] = await Promise.all([
+      fetchInventoryOverview({ companyId: companyId.value, size: 100000 }),
+      products.value.length === 0 ? listProducts({ size: 10000 }) : Promise.resolve(null)
+    ])
+    if (productsRes) products.value = productsRes.data
+    const overview = overviewRes.data
     const byProduct = new Map<number, StockCostRow>()
     for (const row of overview) {
       let bucket = byProduct.get(row.productId)
@@ -80,6 +98,7 @@ async function load() {
       bucket.totalCost += row.valuationValue
     }
     rows.value = Array.from(byProduct.values()).sort((a, b) => b.totalCost - a.totalCost)
+    await ensurePackUnits(rows.value.map((r) => r.productId))
   } catch (err) {
     error.value = apiErrorMessage(err)
   } finally {

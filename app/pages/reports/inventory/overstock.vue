@@ -15,6 +15,9 @@
         <UFormField label="Warehouse">
           <USelect v-model="warehouseId" :items="warehouseFilterOptions" placeholder="All warehouses" class="w-48" />
         </UFormField>
+        <UFormField label="Show quantity in">
+          <USelect v-model="mode" :items="displayUnitOptions" class="w-36" />
+        </UFormField>
       </div>
     </UCard>
 
@@ -46,23 +49,37 @@ definePageMeta({ middleware: 'admin' })
 
 const { companyId, warehouseId, activeCompanyOptions, warehouseFilterOptions, ensureLoaded } = useReportFilters()
 const { overstock } = useInventoryReports()
+const { list: listProducts } = useProducts()
+const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
 const rows = ref<InventoryOverviewRow[]>([])
+const products = ref<{ id: number; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]>([])
 
-const columns: ColumnDef<InventoryOverviewRow>[] = [
+function formatted(row: InventoryOverviewRow, baseQuantity: number) {
+  const { quantity, unit } = displayQuantity(products.value.find((p) => p.id === row.productId), baseQuantity)
+  return unit ? `${quantity} ${unit}` : quantity
+}
+
+const columns = computed<ColumnDef<InventoryOverviewRow>[]>(() => [
   { key: 'productName', label: 'Product', value: (row) => `${row.productName ?? '—'} (${row.productSku ?? '—'})` },
   { key: 'warehouseName', label: 'Warehouse', value: (row) => row.warehouseName ?? '—' },
-  { key: 'currentStock', label: 'On hand' },
-  { key: 'maxStock', label: 'Max stock' }
-]
+  { key: 'currentStock', label: 'On hand', value: (row) => formatted(row, row.currentStock) },
+  { key: 'maxStock', label: 'Max stock', value: (row) => formatted(row, row.maxStock) }
+])
 
 async function load() {
   loading.value = true
   error.value = ''
   try {
-    rows.value = (await overstock({ companyId: companyId.value, warehouseId: warehouseId.value })).rows
+    const [res, productsRes] = await Promise.all([
+      overstock({ companyId: companyId.value, warehouseId: warehouseId.value }),
+      products.value.length === 0 ? listProducts({ size: 10000 }) : Promise.resolve(null)
+    ])
+    rows.value = res.rows
+    if (productsRes) products.value = productsRes.data
+    await ensurePackUnits(rows.value.map((r) => r.productId))
   } catch (err) {
     error.value = apiErrorMessage(err)
   } finally {

@@ -15,6 +15,9 @@
         <UFormField label="Warehouse">
           <USelect v-model="warehouseId" :items="warehouseFilterOptions" placeholder="All warehouses" class="w-48" />
         </UFormField>
+        <UFormField label="Show quantity in">
+          <USelect v-model="mode" :items="displayUnitOptions" class="w-36" />
+        </UFormField>
       </div>
     </UCard>
 
@@ -39,22 +42,38 @@ definePageMeta({ middleware: 'admin' })
 
 const { companyId, warehouseId, activeCompanyOptions, warehouseFilterOptions, ensureLoaded } = useReportFilters()
 const { stockBySupplier } = useInventoryReports()
+const { list: listProducts } = useProducts()
+const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
 const rows = ref<StockByPartyRow[]>([])
+const products = ref<{ id: number; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]>([])
 
-const columns: ColumnDef<StockByPartyRow>[] = [
+const columns = computed<ColumnDef<StockByPartyRow>[]>(() => [
   { key: 'partyName', label: 'Supplier', value: (row) => row.partyName ?? '—' },
   { key: 'productName', label: 'Product', value: (row) => `${row.productName ?? '—'} (${row.productSku ?? '—'})` },
-  { key: 'quantity', label: 'Incoming qty' }
-]
+  {
+    key: 'quantity',
+    label: 'Incoming qty',
+    value: (row) => {
+      const { quantity, unit } = displayQuantity(products.value.find((p) => p.id === row.productId), row.quantity)
+      return unit ? `${quantity} ${unit}` : quantity
+    }
+  }
+])
 
 async function load() {
   loading.value = true
   error.value = ''
   try {
-    rows.value = (await stockBySupplier({ companyId: companyId.value, warehouseId: warehouseId.value })).rows
+    const [res, productsRes] = await Promise.all([
+      stockBySupplier({ companyId: companyId.value, warehouseId: warehouseId.value }),
+      products.value.length === 0 ? listProducts({ size: 10000 }) : Promise.resolve(null)
+    ])
+    rows.value = res.rows
+    if (productsRes) products.value = productsRes.data
+    await ensurePackUnits(rows.value.map((r) => r.productId))
   } catch (err) {
     error.value = apiErrorMessage(err)
   } finally {

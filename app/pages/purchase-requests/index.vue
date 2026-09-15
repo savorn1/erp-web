@@ -2,7 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Purchase requests</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New purchase request </UButton>
+      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" to="/purchase-requests/new"> New purchase request </UButton>
     </div>
 
     <UAlert
@@ -43,7 +43,7 @@
       >
         <template #actions-data="{ row }">
           <div class="flex items-center gap-2">
-            <UButton size="xs" color="primary" variant="soft" icon="i-lucide-eye" @click="openView(row)">
+            <UButton size="xs" color="primary" variant="soft" icon="i-lucide-eye" :to="`/purchase-requests/${row.id}`">
               {{ row.status === 'DRAFT' ? 'Edit' : 'View' }}
             </UButton>
             <UButton
@@ -101,7 +101,7 @@
           </EmptyState>
           <EmptyState v-else icon="i-lucide-clipboard-list" title="No purchase requests yet" description="Create the first purchase request to get started.">
             <template #action>
-              <UButton :disabled="activeCompanyOptions.length === 0" icon="i-lucide-plus" @click="openCreate">New purchase request</UButton>
+              <UButton :disabled="activeCompanyOptions.length === 0" icon="i-lucide-plus" to="/purchase-requests/new">New purchase request</UButton>
             </template>
           </EmptyState>
         </template>
@@ -111,72 +111,6 @@
         <DataPagination v-model:page="page" v-model:page-size="pageSize" :total="total" />
       </div>
     </UCard>
-
-    <UModal v-model:open="showForm" :title="formTitle" :ui="{ content: 'sm:max-w-3xl' }">
-      <template #body>
-        <div v-if="loadingDetail" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
-        <template v-else>
-          <div v-if="editingStatus === 'REJECTED' && rejectionReasonView" class="mb-4">
-            <UAlert color="error" variant="subtle" title="Rejected" :description="rejectionReasonView" icon="i-lucide-triangle-alert" />
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            <UFormField label="Company" required>
-              <USelect v-model="form.companyId" :items="activeCompanyOptions" :disabled="!formEditable || editingId !== null" class="w-full" />
-            </UFormField>
-            <UFormField label="Department" required>
-              <USelect v-model="form.departmentId" :items="departmentOptionsFor()" :disabled="!formEditable" class="w-full" />
-            </UFormField>
-            <UFormField label="Request date" required>
-              <UInput v-model="form.requestDate" type="date" :disabled="!formEditable" class="w-full" />
-            </UFormField>
-            <UFormField label="Required date">
-              <UInput v-model="form.requiredDate" type="date" :disabled="!formEditable" class="w-full" />
-            </UFormField>
-            <UFormField label="Notes" class="sm:col-span-2">
-              <UTextarea v-model="form.notes" :disabled="!formEditable" class="w-full" />
-            </UFormField>
-          </div>
-
-          <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Requested products</p>
-
-          <div v-if="formEditable" class="flex flex-wrap items-end gap-2 mb-3">
-            <UFormField label="Product" class="flex-1 min-w-[240px]">
-              <USelectMenu
-                v-model="addLineProductId"
-                :items="productOptionsFor(form.companyId)"
-                value-key="value"
-                placeholder="Search products…"
-                class="w-full"
-              />
-            </UFormField>
-            <UButton icon="i-lucide-plus" :disabled="!addLineProductId" @click="addLine">Add line</UButton>
-          </div>
-
-          <div class="space-y-2 mb-4">
-            <div
-              v-if="form.lines.length === 0"
-              class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
-            >
-              No line items yet
-            </div>
-            <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center">
-              <div class="col-span-5 text-sm text-gray-900 dark:text-white truncate">{{ productLabel(line.productId) }}</div>
-              <UInput v-model.number="line.quantity" type="number" min="0.0001" step="0.0001" placeholder="Qty" :disabled="!formEditable" class="col-span-2" />
-              <UInput v-model="line.notes" placeholder="Notes (optional)" :disabled="!formEditable" class="col-span-4" />
-              <UButton v-if="formEditable" size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-1" @click="form.lines.splice(i, 1)" />
-            </div>
-          </div>
-
-          <UAlert v-if="formError" color="error" variant="subtle" class="mb-3" :title="formError" />
-
-          <div class="flex justify-end gap-2">
-            <UButton color="neutral" variant="ghost" @click="showForm = false">Close</UButton>
-            <UButton v-if="formEditable" :loading="saving" @click="onSaveForm">{{ editingId ? 'Save changes' : 'Create' }}</UButton>
-          </div>
-        </template>
-      </template>
-    </UModal>
 
     <UModal v-model:open="showRejectModal" title="Reject purchase request" :description="`Reject request '${rejecting?.requestNumber ?? ''}'?`">
       <template #body>
@@ -211,14 +145,13 @@
 
 <script setup lang="ts">
 import type { ColumnDef } from '#shared/types'
-import type { PurchaseRequest, PurchaseRequestPayload, PurchaseRequestStatus } from '~/composables/usePurchaseRequests'
+import type { PurchaseRequest, PurchaseRequestStatus } from '~/composables/usePurchaseRequests'
 
 definePageMeta({ middleware: 'admin' })
 
-const { list, get, create, update, submit, approve, reject, remove } = usePurchaseRequests()
+const { list, submit, approve, reject, remove } = usePurchaseRequests()
 const { list: listCompanies } = useCompanies()
 const { list: listDepartments } = useDepartments()
-const { list: listProducts } = useProducts()
 const toast = useToast()
 
 const rows = ref<PurchaseRequest[]>([])
@@ -227,16 +160,14 @@ const error = ref('')
 
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
 const departments = ref<{ id: number; name: string; active: boolean }[]>([])
-const products = ref<{ id: number; name: string; sku: string; companyId: number; status: string }[]>([])
 const loadingLookups = ref(false)
 
 async function loadLookups() {
   loadingLookups.value = true
   try {
-    const [c, d, p] = await Promise.all([listCompanies({ size: 200 }), listDepartments({ size: 200 }), listProducts({ size: 200 })])
+    const [c, d] = await Promise.all([listCompanies({ size: 200 }), listDepartments({ size: 200 })])
     companies.value = c.data
     departments.value = d.data
-    products.value = p.data
   } finally {
     loadingLookups.value = false
   }
@@ -255,19 +186,6 @@ const statusFilterOptions = [
   { label: 'Approved', value: 'APPROVED' },
   { label: 'Rejected', value: 'REJECTED' }
 ]
-
-function departmentOptionsFor() {
-  return departments.value.filter((d) => d.active).map((d) => ({ label: d.name, value: d.id }))
-}
-function productOptionsFor(companyId: number | undefined) {
-  return products.value
-    .filter((p) => p.status === 'ACTIVE' && (companyId === undefined || p.companyId === companyId))
-    .map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
-}
-function productLabel(productId: number | undefined) {
-  const product = products.value.find((p) => p.id === productId)
-  return product ? `${product.name} (${product.sku})` : '—'
-}
 
 const filter = reactive<{
   companyId: number | undefined
@@ -304,128 +222,6 @@ async function load() {
     error.value = apiErrorMessage(err)
   } finally {
     loading.value = false
-  }
-}
-
-interface LineForm {
-  productId: number | undefined
-  quantity: number | undefined
-  notes: string
-}
-
-const showForm = ref(false)
-const editingId = ref<number | null>(null)
-const editingStatus = ref<PurchaseRequestStatus | null>(null)
-const loadingDetail = ref(false)
-const saving = ref(false)
-const formError = ref('')
-const rejectionReasonView = ref('')
-
-const form = reactive<{
-  companyId: number | undefined
-  departmentId: number | undefined
-  requestDate: string
-  requiredDate: string
-  notes: string
-  lines: LineForm[]
-}>({
-  companyId: undefined,
-  departmentId: undefined,
-  requestDate: new Date().toISOString().slice(0, 10),
-  requiredDate: '',
-  notes: '',
-  lines: []
-})
-
-const formEditable = computed(() => editingStatus.value === null || editingStatus.value === 'DRAFT')
-const formTitle = computed(() => (editingId.value === null ? 'New purchase request' : formEditable.value ? 'Edit purchase request' : 'View purchase request'))
-
-const addLineProductId = ref<number | undefined>(undefined)
-function addLine() {
-  if (!addLineProductId.value) return
-  form.lines.push({ productId: addLineProductId.value, quantity: undefined, notes: '' })
-  addLineProductId.value = undefined
-}
-
-function resetForm() {
-  form.companyId = activeCompanyOptions.value[0]?.value
-  form.departmentId = undefined
-  form.requestDate = new Date().toISOString().slice(0, 10)
-  form.requiredDate = ''
-  form.notes = ''
-  form.lines = []
-  rejectionReasonView.value = ''
-}
-
-function openCreate() {
-  editingId.value = null
-  editingStatus.value = null
-  formError.value = ''
-  resetForm()
-  showForm.value = true
-}
-
-async function openView(row: PurchaseRequest) {
-  editingId.value = row.id
-  editingStatus.value = row.status
-  formError.value = ''
-  showForm.value = true
-  loadingDetail.value = true
-  try {
-    const detail = await get(row.id)
-    form.companyId = detail.companyId
-    form.departmentId = detail.departmentId
-    form.requestDate = detail.requestDate
-    form.requiredDate = detail.requiredDate ?? ''
-    form.notes = detail.notes ?? ''
-    form.lines = (detail.lines ?? []).map((l) => ({ productId: l.productId, quantity: l.quantity, notes: l.notes ?? '' }))
-    rejectionReasonView.value = detail.rejectionReason ?? ''
-  } catch (err) {
-    formError.value = apiErrorMessage(err)
-  } finally {
-    loadingDetail.value = false
-  }
-}
-
-async function onSaveForm() {
-  formError.value = ''
-  if (!form.companyId || !form.departmentId || !form.requestDate) {
-    formError.value = 'Please fill in company, department, and request date'
-    return
-  }
-  if (form.lines.length === 0 || form.lines.some((l) => !l.productId || !l.quantity)) {
-    formError.value = 'Every line needs a product and quantity'
-    return
-  }
-  saving.value = true
-  try {
-    if (editingId.value === null) {
-      const payload: PurchaseRequestPayload = {
-        companyId: form.companyId,
-        departmentId: form.departmentId,
-        requestDate: form.requestDate,
-        requiredDate: form.requiredDate || undefined,
-        notes: form.notes || undefined,
-        lines: form.lines.map((l) => ({ productId: l.productId!, quantity: l.quantity!, notes: l.notes || undefined }))
-      }
-      await create(payload)
-      toast.add({ title: 'Purchase request created', color: 'success' })
-    } else {
-      await update(editingId.value, {
-        departmentId: form.departmentId,
-        requestDate: form.requestDate,
-        requiredDate: form.requiredDate || undefined,
-        notes: form.notes || undefined,
-        lines: form.lines.map((l) => ({ productId: l.productId!, quantity: l.quantity!, notes: l.notes || undefined }))
-      })
-      toast.add({ title: 'Purchase request updated', color: 'success' })
-    }
-    showForm.value = false
-    await load()
-  } catch (err) {
-    formError.value = apiErrorMessage(err)
-  } finally {
-    saving.value = false
   }
 }
 
@@ -496,24 +292,9 @@ async function onDelete() {
   }
 }
 
-// Deep-linkable, e.g. a manufacturing order's material availability check
-// links here with a shortfall pre-filled as the first line — company and
-// quantity are known, but department is still the requester's call.
-const route = useRoute()
-function applyPrefillFromQuery() {
-  const productId = Number(route.query.prefillProductId)
-  const quantity = Number(route.query.prefillQuantity)
-  const companyId = Number(route.query.prefillCompanyId)
-  if (!productId || !quantity) return
-  openCreate()
-  if (companyId) form.companyId = companyId
-  form.lines = [{ productId, quantity, notes: '' }]
-}
-
 onMounted(async () => {
   await loadLookups()
   await load()
-  applyPrefillFromQuery()
 })
 watch(sort, load)
 watch(() => [filter.companyId, filter.departmentId, filter.status], load)

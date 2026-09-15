@@ -15,6 +15,9 @@
         <UFormField label="Warehouse">
           <USelect v-model="warehouseId" :items="warehouseFilterOptions" placeholder="All warehouses" class="w-48" />
         </UFormField>
+        <UFormField label="Show quantity in">
+          <USelect v-model="mode" :items="displayUnitOptions" class="w-36" />
+        </UFormField>
       </div>
     </UCard>
 
@@ -39,32 +42,46 @@ definePageMeta({ middleware: 'admin' })
 
 const { companyId, warehouseId, activeCompanyOptions, warehouseFilterOptions, ensureLoaded } = useReportFilters()
 const { stockCountVariance } = useInventoryReports()
+const { list: listProducts } = useProducts()
+const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
 const rows = ref<StockCountVarianceRow[]>([])
+const products = ref<{ id: number; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]>([])
 
-const columns: ColumnDef<StockCountVarianceRow>[] = [
+function formatted(row: StockCountVarianceRow, baseQuantity: number | null) {
+  if (baseQuantity === null) return '—'
+  const { quantity, unit } = displayQuantity(products.value.find((p) => p.id === row.productId), baseQuantity)
+  return unit ? `${quantity} ${unit}` : quantity
+}
+
+const columns = computed<ColumnDef<StockCountVarianceRow>[]>(() => [
   { key: 'countNumber', label: 'Count #' },
   { key: 'productName', label: 'Product', value: (row) => `${row.productName ?? '—'} (${row.productSku ?? '—'})` },
   { key: 'warehouseName', label: 'Warehouse', value: (row) => row.warehouseName ?? '—' },
-  { key: 'systemQuantity', label: 'System qty' },
-  { key: 'countedQuantity', label: 'Counted qty', value: (row) => row.countedQuantity ?? '—' },
+  { key: 'systemQuantity', label: 'System qty', value: (row) => formatted(row, row.systemQuantity) },
+  { key: 'countedQuantity', label: 'Counted qty', value: (row) => formatted(row, row.countedQuantity) },
   {
     key: 'varianceQuantity',
     label: 'Variance',
-    value: (row) => row.varianceQuantity ?? '—',
+    value: (row) => formatted(row, row.varianceQuantity),
     class: (row) => ((row.varianceQuantity ?? 0) < 0 ? 'text-error' : (row.varianceQuantity ?? 0) > 0 ? 'text-success' : '')
   },
   { key: 'countDate', label: 'Count date', type: 'date' }
-]
+])
 
 async function load() {
   loading.value = true
   error.value = ''
   try {
-    const result = await stockCountVariance({ companyId: companyId.value, warehouseId: warehouseId.value })
+    const [result, productsRes] = await Promise.all([
+      stockCountVariance({ companyId: companyId.value, warehouseId: warehouseId.value }),
+      products.value.length === 0 ? listProducts({ size: 10000 }) : Promise.resolve(null)
+    ])
+    if (productsRes) products.value = productsRes.data
     rows.value = result.rows.filter((r) => r.varianceQuantity !== null && r.varianceQuantity !== 0)
+    await ensurePackUnits(rows.value.map((r) => r.productId))
   } catch (err) {
     error.value = apiErrorMessage(err)
   } finally {

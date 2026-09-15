@@ -15,6 +15,9 @@
         <UFormField label="Warehouse">
           <USelect v-model="warehouseId" :items="warehouseFilterOptions" placeholder="All warehouses" class="w-48" />
         </UFormField>
+        <UFormField label="Show quantity in">
+          <USelect v-model="mode" :items="displayUnitOptions" class="w-36" />
+        </UFormField>
       </div>
     </UCard>
 
@@ -47,23 +50,37 @@ definePageMeta({ middleware: 'admin' })
 
 const { companyId, warehouseId, activeCompanyOptions, warehouseFilterOptions, ensureLoaded } = useReportFilters()
 const { lowStock: fetchLowStock } = useInventoryReports()
+const { list: listProducts } = useProducts()
+const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
 const lowStock = ref<LowStock | null>(null)
+const products = ref<{ id: number; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]>([])
 
-const columns: ColumnDef<InventoryOverviewRow>[] = [
+function formatted(row: InventoryOverviewRow, baseQuantity: number) {
+  const { quantity, unit } = displayQuantity(products.value.find((p) => p.id === row.productId), baseQuantity)
+  return unit ? `${quantity} ${unit}` : quantity
+}
+
+const columns = computed<ColumnDef<InventoryOverviewRow>[]>(() => [
   { key: 'productName', label: 'Product', value: (row) => `${row.productName ?? '—'} (${row.productSku ?? '—'})` },
   { key: 'warehouseName', label: 'Warehouse', value: (row) => row.warehouseName ?? '—' },
-  { key: 'availableStock', label: 'Available', class: 'text-error' },
-  { key: 'reorderPoint', label: 'Reorder point' }
-]
+  { key: 'availableStock', label: 'Available', value: (row) => formatted(row, row.availableStock), class: 'text-error' },
+  { key: 'reorderPoint', label: 'Reorder point', value: (row) => formatted(row, row.reorderPoint) }
+])
 
 async function load() {
   loading.value = true
   error.value = ''
   try {
-    lowStock.value = await fetchLowStock({ companyId: companyId.value, warehouseId: warehouseId.value })
+    const [result, productsRes] = await Promise.all([
+      fetchLowStock({ companyId: companyId.value, warehouseId: warehouseId.value }),
+      products.value.length === 0 ? listProducts({ size: 10000 }) : Promise.resolve(null)
+    ])
+    lowStock.value = result
+    if (productsRes) products.value = productsRes.data
+    await ensurePackUnits(result.rows.map((r) => r.productId))
   } catch (err) {
     error.value = apiErrorMessage(err)
   } finally {

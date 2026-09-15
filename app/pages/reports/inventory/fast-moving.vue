@@ -18,6 +18,9 @@
         <UFormField label="Window (days)">
           <UInput v-model.number="days" type="number" min="1" class="w-32" />
         </UFormField>
+        <UFormField label="Show quantity in">
+          <USelect v-model="mode" :items="displayUnitOptions" class="w-36" />
+        </UFormField>
       </div>
     </UCard>
 
@@ -42,26 +45,39 @@ definePageMeta({ middleware: 'admin' })
 
 const { companyId, warehouseId, activeCompanyOptions, warehouseFilterOptions, ensureLoaded } = useReportFilters()
 const { stockTurnover } = useInventoryReports()
+const { list: listProducts } = useProducts()
+const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
 const days = ref(90)
 const rows = ref<StockTurnoverRow[]>([])
+const products = ref<{ id: number; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]>([])
 
-const columns: ColumnDef<StockTurnoverRow>[] = [
+function formatted(row: StockTurnoverRow, baseQuantity: number) {
+  const { quantity, unit } = displayQuantity(products.value.find((p) => p.id === row.productId), baseQuantity)
+  return unit ? `${quantity} ${unit}` : quantity
+}
+
+const columns = computed<ColumnDef<StockTurnoverRow>[]>(() => [
   { key: 'productName', label: 'Product', value: (row) => `${row.productName ?? '—'} (${row.productSku ?? '—'})` },
   { key: 'warehouseName', label: 'Warehouse', value: (row) => row.warehouseName ?? '—' },
-  { key: 'currentStock', label: 'On hand' },
-  { key: 'outboundQuantityInWindow', label: 'Outbound qty' },
+  { key: 'currentStock', label: 'On hand', value: (row) => formatted(row, row.currentStock) },
+  { key: 'outboundQuantityInWindow', label: 'Outbound qty', value: (row) => formatted(row, row.outboundQuantityInWindow) },
   { key: 'lastOutboundDate', label: 'Last outbound', type: 'datetime' }
-]
+])
 
 async function load() {
   loading.value = true
   error.value = ''
   try {
-    const result = await stockTurnover({ companyId: companyId.value, warehouseId: warehouseId.value, days: days.value })
+    const [result, productsRes] = await Promise.all([
+      stockTurnover({ companyId: companyId.value, warehouseId: warehouseId.value, days: days.value }),
+      products.value.length === 0 ? listProducts({ size: 10000 }) : Promise.resolve(null)
+    ])
+    if (productsRes) products.value = productsRes.data
     rows.value = result.rows.filter((r) => r.outboundQuantityInWindow > 0).slice(0, 50)
+    await ensurePackUnits(rows.value.map((r) => r.productId))
   } catch (err) {
     error.value = apiErrorMessage(err)
   } finally {

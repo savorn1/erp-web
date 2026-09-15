@@ -15,6 +15,9 @@
         <UFormField label="Warehouse">
           <USelect v-model="warehouseId" :items="warehouseFilterOptions" placeholder="All warehouses" class="w-48" />
         </UFormField>
+        <UFormField label="Show quantity in">
+          <USelect v-model="mode" :items="displayUnitOptions" class="w-36" />
+        </UFormField>
       </div>
     </UCard>
 
@@ -47,29 +50,46 @@ definePageMeta({ middleware: 'admin' })
 
 const { companyId, warehouseId, activeCompanyOptions, warehouseFilterOptions, ensureLoaded } = useReportFilters()
 const { get: fetchInventoryOverview } = useInventoryOverview()
+const { list: listProducts } = useProducts()
+const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
 const rows = ref<InventoryOverviewRow[]>([])
+const products = ref<{ id: number; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]>([])
 
 const totalOnHand = computed(() => rows.value.reduce((sum, r) => sum + r.currentStock, 0))
 const totalAvailable = computed(() => rows.value.reduce((sum, r) => sum + r.availableStock, 0))
 const totalValuation = computed(() => rows.value.reduce((sum, r) => sum + r.valuationValue, 0))
 
-const columns: ColumnDef<InventoryOverviewRow>[] = [
+function formatted(row: InventoryOverviewRow, baseQuantity: number) {
+  const { quantity, unit } = displayQuantity(
+    products.value.find((p) => p.id === row.productId),
+    baseQuantity
+  )
+  return unit ? `${quantity} ${unit}` : quantity
+}
+
+const columns = computed<ColumnDef<InventoryOverviewRow>[]>(() => [
   { key: 'productName', label: 'Product', value: (row) => `${row.productName ?? '—'} (${row.productSku ?? '—'})` },
   { key: 'warehouseName', label: 'Warehouse', value: (row) => row.warehouseName ?? '—' },
-  { key: 'currentStock', label: 'On hand' },
-  { key: 'availableStock', label: 'Available' },
-  { key: 'incomingStock', label: 'Incoming' },
+  { key: 'currentStock', label: 'On hand', value: (row) => formatted(row, row.currentStock) },
+  { key: 'availableStock', label: 'Available', value: (row) => formatted(row, row.availableStock) },
+  { key: 'incomingStock', label: 'Incoming', value: (row) => formatted(row, row.incomingStock) },
   { key: 'valuationValue', label: 'Valuation', type: 'currency' }
-]
+])
 
 async function load() {
   loading.value = true
   error.value = ''
   try {
-    rows.value = (await fetchInventoryOverview({ companyId: companyId.value, warehouseId: warehouseId.value, size: 100000 })).data
+    const [res, productsRes] = await Promise.all([
+      fetchInventoryOverview({ companyId: companyId.value, warehouseId: warehouseId.value, size: 100000 }),
+      products.value.length === 0 ? listProducts({ size: 10000 }) : Promise.resolve(null)
+    ])
+    rows.value = res.data
+    if (productsRes) products.value = productsRes.data
+    await ensurePackUnits(rows.value.map((r) => r.productId))
   } catch (err) {
     error.value = apiErrorMessage(err)
   } finally {

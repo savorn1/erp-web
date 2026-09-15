@@ -2,6 +2,9 @@
   <div>
     <div class="flex items-center justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Posting rules</h1>
+      <UButton v-if="companyId" color="neutral" variant="soft" icon="i-lucide-sparkles" :loading="seeding" @click="onSeed">
+        Seed from standard chart
+      </UButton>
     </div>
 
     <UCard class="mb-4">
@@ -11,7 +14,8 @@
       <p class="text-xs text-gray-400 mt-3">
         These are the "auto-posting accounts" — approving an invoice, recording a payment, or issuing a credit/debit note will create and post a balanced
         journal entry using the accounts mapped here. Leave any field blank to skip auto-posting for that document type; the underlying action (approving,
-        recording, etc.) always succeeds either way.
+        recording, etc.) always succeeds either way. "Seed from standard chart" fills in every still-blank field with one default account per module,
+        creating the standard chart of accounts first if the company doesn't have it yet — it never overwrites a field you've already mapped.
       </p>
     </UCard>
 
@@ -81,7 +85,7 @@ import type { PostingRule } from '~/composables/usePostingRules'
 
 definePageMeta({ middleware: 'admin' })
 
-const { getForCompany, upsert } = usePostingRules()
+const { getForCompany, upsert, seed } = usePostingRules()
 const { list: listCompanies } = useCompanies()
 const { list: listAccounts } = useAccounts()
 const toast = useToast()
@@ -145,6 +149,22 @@ async function loadRule() {
     error.value = apiErrorMessage(err)
   } finally {
     loading.value = false
+  }
+}
+
+const seeding = ref(false)
+async function onSeed() {
+  if (!companyId.value) return
+  seeding.value = true
+  try {
+    const [rule, a] = await Promise.all([seed(companyId.value), listAccounts({ size: 1000 })])
+    accounts.value = a.data
+    applyRule(rule)
+    toast.add({ title: 'Posting rules seeded from the standard chart of accounts', color: 'success' })
+  } catch (err) {
+    toast.add({ title: 'Could not seed posting rules', description: apiErrorMessage(err), color: 'error' })
+  } finally {
+    seeding.value = false
   }
 }
 

@@ -61,5 +61,13 @@ export function usePostingRules() {
     return res.data
   }
 
-  return { getForCompany, upsert }
+  // Seeds the company's standard chart of accounts if needed, then fills in
+  // one default account per module (Sales, Purchasing, Cash & bank) for
+  // every field not already mapped — anything already set is left alone.
+  async function seed(companyId: number) {
+    const res = await api<ApiEnvelope<PostingRule>>(`/api/admin/posting-rules/seed/${companyId}`, { method: 'POST' })
+    return res.data
+  }
+
+  return { getForCompany, upsert, seed }
 }

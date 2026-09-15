@@ -24,6 +24,9 @@
         <UFormField label="To">
           <UInput v-model="dateTo" type="date" class="w-40" />
         </UFormField>
+        <UFormField label="Show quantity in">
+          <USelect v-model="mode" :items="displayUnitOptions" class="w-36" />
+        </UFormField>
       </div>
     </UCard>
 
@@ -56,6 +59,7 @@ definePageMeta({ middleware: 'admin' })
 const { companyId, warehouseId, dateFrom, dateTo, activeCompanyOptions, warehouseFilterOptions, ensureLoaded } = useReportFilters()
 const { stockLedger } = useInventoryReports()
 const { list: listProducts } = useProducts()
+const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
@@ -68,13 +72,29 @@ const productOptions = computed(() => [
   ...products.value.filter((p) => companyId.value === undefined || p.companyId === companyId.value).map((p) => ({ label: `${p.sku} — ${p.name}`, value: p.id }))
 ])
 
-const columns: ColumnDef<StockLedgerRow>[] = [
+const columns = computed<ColumnDef<StockLedgerRow>[]>(() => [
   { key: 'date', label: 'Date', type: 'datetime' },
   { key: 'type', label: 'Type', type: 'badge' },
   { key: 'referenceType', label: 'Reference', value: (row) => `${row.referenceType ?? '—'} #${row.referenceId ?? '—'}` },
-  { key: 'quantityDelta', label: 'Change', class: (row) => (row.quantityDelta < 0 ? 'text-error' : 'text-success') },
-  { key: 'balance', label: 'Balance' }
-]
+  {
+    key: 'quantityDelta',
+    label: 'Change',
+    value: (row) => {
+      const { quantity, unit } = displayQuantity(products.value.find((p) => p.id === row.productId), row.quantityDelta)
+      const signed = quantity >= 0 ? `+${quantity}` : String(quantity)
+      return unit ? `${signed} ${unit}` : signed
+    },
+    class: (row) => (row.quantityDelta < 0 ? 'text-error' : 'text-success')
+  },
+  {
+    key: 'balance',
+    label: 'Balance',
+    value: (row) => {
+      const { quantity, unit } = displayQuantity(products.value.find((p) => p.id === row.productId), row.balance)
+      return unit ? `${quantity} ${unit}` : quantity
+    }
+  }
+])
 
 async function load() {
   if (!productId.value) {
@@ -91,6 +111,7 @@ async function load() {
       dateFrom: dateFrom.value,
       dateTo: dateTo.value
     })
+    await ensurePackUnits([productId.value])
   } catch (err) {
     error.value = apiErrorMessage(err)
   } finally {

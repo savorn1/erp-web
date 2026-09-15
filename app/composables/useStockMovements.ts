@@ -3,7 +3,8 @@
 
 import type { PageEnvelope } from '#shared/types'
 
-export type StockMovementType = 'RECEIPT' | 'ISSUE' | 'TRANSFER_OUT' | 'TRANSFER_IN' | 'ADJUSTMENT'
+export type StockMovementType = 'RECEIPT' | 'ISSUE' | 'TRANSFER_OUT' | 'TRANSFER_IN' | 'ADJUSTMENT' | 'MATERIAL_CONSUMPTION' | 'PRODUCTION_OUTPUT'
+export type StockMovementDirection = 'IN' | 'OUT'
 
 export interface StockMovement {
   id: number
@@ -16,6 +17,9 @@ export interface StockMovement {
   binId: number | null
   binName: string | null
   type: StockMovementType
+  // Derived from quantityDelta's sign — ADJUSTMENT can go either way, so
+  // this isn't inferrable from `type` alone.
+  direction: StockMovementDirection
   quantityDelta: number
   referenceType: string
   referenceId: number
@@ -28,6 +32,7 @@ export interface StockMovementFilter {
   productId?: number
   warehouseId?: number
   type?: StockMovementType
+  direction?: StockMovementDirection
   dateFrom?: string
   dateTo?: string
   sortBy?: string

@@ -21,6 +21,9 @@
         <UFormField label="To">
           <UInput v-model="dateTo" type="date" class="w-40" />
         </UFormField>
+        <UFormField label="Show quantity in">
+          <USelect v-model="mode" :items="displayUnitOptions" class="w-36" />
+        </UFormField>
       </div>
     </UCard>
 
@@ -52,30 +55,46 @@ definePageMeta({ middleware: 'admin' })
 
 const { companyId, warehouseId, dateFrom, dateTo, activeCompanyOptions, warehouseFilterOptions, ensureLoaded } = useReportFilters()
 const { stockProfitability } = useInventoryReports()
+const { list: listProducts } = useProducts()
+const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
 const result = ref<StockProfitability | null>(null)
+const products = ref<{ id: number; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]>([])
 
-const columns: ColumnDef<StockProfitabilityRow>[] = [
+const columns = computed<ColumnDef<StockProfitabilityRow>[]>(() => [
   { key: 'productName', label: 'Product', value: (row) => `${row.productName ?? '—'} (${row.productSku ?? '—'})` },
-  { key: 'quantitySold', label: 'Qty sold' },
+  {
+    key: 'quantitySold',
+    label: 'Qty sold',
+    value: (row) => {
+      const { quantity, unit } = displayQuantity(products.value.find((p) => p.id === row.productId), row.quantitySold)
+      return unit ? `${quantity} ${unit}` : quantity
+    }
+  },
   { key: 'revenue', label: 'Revenue', type: 'currency' },
   { key: 'cogs', label: 'COGS', type: 'currency' },
   { key: 'grossProfit', label: 'Gross profit', type: 'currency' },
   { key: 'marginPercent', label: 'Margin %', suffix: '%' }
-]
+])
 
 async function load() {
   loading.value = true
   error.value = ''
   try {
-    result.value = await stockProfitability({
-      companyId: companyId.value,
-      warehouseId: warehouseId.value,
-      dateFrom: dateFrom.value,
-      dateTo: dateTo.value
-    })
+    const [res, productsRes] = await Promise.all([
+      stockProfitability({
+        companyId: companyId.value,
+        warehouseId: warehouseId.value,
+        dateFrom: dateFrom.value,
+        dateTo: dateTo.value
+      }),
+      products.value.length === 0 ? listProducts({ size: 10000 }) : Promise.resolve(null)
+    ])
+    result.value = res
+    if (productsRes) products.value = productsRes.data
+    await ensurePackUnits(res.rows.map((r) => r.productId))
   } catch (err) {
     error.value = apiErrorMessage(err)
   } finally {

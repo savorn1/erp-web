@@ -14,6 +14,8 @@ export interface StockTransferLine {
   productName: string | null
   productSku: string | null
   quantityRequested: number
+  unitOfMeasureId: number | null
+  unitOfMeasureAbbreviation: string | null
   sourceBinId: number | null
   sourceBinName: string | null
   destinationBinId: number | null
@@ -60,6 +62,10 @@ export interface StockTransferFilter {
 export interface StockTransferLinePayload {
   productId: number
   quantityRequested: number
+  // The unit quantityRequested is expressed in. Omit for the product's own
+  // base unit; any other value must already be registered as an
+  // inventory-allowed ProductUom for this product.
+  unitOfMeasureId?: number
   sourceBinId?: number
   destinationBinId?: number
   // Required when the product is BATCH- or SERIAL-tracked — must reference

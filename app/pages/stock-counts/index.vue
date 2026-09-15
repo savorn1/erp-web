@@ -2,7 +2,7 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Stock counts</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New stock count </UButton>
+      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" to="/stock-counts/new"> New stock count </UButton>
     </div>
 
     <UAlert
@@ -64,7 +64,7 @@
           </EmptyState>
           <EmptyState v-else icon="i-lucide-clipboard-check" title="No stock counts yet" description="Start the first physical stock count to get going.">
             <template #action>
-              <UButton :disabled="activeCompanyOptions.length === 0" icon="i-lucide-plus" @click="openCreate">New stock count</UButton>
+              <UButton :disabled="activeCompanyOptions.length === 0" icon="i-lucide-plus" to="/stock-counts/new">New stock count</UButton>
             </template>
           </EmptyState>
         </template>
@@ -74,54 +74,6 @@
         <DataPagination v-model:page="page" v-model:page-size="pageSize" :total="total" />
       </div>
     </UCard>
-
-    <!-- Create modal -->
-    <UModal v-model:open="showCreate" title="New stock count" :ui="{ content: 'sm:max-w-3xl' }">
-      <template #body>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-          <UFormField label="Company" required>
-            <USelect v-model="form.companyId" :items="activeCompanyOptions" class="w-full" @update:model-value="onFormCompanyChanged" />
-          </UFormField>
-          <UFormField label="Count date" required>
-            <UInput v-model="form.countDate" type="date" class="w-full" />
-          </UFormField>
-          <UFormField label="Warehouse" required class="sm:col-span-2">
-            <USelect v-model="form.warehouseId" :items="warehouseOptionsFor(form.companyId)" class="w-full" @update:model-value="onWarehouseChanged" />
-          </UFormField>
-          <UFormField label="Notes" class="sm:col-span-2">
-            <UTextarea v-model="form.notes" class="w-full" />
-          </UFormField>
-        </div>
-
-        <p class="text-xs text-gray-400 mb-3">Only untracked products can be counted — batch/serial-tracked stock isn't supported here.</p>
-
-        <div class="mb-2 flex items-center justify-between">
-          <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Products to count</p>
-          <UButton size="xs" variant="soft" icon="i-lucide-plus" :disabled="!form.warehouseId" @click="addLine">Add product</UButton>
-        </div>
-
-        <div class="space-y-2 mb-4">
-          <div
-            v-if="form.lines.length === 0"
-            class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
-          >
-            No products added yet
-          </div>
-          <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center">
-            <USelect v-model="line.productId" :items="untrackedProductOptionsFor(form.companyId)" placeholder="Product" class="col-span-6" />
-            <USelect v-model="line.binId" :items="binOptionsForWarehouse" placeholder="No bin" class="col-span-5" />
-            <UButton size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-1" @click="form.lines.splice(i, 1)" />
-          </div>
-        </div>
-
-        <UAlert v-if="createError" color="error" variant="subtle" class="mb-3" :title="createError" />
-
-        <div class="flex justify-end gap-2">
-          <UButton color="neutral" variant="ghost" @click="showCreate = false">Cancel</UButton>
-          <UButton :loading="creating" @click="onCreateSubmit">Start count</UButton>
-        </div>
-      </template>
-    </UModal>
 
     <!-- View / enter counts / complete / reconcile modal -->
     <UModal v-model:open="showView" :title="`Count — ${viewingCount?.countNumber ?? ''}`" :ui="{ content: 'sm:max-w-2xl' }">
@@ -214,15 +166,13 @@
 
 <script setup lang="ts">
 import type { ColumnDef } from '#shared/types'
-import type { StockCount, StockCountPayload, StockCountStatus } from '~/composables/useStockCounts'
+import type { StockCount, StockCountStatus } from '~/composables/useStockCounts'
 
 definePageMeta({ middleware: 'admin' })
 
-const { list, get, create, submitCounts, complete, reconcile, remove } = useStockCounts()
+const { list, get, submitCounts, complete, reconcile, remove } = useStockCounts()
 const { list: listCompanies } = useCompanies()
 const { list: listWarehouses } = useWarehouses()
-const { list: listProducts } = useProducts()
-const { list: listBins } = useWarehouseBins()
 const toast = useToast()
 
 const rows = ref<StockCount[]>([])
@@ -231,18 +181,14 @@ const error = ref('')
 
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
 const warehouses = ref<{ id: number; name: string; companyId: number; active: boolean }[]>([])
-const products = ref<{ id: number; name: string; sku: string; companyId: number; status: string; trackingType: string }[]>([])
-const bins = ref<{ id: number; name: string; warehouseId: number | null; active: boolean }[]>([])
 const loadingLookups = ref(false)
 
 async function loadLookups() {
   loadingLookups.value = true
   try {
-    const [c, w, p, b] = await Promise.all([listCompanies({ size: 200 }), listWarehouses({ size: 200 }), listProducts({ size: 200 }), listBins({ size: 200 })])
+    const [c, w] = await Promise.all([listCompanies({ size: 200 }), listWarehouses({ size: 200 })])
     companies.value = c.data
     warehouses.value = w.data
-    products.value = p.data
-    bins.value = b.data
   } finally {
     loadingLookups.value = false
   }
@@ -256,15 +202,6 @@ const statusFilterOptions = [
   { label: 'Completed', value: 'COMPLETED' },
   { label: 'Reconciled', value: 'RECONCILED' }
 ]
-
-function warehouseOptionsFor(companyId: number | undefined) {
-  return warehouses.value.filter((w) => w.active && (companyId === undefined || w.companyId === companyId)).map((w) => ({ label: w.name, value: w.id }))
-}
-function untrackedProductOptionsFor(companyId: number | undefined) {
-  return products.value
-    .filter((p) => p.status === 'ACTIVE' && p.trackingType === 'NONE' && (companyId === undefined || p.companyId === companyId))
-    .map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
-}
 
 const filter = reactive<{ warehouseId: number | undefined; status: StockCountStatus | undefined }>({ warehouseId: undefined, status: undefined })
 
@@ -290,88 +227,6 @@ async function load() {
     error.value = apiErrorMessage(err)
   } finally {
     loading.value = false
-  }
-}
-
-// ── Create ─────────────────────────────────────────────────────────────────
-
-interface LineForm {
-  productId: number | undefined
-  binId: number | undefined
-}
-
-const showCreate = ref(false)
-const creating = ref(false)
-const createError = ref('')
-
-const form = reactive<{
-  companyId: number | undefined
-  warehouseId: number | undefined
-  countDate: string
-  notes: string
-  lines: LineForm[]
-}>({
-  companyId: undefined,
-  warehouseId: undefined,
-  countDate: new Date().toISOString().slice(0, 10),
-  notes: '',
-  lines: []
-})
-
-const binOptionsForWarehouse = computed(() => [
-  { label: 'No bin', value: undefined },
-  ...bins.value.filter((b) => b.active && b.warehouseId === form.warehouseId).map((b) => ({ label: b.name, value: b.id }))
-])
-
-function onFormCompanyChanged() {
-  form.warehouseId = undefined
-  form.lines = []
-}
-function onWarehouseChanged() {
-  form.lines = []
-}
-
-function addLine() {
-  form.lines.push({ productId: undefined, binId: undefined })
-}
-
-function openCreate() {
-  createError.value = ''
-  form.companyId = activeCompanyOptions.value[0]?.value
-  form.warehouseId = undefined
-  form.countDate = new Date().toISOString().slice(0, 10)
-  form.notes = ''
-  form.lines = []
-  showCreate.value = true
-}
-
-async function onCreateSubmit() {
-  createError.value = ''
-  if (!form.companyId || !form.warehouseId || !form.countDate) {
-    createError.value = 'Please fill in company, warehouse, and count date'
-    return
-  }
-  if (form.lines.length === 0 || form.lines.some((l) => !l.productId)) {
-    createError.value = 'Add at least one product to count'
-    return
-  }
-  const payload: StockCountPayload = {
-    companyId: form.companyId,
-    warehouseId: form.warehouseId,
-    countDate: form.countDate,
-    notes: form.notes || undefined,
-    lines: form.lines.map((l) => ({ productId: l.productId!, binId: l.binId }))
-  }
-  creating.value = true
-  try {
-    await create(payload)
-    toast.add({ title: 'Stock count started', color: 'success' })
-    showCreate.value = false
-    await load()
-  } catch (err) {
-    createError.value = apiErrorMessage(err)
-  } finally {
-    creating.value = false
   }
 }
 

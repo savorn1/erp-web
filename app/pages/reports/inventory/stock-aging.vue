@@ -15,6 +15,9 @@
         <UFormField label="Warehouse">
           <USelect v-model="warehouseId" :items="warehouseFilterOptions" placeholder="All warehouses" class="w-48" />
         </UFormField>
+        <UFormField label="Show quantity in">
+          <USelect v-model="mode" :items="displayUnitOptions" class="w-36" />
+        </UFormField>
       </div>
     </UCard>
 
@@ -51,25 +54,41 @@ definePageMeta({ middleware: 'admin' })
 
 const { companyId, warehouseId, activeCompanyOptions, warehouseFilterOptions, ensureLoaded } = useReportFilters()
 const { stockAging } = useInventoryReports()
+const { list: listProducts } = useProducts()
+const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
 const aging = ref<StockAging | null>(null)
+const products = ref<{ id: number; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]>([])
 
-const columns: ColumnDef<StockAgingRow>[] = [
+const columns = computed<ColumnDef<StockAgingRow>[]>(() => [
   { key: 'productName', label: 'Product', value: (row) => `${row.productName ?? '—'} (${row.productSku ?? '—'})` },
   { key: 'warehouseName', label: 'Warehouse', value: (row) => row.warehouseName ?? '—' },
-  { key: 'currentStock', label: 'On hand' },
+  {
+    key: 'currentStock',
+    label: 'On hand',
+    value: (row) => {
+      const { quantity, unit } = displayQuantity(products.value.find((p) => p.id === row.productId), row.currentStock)
+      return unit ? `${quantity} ${unit}` : quantity
+    }
+  },
   { key: 'value', label: 'Value', type: 'currency' },
   { key: 'daysSinceInbound', label: 'Days since received', value: (row) => row.daysSinceInbound ?? '—' },
   { key: 'ageBucket', label: 'Bucket', type: 'badge', color: (row) => (row.ageBucket === '90+' ? 'error' : row.ageBucket === '61-90' ? 'warning' : 'neutral') }
-]
+])
 
 async function load() {
   loading.value = true
   error.value = ''
   try {
-    aging.value = await stockAging({ companyId: companyId.value, warehouseId: warehouseId.value })
+    const [result, productsRes] = await Promise.all([
+      stockAging({ companyId: companyId.value, warehouseId: warehouseId.value }),
+      products.value.length === 0 ? listProducts({ size: 10000 }) : Promise.resolve(null)
+    ])
+    aging.value = result
+    if (productsRes) products.value = productsRes.data
+    await ensurePackUnits(result.rows.map((r) => r.productId))
   } catch (err) {
     error.value = apiErrorMessage(err)
   } finally {
