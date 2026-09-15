@@ -2,9 +2,17 @@
   <div>
     <ReportBackButton />
     <PageHeader
-      title="Stock in/out summary"
-      description="Inbound and outbound quantity side by side, per product and warehouse."
-      :crumbs="[{ label: 'Reports', to: '/reports' }, { label: 'Inventory reports' }, { label: 'Stock in/out summary' }]"
+      title="Stock roll-forward"
+      description="Beginning balance, in, out, and ending balance per product and warehouse, for a date range."
+      :crumbs="[{ label: 'Reports', to: '/reports' }, { label: 'Inventory reports' }, { label: 'Stock roll-forward' }]"
+    />
+
+    <UAlert
+      color="neutral"
+      variant="subtle"
+      class="mb-4"
+      title="Adjustments reconcile the difference"
+      description="In/Out only cover receipts, issues, transfers, and manufacturing movements. Stock adjustments made during the range aren't split into in/out — they show up in the Adjustments column instead, so Beginning + In − Out + Adjustments always equals Ending."
     />
 
     <UCard class="mb-4">
@@ -30,27 +38,13 @@
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
     <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
 
-    <template v-else>
-      <UAlert
-        color="neutral"
-        variant="subtle"
-        class="mb-4"
-        title="Totals mix units across products"
-        description="These are raw sums of quantity across every product and warehouse in view, in each product's base unit — they don't account for different products using different units of measure, and aren't affected by the display-unit toggle above."
-      />
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-        <StatTile label="Total in" :value="String(totalIn)" icon="i-lucide-log-in" color="success" />
-        <StatTile label="Total out" :value="String(totalOut)" icon="i-lucide-log-out" color="error" />
-        <StatTile label="Net change" :value="(totalIn - totalOut >= 0 ? '+' : '') + String(totalIn - totalOut)" icon="i-lucide-arrow-left-right" color="info" />
-      </div>
-      <UCard>
-        <DataTable :rows="rows" :columns="columns" :exportable="false">
-          <template #empty-state>
-            <EmptyState icon="i-lucide-arrow-left-right" title="No movements in this range" />
-          </template>
-        </DataTable>
-      </UCard>
-    </template>
+    <UCard v-else>
+      <DataTable :rows="rows" :columns="columns" :exportable="false">
+        <template #empty-state>
+          <EmptyState icon="i-lucide-list-restart" title="No movements in this range" />
+        </template>
+      </DataTable>
+    </UCard>
   </div>
 </template>
 
@@ -59,46 +53,46 @@ import type { ColumnDef } from '#shared/types'
 
 definePageMeta({ middleware: 'admin' })
 
-interface SummaryRow {
+interface RollForwardRow {
   productId: number
   productName: string | null
   productSku: string | null
   warehouseId: number
   warehouseName: string | null
+  beginningQuantity: number
   inQuantity: number
   outQuantity: number
-  net: number
-  movementCount: number
+  adjustments: number
+  endingQuantity: number
 }
 
 const { companyId, warehouseId, dateFrom, dateTo, activeCompanyOptions, warehouseFilterOptions, ensureLoaded } = useReportFilters()
-const { stockIn, stockOut } = useInventoryReports()
+const { openingClosingStock, stockIn, stockOut } = useInventoryReports()
 const { list: listProducts } = useProducts()
 const { mode, displayUnitOptions, ensurePackUnits, formatQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
-const rows = ref<SummaryRow[]>([])
+const rows = ref<RollForwardRow[]>([])
 const products = ref<{ id: number; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]>([])
-const totalIn = computed(() => rows.value.reduce((sum, r) => sum + r.inQuantity, 0))
-const totalOut = computed(() => rows.value.reduce((sum, r) => sum + r.outQuantity, 0))
 
-function formatted(row: SummaryRow, baseQuantity: number) {
-  return formatQuantity(products.value.find((p) => p.id === row.productId), baseQuantity)
+function formatted(row: RollForwardRow, baseQuantity: number, signed = false) {
+  return formatQuantity(products.value.find((p) => p.id === row.productId), baseQuantity, { signed })
 }
 
-const columns = computed<ColumnDef<SummaryRow>[]>(() => [
+const columns = computed<ColumnDef<RollForwardRow>[]>(() => [
   { key: 'productName', label: 'Product', value: (row) => `${row.productName ?? '—'} (${row.productSku ?? '—'})` },
   { key: 'warehouseName', label: 'Warehouse', value: (row) => row.warehouseName ?? '—' },
+  { key: 'beginningQuantity', label: 'Beginning', value: (row) => formatted(row, row.beginningQuantity) },
   { key: 'inQuantity', label: 'In', value: (row) => formatted(row, row.inQuantity), class: 'text-success' },
   { key: 'outQuantity', label: 'Out', value: (row) => formatted(row, row.outQuantity), class: 'text-error' },
   {
-    key: 'net',
-    label: 'Net',
-    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.net, { signed: true }),
-    class: (row) => (row.net > 0 ? 'text-success' : row.net < 0 ? 'text-error' : '')
+    key: 'adjustments',
+    label: 'Adjustments',
+    value: (row) => formatted(row, row.adjustments, true),
+    class: (row) => (row.adjustments > 0 ? 'text-success' : row.adjustments < 0 ? 'text-error' : '')
   },
-  { key: 'movementCount', label: 'Movements' }
+  { key: 'endingQuantity', label: 'Ending', value: (row) => formatted(row, row.endingQuantity) }
 ])
 
 async function load() {
@@ -106,37 +100,42 @@ async function load() {
   error.value = ''
   try {
     const query = { companyId: companyId.value, warehouseId: warehouseId.value, dateFrom: dateFrom.value, dateTo: dateTo.value }
-    const [inResult, outResult, productsRes] = await Promise.all([
+    const [openingClosing, inResult, outResult, productsRes] = await Promise.all([
+      openingClosingStock(query),
       stockIn(query),
       stockOut(query),
       products.value.length === 0 ? listProducts({ size: 10000 }) : Promise.resolve(null)
     ])
     if (productsRes) products.value = productsRes.data
 
-    const byKey = new Map<string, SummaryRow>()
+    const byKey = new Map<string, RollForwardRow>()
     function bucketFor(productId: number, warehouseId: number, productName: string | null, productSku: string | null, warehouseName: string | null) {
       const key = `${productId}:${warehouseId}`
       let bucket = byKey.get(key)
       if (!bucket) {
-        bucket = { productId, productName, productSku, warehouseId, warehouseName, inQuantity: 0, outQuantity: 0, net: 0, movementCount: 0 }
+        bucket = { productId, productName, productSku, warehouseId, warehouseName, beginningQuantity: 0, inQuantity: 0, outQuantity: 0, adjustments: 0, endingQuantity: 0 }
         byKey.set(key, bucket)
       }
       return bucket
     }
+    for (const row of openingClosing.rows) {
+      const bucket = bucketFor(row.productId, row.warehouseId, row.productName, row.productSku, row.warehouseName)
+      bucket.beginningQuantity = row.openingQuantity
+      bucket.endingQuantity = row.closingQuantity
+    }
     for (const row of inResult.rows) {
       const bucket = bucketFor(row.productId, row.warehouseId, row.productName, row.productSku, row.warehouseName)
       bucket.inQuantity += row.quantity
-      bucket.movementCount += row.movementCount
     }
     for (const row of outResult.rows) {
       const bucket = bucketFor(row.productId, row.warehouseId, row.productName, row.productSku, row.warehouseName)
       bucket.outQuantity += row.quantity
-      bucket.movementCount += row.movementCount
     }
     for (const bucket of byKey.values()) {
-      bucket.net = bucket.inQuantity - bucket.outQuantity
+      bucket.adjustments = bucket.endingQuantity - bucket.beginningQuantity - bucket.inQuantity + bucket.outQuantity
     }
-    rows.value = Array.from(byKey.values()).sort((a, b) => Math.abs(b.net) - Math.abs(a.net))
+    rows.value = Array.from(byKey.values()).sort((a, b) => (a.productName ?? '').localeCompare(b.productName ?? ''))
+    await ensurePackUnits(rows.value.map((r) => r.productId))
   } catch (err) {
     error.value = apiErrorMessage(err)
   } finally {

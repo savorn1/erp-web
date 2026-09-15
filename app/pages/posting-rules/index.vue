@@ -72,6 +72,24 @@
         </div>
       </UCard>
 
+      <UCard class="mb-4">
+        <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">Fixed assets</h2></template>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <UFormField label="Fixed assets, at cost" hint="Debited on acquisition, credited on disposal.">
+            <USelectMenu v-model="form.fixedAssetCostAccountId" :items="accountOptions" value-key="value" placeholder="None" class="w-full" />
+          </UFormField>
+          <UFormField label="Depreciation expense">
+            <USelectMenu v-model="form.depreciationExpenseAccountId" :items="accountOptions" value-key="value" placeholder="None" class="w-full" />
+          </UFormField>
+          <UFormField label="Accumulated depreciation">
+            <USelectMenu v-model="form.accumulatedDepreciationAccountId" :items="accountOptions" value-key="value" placeholder="None" class="w-full" />
+          </UFormField>
+          <UFormField label="Gain/loss on disposal">
+            <USelectMenu v-model="form.assetDisposalGainLossAccountId" :items="accountOptions" value-key="value" placeholder="None" class="w-full" />
+          </UFormField>
+        </div>
+      </UCard>
+
       <UAlert v-if="saveError" color="error" variant="subtle" class="mb-4" :title="saveError" />
       <div class="flex justify-end">
         <UButton :loading="saving" icon="i-lucide-check" @click="onSave">Save posting rules</UButton>
@@ -113,6 +131,10 @@ const form = reactive<{
   taxReceivableAccountId: number | undefined
   defaultCashAccountId: number | undefined
   defaultBankAccountId: number | undefined
+  fixedAssetCostAccountId: number | undefined
+  depreciationExpenseAccountId: number | undefined
+  accumulatedDepreciationAccountId: number | undefined
+  assetDisposalGainLossAccountId: number | undefined
 }>({
   accountsReceivableAccountId: undefined,
   accountsPayableAccountId: undefined,
@@ -123,7 +145,11 @@ const form = reactive<{
   taxPayableAccountId: undefined,
   taxReceivableAccountId: undefined,
   defaultCashAccountId: undefined,
-  defaultBankAccountId: undefined
+  defaultBankAccountId: undefined,
+  fixedAssetCostAccountId: undefined,
+  depreciationExpenseAccountId: undefined,
+  accumulatedDepreciationAccountId: undefined,
+  assetDisposalGainLossAccountId: undefined
 })
 
 function applyRule(rule: PostingRule) {
@@ -137,6 +163,10 @@ function applyRule(rule: PostingRule) {
   form.taxReceivableAccountId = rule.taxReceivableAccountId ?? undefined
   form.defaultCashAccountId = rule.defaultCashAccountId ?? undefined
   form.defaultBankAccountId = rule.defaultBankAccountId ?? undefined
+  form.fixedAssetCostAccountId = rule.fixedAssetCostAccountId ?? undefined
+  form.depreciationExpenseAccountId = rule.depreciationExpenseAccountId ?? undefined
+  form.accumulatedDepreciationAccountId = rule.accumulatedDepreciationAccountId ?? undefined
+  form.assetDisposalGainLossAccountId = rule.assetDisposalGainLossAccountId ?? undefined
 }
 
 async function loadRule() {

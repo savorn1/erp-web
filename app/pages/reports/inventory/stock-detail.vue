@@ -1,3 +1,4 @@
+
 <template>
   <div>
     <ReportBackButton />
@@ -43,7 +44,7 @@ definePageMeta({ middleware: 'admin' })
 const { companyId, warehouseId, activeCompanyOptions, warehouseFilterOptions, ensureLoaded } = useReportFilters()
 const { stockDetail } = useInventoryReports()
 const { list: listProducts } = useProducts()
-const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
+const { mode, displayUnitOptions, ensurePackUnits, formatQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
@@ -57,10 +58,7 @@ const columns = computed<ColumnDef<StockDetailRow>[]>(() => [
   {
     key: 'quantityOnHand',
     label: 'On hand',
-    value: (row) => {
-      const { quantity, unit } = displayQuantity(products.value.find((p) => p.id === row.productId), row.quantityOnHand)
-      return unit ? `${quantity} ${unit}` : quantity
-    }
+    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.quantityOnHand)
   }
 ])
 

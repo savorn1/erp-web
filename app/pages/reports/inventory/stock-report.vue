@@ -51,7 +51,7 @@ definePageMeta({ middleware: 'admin' })
 const { companyId, warehouseId, activeCompanyOptions, warehouseFilterOptions, ensureLoaded } = useReportFilters()
 const { get: fetchInventoryOverview } = useInventoryOverview()
 const { list: listProducts } = useProducts()
-const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
+const { mode, displayUnitOptions, ensurePackUnits, formatQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
@@ -63,11 +63,7 @@ const totalAvailable = computed(() => rows.value.reduce((sum, r) => sum + r.avai
 const totalValuation = computed(() => rows.value.reduce((sum, r) => sum + r.valuationValue, 0))
 
 function formatted(row: InventoryOverviewRow, baseQuantity: number) {
-  const { quantity, unit } = displayQuantity(
-    products.value.find((p) => p.id === row.productId),
-    baseQuantity
-  )
-  return unit ? `${quantity} ${unit}` : quantity
+  return formatQuantity(products.value.find((p) => p.id === row.productId), baseQuantity)
 }
 
 const columns = computed<ColumnDef<InventoryOverviewRow>[]>(() => [

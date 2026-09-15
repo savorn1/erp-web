@@ -51,7 +51,7 @@ definePageMeta({ middleware: 'admin' })
 const { companyId, activeCompanyOptions, ensureLoaded } = useReportFilters()
 const { batchLotStock } = useInventoryReports()
 const { list: listProducts } = useProducts()
-const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
+const { mode, displayUnitOptions, ensurePackUnits, formatQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
@@ -66,13 +66,7 @@ const columns = computed<ColumnDef<BatchLotStockRow>[]>(() => [
   {
     key: 'currentQuantity',
     label: 'Current qty',
-    value: (row) => {
-      const { quantity, unit } = displayQuantity(
-        products.value.find((p) => p.id === row.productId),
-        row.currentQuantity
-      )
-      return unit ? `${quantity} ${unit}` : quantity
-    }
+    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.currentQuantity)
   }
 ])
 

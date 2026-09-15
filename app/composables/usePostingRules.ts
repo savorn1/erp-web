@@ -32,6 +32,14 @@ export interface PostingRule {
   defaultCashAccountLabel: string | null
   defaultBankAccountId: number | null
   defaultBankAccountLabel: string | null
+  fixedAssetCostAccountId: number | null
+  fixedAssetCostAccountLabel: string | null
+  depreciationExpenseAccountId: number | null
+  depreciationExpenseAccountLabel: string | null
+  accumulatedDepreciationAccountId: number | null
+  accumulatedDepreciationAccountLabel: string | null
+  assetDisposalGainLossAccountId: number | null
+  assetDisposalGainLossAccountLabel: string | null
 }
 
 export interface PostingRulePayload {
@@ -46,6 +54,10 @@ export interface PostingRulePayload {
   taxReceivableAccountId?: number
   defaultCashAccountId?: number
   defaultBankAccountId?: number
+  fixedAssetCostAccountId?: number
+  depreciationExpenseAccountId?: number
+  accumulatedDepreciationAccountId?: number
+  assetDisposalGainLossAccountId?: number
 }
 
 export function usePostingRules() {

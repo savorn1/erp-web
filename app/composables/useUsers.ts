@@ -3,6 +3,7 @@
 // list wraps in PageResponse<T>.
 
 import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+import type { PermissionGrant } from './useCustomRoles'
 
 export type Role = 'ADMIN' | 'USER'
 
@@ -18,6 +19,11 @@ export interface AdminUser {
   branchName: string | null
   departmentId: number | null
   departmentName: string | null
+  customRoleId: number | null
+  customRoleName: string | null
+  // Only populated on single-user responses (get/create/update/etc), not
+  // the batch list — see UserServiceImpl.effectivePermissionsOf.
+  permissions?: PermissionGrant[]
 }
 
 export interface UserFilter {
@@ -42,6 +48,8 @@ export interface CreateUserPayload {
   companyId?: number
   branchId?: number
   departmentId?: number
+  // Only meaningful when role is USER — see PermissionAuthorizationManager.
+  customRoleId?: number
 }
 
 // Admin-side general edit — email plus org assignment. Role/status stay on
@@ -84,6 +92,14 @@ export function useUsers() {
     return res.data
   }
 
+  async function updateCustomRole(id: number, customRoleId: number | undefined) {
+    const res = await api<ApiEnvelope<AdminUser>>(`/api/admin/users/${id}/custom-role`, {
+      method: 'PUT',
+      body: { customRoleId }
+    })
+    return res.data
+  }
+
   async function updateStatus(id: number, enabled: boolean) {
     const res = await api<ApiEnvelope<AdminUser>>(`/api/admin/users/${id}/status`, {
       method: 'PUT',
@@ -111,5 +127,5 @@ export function useUsers() {
     await api('/api/admin/users/force-logout', { method: 'POST', body: { userIds } })
   }
 
-  return { list, get, create, update, updateRole, updateStatus, resetPassword, remove, forceLogout, bulkForceLogout }
+  return { list, get, create, update, updateRole, updateCustomRole, updateStatus, resetPassword, remove, forceLogout, bulkForceLogout }
 }

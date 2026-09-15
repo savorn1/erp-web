@@ -174,10 +174,11 @@ import type { AdminUser, CreateUserPayload, Role } from '~/composables/useUsers'
 
 definePageMeta({ middleware: 'admin' })
 
-const { list, create, update, updateRole, updateStatus, resetPassword, remove, forceLogout, bulkForceLogout } = useUsers()
+const { list, create, update, updateRole, updateCustomRole, updateStatus, resetPassword, remove, forceLogout, bulkForceLogout } = useUsers()
 const { list: listCompanies } = useCompanies()
 const { list: listBranches } = useBranches()
 const { list: listDepartments } = useDepartments()
+const { list: listCustomRoles } = useCustomRoles()
 const { username: myUsername } = useAuth()
 const toast = useToast()
 
@@ -188,17 +189,21 @@ const error = ref('')
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
 const branches = ref<{ id: number; name: string; active: boolean }[]>([])
 const departments = ref<{ id: number; name: string; active: boolean }[]>([])
+const customRoles = ref<{ id: number; name: string }[]>([])
 
 async function loadLookups() {
-  const [companiesRes, branchesRes, departmentsRes] = await Promise.all([
+  const [companiesRes, branchesRes, departmentsRes, customRolesRes] = await Promise.all([
     listCompanies({ size: 200 }),
     listBranches({ size: 200 }),
-    listDepartments({ size: 200 })
+    listDepartments({ size: 200 }),
+    listCustomRoles({ size: 200 })
   ])
   companies.value = companiesRes.data
   branches.value = branchesRes.data
   departments.value = departmentsRes.data
+  customRoles.value = customRolesRes.data
 }
+const customRoleOptions = computed(() => [{ label: 'None', value: undefined }, ...customRoles.value.map((r) => ({ label: r.name, value: r.id }))])
 
 const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
 const companyFilterOptions = computed(() => [{ label: 'All companies', value: undefined }, ...companies.value.map((c) => ({ label: c.name, value: c.id }))])
@@ -255,6 +260,7 @@ const columns: ColumnDef<AdminUser>[] = [
   { key: 'username', sortable: true },
   { key: 'email', value: (row) => row.email ?? '—' },
   { key: 'role', type: 'badge', color: (row) => (row.role === 'ADMIN' ? 'primary' : 'neutral') },
+  { key: 'customRoleName', label: 'Custom role', value: (row) => row.customRoleName ?? '—' },
   { key: 'companyName', label: 'Company', value: (row) => row.companyName ?? '—' },
   { key: 'branchName', label: 'Branch', value: (row) => row.branchName ?? '—' },
   { key: 'departmentName', label: 'Department', value: (row) => row.departmentName ?? '—' },
@@ -311,6 +317,13 @@ const createFields = computed<FieldDef[]>(() => [
   { name: 'password', type: 'password', required: true, hint: 'Minimum 6 characters.' },
   { name: 'email', type: 'email', hint: 'Optional — needed for the user to use "forgot password".' },
   { name: 'role', type: 'select', required: true, options: roleOptions },
+  {
+    name: 'customRoleId',
+    label: 'Custom role',
+    type: 'select',
+    options: customRoleOptions.value,
+    hint: 'Only used when Role is User — grants that role\'s per-module permissions.'
+  },
   { name: 'enabled', type: 'switch', onLabel: 'Enabled', offLabel: 'Disabled', default: true },
   { name: 'companyId', label: 'Company', type: 'select', options: activeCompanyOptions.value, hint: 'Optional — can be assigned later.' },
   { name: 'branchId', label: 'Branch', type: 'select', options: branchOptionsFor() },
@@ -319,6 +332,13 @@ const createFields = computed<FieldDef[]>(() => [
 
 const editFields = computed<FieldDef[]>(() => [
   { name: 'role', type: 'select', required: true, options: roleOptions },
+  {
+    name: 'customRoleId',
+    label: 'Custom role',
+    type: 'select',
+    options: customRoleOptions.value,
+    hint: 'Only used when Role is User — grants that role\'s per-module permissions.'
+  },
   { name: 'enabled', type: 'switch', onLabel: 'Enabled', offLabel: 'Disabled' },
   { name: 'email', type: 'email' },
   { name: 'companyId', label: 'Company', type: 'select', options: activeCompanyOptions.value },
@@ -328,6 +348,7 @@ const editFields = computed<FieldDef[]>(() => [
 
 interface UserEditPayload {
   role: Role
+  customRoleId?: number
   enabled: boolean
   email?: string
   companyId?: number
@@ -375,6 +396,7 @@ const {
         })
       }
       if (payload.role !== row.role) result = await updateRole(row.id, payload.role)
+      if (payload.customRoleId !== (row.customRoleId ?? undefined)) result = await updateCustomRole(row.id, payload.customRoleId)
       if (payload.enabled !== row.enabled) result = await updateStatus(row.id, payload.enabled)
       return result
     }
@@ -388,6 +410,7 @@ const {
       password: values.password,
       email: values.email || undefined,
       role: values.role,
+      customRoleId: values.customRoleId || undefined,
       enabled: values.enabled ?? true,
       companyId: values.companyId || undefined,
       branchId: values.branchId || undefined,
@@ -395,6 +418,7 @@ const {
     }),
     toForm: (row) => ({
       role: row.role,
+      customRoleId: row.customRoleId ?? undefined,
       enabled: row.enabled,
       email: row.email ?? '',
       companyId: row.companyId ?? undefined,
@@ -403,6 +427,7 @@ const {
     }),
     toEditPayload: (values) => ({
       role: values.role,
+      customRoleId: values.customRoleId || undefined,
       enabled: values.enabled,
       email: values.email || undefined,
       companyId: values.companyId || undefined,

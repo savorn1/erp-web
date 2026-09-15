@@ -6,7 +6,13 @@
 import type { ApiEnvelope, PageEnvelope } from '#shared/types'
 
 export type StockAdjustmentStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
-export type StockAdjustmentReason = 'STOCK_INCREASE' | 'STOCK_DECREASE' | 'DAMAGED' | 'LOST' | 'EXPIRED'
+export type StockAdjustmentReason = 'STOCK_INCREASE' | 'OPENING_BALANCE' | 'STOCK_DECREASE' | 'DAMAGED' | 'LOST' | 'EXPIRED'
+
+// STOCK_INCREASE and OPENING_BALANCE both add quantity — OPENING_BALANCE is
+// just a distinct label for a product/warehouse's initial stock entry.
+export function isIncreaseReason(reason: StockAdjustmentReason | undefined) {
+  return reason === 'STOCK_INCREASE' || reason === 'OPENING_BALANCE'
+}
 
 export interface StockAdjustmentLine {
   id: number
@@ -56,7 +62,7 @@ export interface StockAdjustmentLinePayload {
   quantity: number
   // Required when the product is BATCH-tracked.
   batchNumber?: string
-  // Only used for reason=STOCK_INCREASE when batchNumber doesn't already exist.
+  // Only used for reason=STOCK_INCREASE/OPENING_BALANCE when batchNumber doesn't already exist.
   expirationDate?: string
   // Required when the product is SERIAL-tracked — must have exactly
   // `quantity` entries.

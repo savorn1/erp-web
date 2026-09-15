@@ -46,7 +46,7 @@ definePageMeta({ middleware: 'admin' })
 const { companyId, warehouseId, activeCompanyOptions, warehouseFilterOptions, ensureLoaded } = useReportFilters()
 const { stockTurnover } = useInventoryReports()
 const { list: listProducts } = useProducts()
-const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
+const { mode, displayUnitOptions, ensurePackUnits, formatQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
@@ -55,8 +55,7 @@ const rows = ref<StockTurnoverRow[]>([])
 const products = ref<{ id: number; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]>([])
 
 function formatted(row: StockTurnoverRow, baseQuantity: number) {
-  const { quantity, unit } = displayQuantity(products.value.find((p) => p.id === row.productId), baseQuantity)
-  return unit ? `${quantity} ${unit}` : quantity
+  return formatQuantity(products.value.find((p) => p.id === row.productId), baseQuantity)
 }
 
 const columns = computed<ColumnDef<StockTurnoverRow>[]>(() => [

@@ -57,7 +57,7 @@ const { companyId, activeCompanyOptions, ensureLoaded } = useReportFilters()
 const { get: fetchInventoryOverview } = useInventoryOverview()
 const { list: listVariants } = useProductVariants()
 const { list: listProducts } = useProducts()
-const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
+const { mode, displayUnitOptions, ensurePackUnits, formatQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
@@ -70,10 +70,7 @@ const columns = computed<ColumnDef<VariantStockRow>[]>(() => [
   {
     key: 'productTotalQuantity',
     label: "Product's total on-hand",
-    value: (row) => {
-      const { quantity, unit } = displayQuantity(products.value.find((p) => p.id === row.productId), row.productTotalQuantity)
-      return unit ? `${quantity} ${unit}` : quantity
-    }
+    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.productTotalQuantity)
   }
 ])
 

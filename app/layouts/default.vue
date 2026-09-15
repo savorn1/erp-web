@@ -54,7 +54,7 @@
 import type { BreadcrumbItem, DropdownMenuItem } from '@nuxt/ui'
 import type { SidebarItem } from '~/components/SidebarNav.vue'
 
-const { username, role, isAdmin, logout } = useAuth()
+const { username, role, isAdmin, hasAnyAccess, logout } = useAuth()
 const route = useRoute()
 
 const profileItems = computed<DropdownMenuItem[][]>(() => [
@@ -71,15 +71,24 @@ const profileItems = computed<DropdownMenuItem[][]>(() => [
 ])
 
 // Starter nav — add feature groups here the same way (a top-level item with
-// `children`), gating admin-only items behind `isAdmin`. Organization and
-// Master Data stay open by default since they're small/frequently used;
-// the rest start collapsed to keep the sidebar from being one long list.
-// Each group's `color` picks its accent hue in SidebarNav (header icon,
-// active-item background/border) so groups stay visually distinct at a glance.
+// `children`), gating admin-only items behind `hasAnyAccess` (ADMIN always,
+// or a USER whose custom role was granted at least one permission — see
+// useAuth.can/middleware/admin.ts). Organization and Master Data stay open
+// by default since they're small/frequently used; the rest start collapsed
+// to keep the sidebar from being one long list. Each group's `color` picks
+// its accent hue in SidebarNav (header icon, active-item background/border)
+// so groups stay visually distinct at a glance.
+//
+// Known limitation: this shows the full nav to any USER who has ANY grant
+// at all, not just the sections they're actually permitted in — filtering
+// each of the ~70 modules' nav items individually against their specific
+// grants is out of scope for now. A USER who follows a link they lack
+// permission for gets a 403 from the backend on that page, same as any
+// other ungranted action.
 const items = computed<SidebarItem[]>(() => [
   { label: 'Dashboard', to: '/', icon: 'i-lucide-layout-dashboard' },
 
-  ...(isAdmin.value
+  ...(hasAnyAccess.value
     ? [
         { label: 'Reports', to: '/reports', icon: 'i-lucide-file-bar-chart-2' },
 
@@ -188,6 +197,7 @@ const items = computed<SidebarItem[]>(() => [
             { label: 'Bank & cash', to: '/bank-accounts', icon: 'i-lucide-landmark' },
             { label: 'Cost centers', to: '/cost-centers', icon: 'i-lucide-building-2' },
             { label: 'Fiscal years', to: '/fiscal-years', icon: 'i-lucide-calendar' },
+            { label: 'Fixed assets', to: '/fixed-assets', icon: 'i-lucide-briefcase' },
             { label: 'Tax rates', to: '/tax-rates', icon: 'i-lucide-percent' }
           ]
         },
@@ -195,7 +205,10 @@ const items = computed<SidebarItem[]>(() => [
           label: 'Administration',
           icon: 'i-lucide-shield',
           color: 'rose',
-          children: [{ label: 'Users', to: '/users', icon: 'i-lucide-users' }]
+          children: [
+            { label: 'Users', to: '/users', icon: 'i-lucide-users' },
+            { label: 'Custom roles', to: '/custom-roles', icon: 'i-lucide-shield' }
+          ]
         }
       ]
     : [])

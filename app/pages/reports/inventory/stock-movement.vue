@@ -56,7 +56,7 @@ const { companyId, warehouseId, dateFrom, dateTo, movementType, activeCompanyOpt
   useReportFilters()
 const { list: fetchStockMovements } = useStockMovements()
 const { list: listProducts } = useProducts()
-const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
+const { mode, displayUnitOptions, ensurePackUnits, formatQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
@@ -85,11 +85,7 @@ const columns = computed<ColumnDef<StockMovement>[]>(() => [
   {
     key: 'quantityDelta',
     label: 'Qty change',
-    value: (row) => {
-      const { quantity, unit } = displayQuantity(products.value.find((p) => p.id === row.productId), row.quantityDelta)
-      const signed = quantity >= 0 ? `+${quantity}` : String(quantity)
-      return unit ? `${signed} ${unit}` : signed
-    },
+    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.quantityDelta, { signed: true }),
     class: (row) => (row.quantityDelta >= 0 ? 'text-success' : 'text-error')
   },
   { key: 'reference', label: 'Reference', value: (row) => `${row.referenceType} #${row.referenceId}` }

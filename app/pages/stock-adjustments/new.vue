@@ -65,14 +65,14 @@
               </div>
               <div class="grid grid-cols-2 gap-2">
                 <USelect v-model="line.binId" :items="binOptionsForWarehouse" placeholder="No bin" />
-                <span v-if="line.reason && line.reason !== 'STOCK_INCREASE'" class="text-xs text-gray-400 self-center">
+                <span v-if="line.reason && !isIncreaseReason(line.reason)" class="text-xs text-gray-400 self-center">
                   Available: {{ availableFor(line) }}
                 </span>
               </div>
 
               <template v-if="trackingTypeFor(line.productId) === 'BATCH'">
                 <USelect
-                  v-if="line.reason && line.reason !== 'STOCK_INCREASE'"
+                  v-if="line.reason && !isIncreaseReason(line.reason)"
                   v-model="line.batchNumber"
                   :items="batchOptionsFor(line)"
                   placeholder="Select existing batch / lot"
@@ -86,7 +86,7 @@
 
               <template v-else-if="trackingTypeFor(line.productId) === 'SERIAL'">
                 <UTextarea
-                  v-if="line.reason === 'STOCK_INCREASE'"
+                  v-if="isIncreaseReason(line.reason)"
                   v-model="line.serialNumbersText"
                   placeholder="One new serial number per line"
                   :rows="3"
@@ -135,7 +135,7 @@
 </template>
 
 <script setup lang="ts">
-import type { StockAdjustmentPayload, StockAdjustmentReason } from '~/composables/useStockAdjustments'
+import { isIncreaseReason, type StockAdjustmentPayload, type StockAdjustmentReason } from '~/composables/useStockAdjustments'
 
 definePageMeta({ middleware: 'admin' })
 
@@ -158,6 +158,7 @@ const bins = ref<{ id: number; name: string; warehouseId: number | null; active:
 const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
 const reasonOptions = [
   { label: 'Stock increase', value: 'STOCK_INCREASE' },
+  { label: 'Opening balance', value: 'OPENING_BALANCE' },
   { label: 'Stock decrease', value: 'STOCK_DECREASE' },
   { label: 'Damaged', value: 'DAMAGED' },
   { label: 'Lost', value: 'LOST' },
@@ -231,7 +232,7 @@ function serialOptionsFor(line: LineForm) {
 }
 
 function serialCountFor(line: LineForm): number {
-  if (line.reason === 'STOCK_INCREASE') {
+  if (isIncreaseReason(line.reason)) {
     return line.serialNumbersText
       .split('\n')
       .map((s) => s.trim())
@@ -328,7 +329,7 @@ async function onSaveForm() {
       formError.value = `Every serial-tracked line needs exactly its quantity in serial numbers (expected ${line.quantity})`
       return
     }
-    if (line.reason !== 'STOCK_INCREASE' && line.quantity! > availableFor(line)) {
+    if (!isIncreaseReason(line.reason) && line.quantity! > availableFor(line)) {
       formError.value = `Only ${availableFor(line)} available in stock for one of the decrease lines`
       return
     }
@@ -346,10 +347,10 @@ async function onSaveForm() {
         reason: l.reason!,
         quantity: l.quantity!,
         batchNumber: trackingType === 'BATCH' ? l.batchNumber : undefined,
-        expirationDate: trackingType === 'BATCH' && l.reason === 'STOCK_INCREASE' && l.expirationDate ? l.expirationDate : undefined,
+        expirationDate: trackingType === 'BATCH' && isIncreaseReason(l.reason) && l.expirationDate ? l.expirationDate : undefined,
         serialNumbers:
           trackingType === 'SERIAL'
-            ? l.reason === 'STOCK_INCREASE'
+            ? isIncreaseReason(l.reason)
               ? l.serialNumbersText
                   .split('\n')
                   .map((s) => s.trim())

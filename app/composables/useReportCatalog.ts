@@ -238,6 +238,12 @@ export function useReportCatalog() {
       description: 'Inbound and outbound quantity side by side, with net change, per product and warehouse.'
     },
     {
+      to: '/reports/inventory/stock-roll-forward',
+      icon: 'i-lucide-list-restart',
+      label: 'Stock roll-forward',
+      description: 'Beginning balance, in, out, adjustments, and ending balance per product and warehouse.'
+    },
+    {
       to: '/reports/inventory/stock-transfer',
       icon: 'i-lucide-repeat',
       label: 'Stock transfer',
@@ -480,6 +486,12 @@ export function useReportCatalog() {
       icon: 'i-lucide-trending-up',
       label: 'Statement of changes in equity',
       description: 'Beginning equity, net income, and other equity changes for a period.'
+    },
+    {
+      to: '/reports/accounting/depreciation-schedule',
+      icon: 'i-lucide-trending-down',
+      label: 'Depreciation schedule',
+      description: 'Period-by-period depreciation posted per fixed asset.'
     }
   ])
 

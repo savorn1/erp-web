@@ -61,7 +61,7 @@ definePageMeta({ middleware: 'admin' })
 const { companyId, warehouseId, dateFrom, dateTo, activeCompanyOptions, warehouseFilterOptions, ensureLoaded } = useReportFilters()
 const { stockIn } = useInventoryReports()
 const { list: listProducts } = useProducts()
-const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
+const { mode, displayUnitOptions, ensurePackUnits, formatQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
@@ -74,10 +74,7 @@ const columns = computed<ColumnDef<StockInOutRow>[]>(() => [
   {
     key: 'quantity',
     label: 'Quantity in',
-    value: (row) => {
-      const { quantity, unit } = displayQuantity(products.value.find((p) => p.id === row.productId), row.quantity)
-      return unit ? `${quantity} ${unit}` : quantity
-    }
+    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.quantity)
   },
   { key: 'movementCount', label: 'Movements' }
 ])

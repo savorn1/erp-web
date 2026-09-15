@@ -56,7 +56,7 @@ definePageMeta({ middleware: 'admin' })
 const { companyId, warehouseId, dateFrom, dateTo, activeCompanyOptions, warehouseFilterOptions, ensureLoaded } = useReportFilters()
 const { stockProfitability } = useInventoryReports()
 const { list: listProducts } = useProducts()
-const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
+const { mode, displayUnitOptions, ensurePackUnits, formatQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
@@ -68,10 +68,7 @@ const columns = computed<ColumnDef<StockProfitabilityRow>[]>(() => [
   {
     key: 'quantitySold',
     label: 'Qty sold',
-    value: (row) => {
-      const { quantity, unit } = displayQuantity(products.value.find((p) => p.id === row.productId), row.quantitySold)
-      return unit ? `${quantity} ${unit}` : quantity
-    }
+    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.quantitySold)
   },
   { key: 'revenue', label: 'Revenue', type: 'currency' },
   { key: 'cogs', label: 'COGS', type: 'currency' },

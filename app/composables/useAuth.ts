@@ -32,15 +32,54 @@ export function useAuth() {
     sameSite: 'lax'
   })
   const role = useCookie<string | null>('erp_auth_role', { default: () => null, sameSite: 'lax' })
+  // JSON-encoded PermissionGrant[] for the current USER account (see
+  // UserServiceImpl.effectivePermissionsOf) — always empty for ADMIN, who
+  // bypasses permission checks entirely. Refreshed on login/token refresh,
+  // same lifecycle as `role`.
+  const permissions = useCookie<string | null>('erp_auth_permissions', { default: () => null, sameSite: 'lax' })
 
   const isAuthenticated = computed(() => !!token.value)
   const isAdmin = computed(() => role.value === 'ADMIN')
+
+  function parsedPermissions(): { module: string; action: string }[] {
+    if (!permissions.value) return []
+    try {
+      return JSON.parse(permissions.value)
+    } catch {
+      return []
+    }
+  }
+
+  // Whether this account can reach the admin UI shell at all — ADMIN always
+  // can; a USER can only if their custom role was granted at least one
+  // permission. Individual pages/actions still enforce their own specific
+  // module+action requirement against the backend, which is authoritative —
+  // this is just the front-door gate (see middleware/admin.ts).
+  const hasAnyAccess = computed(() => isAdmin.value || parsedPermissions().length > 0)
+
+  function can(module: string, action: 'READ' | 'WRITE' | 'APPROVE') {
+    return isAdmin.value || parsedPermissions().some((g) => g.module === module && g.action === action)
+  }
 
   function applySession(res: AuthResponse) {
     token.value = res.accessToken
     refreshToken.value = res.refreshToken
     username.value = res.username
     role.value = res.role
+  }
+
+  // Best-effort — a failure here just means hasAnyAccess/can() fall back to
+  // "no permissions", never blocking login itself.
+  async function loadPermissions() {
+    try {
+      const res = await $fetch<ApiEnvelope<{ permissions?: { module: string; action: string }[] }>>('/api/users/me', {
+        baseURL: apiBase,
+        headers: { Authorization: `Bearer ${token.value}` }
+      })
+      permissions.value = JSON.stringify(res.data.permissions ?? [])
+    } catch {
+      permissions.value = JSON.stringify([])
+    }
   }
 
   async function login(payload: LoginRequest) {
@@ -50,6 +89,7 @@ export function useAuth() {
       body: payload
     })
     applySession(res.data)
+    await loadPermissions()
     return res.data
   }
 
@@ -65,6 +105,7 @@ export function useAuth() {
       body: { refreshToken: refreshToken.value }
     })
     applySession(res.data)
+    await loadPermissions()
     return res.data
   }
 
@@ -76,6 +117,7 @@ export function useAuth() {
     refreshToken.value = null
     username.value = null
     role.value = null
+    permissions.value = null
     if (pendingRefreshToken) {
       // Best-effort server-side revocation — the client-side session is already
       // cleared above regardless of whether this call succeeds.
@@ -94,6 +136,8 @@ export function useAuth() {
     role,
     isAuthenticated,
     isAdmin,
+    hasAnyAccess,
+    can,
     login,
     refresh,
     refreshOnce,

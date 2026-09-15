@@ -46,7 +46,7 @@ definePageMeta({ middleware: 'admin' })
 const { companyId, warehouseId, activeCompanyOptions, warehouseFilterOptions, ensureLoaded } = useReportFilters()
 const { stockTurnover } = useInventoryReports()
 const { list: listProducts } = useProducts()
-const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
+const { mode, displayUnitOptions, ensurePackUnits, formatQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
@@ -60,10 +60,7 @@ const columns = computed<ColumnDef<StockTurnoverRow>[]>(() => [
   {
     key: 'currentStock',
     label: 'On hand',
-    value: (row) => {
-      const { quantity, unit } = displayQuantity(products.value.find((p) => p.id === row.productId), row.currentStock)
-      return unit ? `${quantity} ${unit}` : quantity
-    }
+    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.currentStock)
   },
   { key: 'lastOutboundDate', label: 'Last outbound', value: (row) => row.lastOutboundDate ?? 'Never', type: 'datetime' }
 ])

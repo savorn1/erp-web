@@ -130,8 +130,8 @@
               <div class="flex items-center justify-between">
                 <span>{{ line.productName }} ({{ line.productSku }})</span>
                 <span class="text-gray-500 dark:text-gray-400">
-                  <span :class="line.reason === 'STOCK_INCREASE' ? 'text-success' : 'text-error'"
-                    >{{ line.reason === 'STOCK_INCREASE' ? '+' : '-' }}{{ line.quantity }}</span
+                  <span :class="isIncreaseReason(line.reason) ? 'text-success' : 'text-error'"
+                    >{{ isIncreaseReason(line.reason) ? '+' : '-' }}{{ line.quantity }}</span
                   >
                   <span v-if="line.binName"> — {{ line.binName }}</span>
                 </span>
@@ -168,7 +168,7 @@
 
 <script setup lang="ts">
 import type { ColumnDef } from '#shared/types'
-import type { StockAdjustment, StockAdjustmentStatus } from '~/composables/useStockAdjustments'
+import { isIncreaseReason, type StockAdjustment, type StockAdjustmentStatus } from '~/composables/useStockAdjustments'
 
 definePageMeta({ middleware: 'admin' })
 
@@ -206,6 +206,7 @@ const statusFilterOptions = [
 ]
 const reasonOptions = [
   { label: 'Stock increase', value: 'STOCK_INCREASE' },
+  { label: 'Opening balance', value: 'OPENING_BALANCE' },
   { label: 'Stock decrease', value: 'STOCK_DECREASE' },
   { label: 'Damaged', value: 'DAMAGED' },
   { label: 'Lost', value: 'LOST' },

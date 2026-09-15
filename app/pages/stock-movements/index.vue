@@ -12,6 +12,7 @@
         <USelect v-model="filter.type" :items="typeFilterOptions" placeholder="Type" class="w-40" />
         <UInput v-model="filter.dateFrom" type="date" class="w-40" />
         <UInput v-model="filter.dateTo" type="date" class="w-40" />
+        <USelect v-model="mode" :items="displayUnitOptions" class="w-36" />
         <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
     </UCard>
@@ -33,8 +34,8 @@
         @refresh="load"
       >
         <template #quantityDelta-data="{ row }">
-          <span :class="row.quantityDelta >= 0 ? 'text-error' : 'text-success'" class="font-medium">
-            {{ row.quantityDelta >= 0 ? '+' : '' }}{{ row.quantityDelta }}
+          <span :class="row.quantityDelta >= 0 ? 'text-success' : 'text-error'" class="font-medium">
+            {{ formatQuantity(products.find((p) => p.id === row.productId), row.quantityDelta, { signed: true }) }}
           </span>
         </template>
         <template #empty-state>
@@ -68,13 +69,14 @@ definePageMeta({ middleware: 'admin' })
 const { list } = useStockMovements()
 const { list: listWarehouses } = useWarehouses()
 const { list: listProducts } = useProducts()
+const { mode, displayUnitOptions, ensurePackUnits, formatQuantity } = useDisplayUnit()
 
 const rows = ref<StockMovement[]>([])
 const loading = ref(false)
 const error = ref('')
 
 const warehouses = ref<{ id: number; name: string }[]>([])
-const products = ref<{ id: number; name: string; sku: string }[]>([])
+const products = ref<{ id: number; name: string; sku: string; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]>([])
 
 async function loadLookups() {
   const [w, p] = await Promise.all([listWarehouses({ size: 200 }), listProducts({ size: 200 })])
@@ -134,6 +136,7 @@ async function load() {
       size: 200
     })
     rows.value = res.data
+    await ensurePackUnits(rows.value.map((r) => r.productId))
   } catch (err) {
     error.value = apiErrorMessage(err)
   } finally {

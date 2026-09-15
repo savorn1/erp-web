@@ -48,7 +48,7 @@ interface ProductStockRow {
 const { companyId, activeCompanyOptions, ensureLoaded } = useReportFilters()
 const { get: fetchInventoryOverview } = useInventoryOverview()
 const { list: listProducts } = useProducts()
-const { mode, displayUnitOptions, ensurePackUnits, displayQuantity } = useDisplayUnit()
+const { mode, displayUnitOptions, ensurePackUnits, formatQuantity } = useDisplayUnit()
 
 const loading = ref(false)
 const error = ref('')
@@ -61,10 +61,7 @@ const columns = computed<ColumnDef<ProductStockRow>[]>(() => [
   {
     key: 'totalQuantity',
     label: 'Total quantity',
-    value: (row) => {
-      const { quantity, unit } = displayQuantity(products.value.find((p) => p.id === row.productId), row.totalQuantity)
-      return unit ? `${quantity} ${unit}` : quantity
-    }
+    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.totalQuantity)
   },
   { key: 'totalValue', label: 'Total value', type: 'currency' }
 ])
