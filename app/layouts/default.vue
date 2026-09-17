@@ -1,11 +1,16 @@
 <template>
   <UDashboardGroup class="bg-gray-50 dark:bg-gray-950">
+    <!-- Cmd/Ctrl+K anywhere in the app — items are derived straight from the
+         sidebar nav below, so it can never list a page the sidebar doesn't
+         also have (see searchGroups). -->
+    <UDashboardSearch :groups="searchGroups" />
+
     <!-- Deliberately always dark, independent of the app's own light/dark
          toggle — the `dark` class forces every Nuxt UI component inside
          (nav items, icons, the collapse button) onto its dark-mode tokens
          regardless of the outer mode, so this doesn't need per-component
          overrides. -->
-    <UDashboardSidebar collapsible :collapsed-size="4" class="dark bg-gray-950 border-gray-900">
+    <UDashboardSidebar v-if="!kioskMode" collapsible :collapsed-size="4" class="dark bg-gray-950 border-gray-900">
       <template #header="{ collapsed }">
         <NuxtLink to="/" class="flex items-center gap-2.5" :class="collapsed ? 'justify-center w-full' : ''">
           <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary-500 text-white shrink-0">
@@ -32,6 +37,7 @@
           </template>
 
           <template #right>
+            <UDashboardSearchButton />
             <UColorModeButton />
             <UDropdownMenu :items="profileItems" :content="{ align: 'end' }" :ui="{ content: 'w-56' }">
               <UButton size="sm" color="neutral" variant="ghost" trailing-icon="i-lucide-chevron-down">
@@ -54,7 +60,8 @@
 import type { BreadcrumbItem, DropdownMenuItem } from '@nuxt/ui'
 import type { SidebarItem } from '~/components/SidebarNav.vue'
 
-const { username, role, isAdmin, hasAnyAccess, logout } = useAuth()
+const { username, role, hasAnyAccess, logout } = useAuth()
+const { kioskMode } = useKioskMode()
 const route = useRoute()
 
 const profileItems = computed<DropdownMenuItem[][]>(() => [
@@ -140,7 +147,8 @@ const items = computed<SidebarItem[]>(() => [
             { label: 'Stock transfers', to: '/stock-transfers', icon: 'i-lucide-repeat' },
             { label: 'Stock adjustments', to: '/stock-adjustments', icon: 'i-lucide-scale' },
             { label: 'Inventory overview', to: '/inventory-overview', icon: 'i-lucide-layout-dashboard' },
-            { label: 'Stock counts', to: '/stock-counts', icon: 'i-lucide-clipboard-check' }
+            { label: 'Stock counts', to: '/stock-counts', icon: 'i-lucide-clipboard-check' },
+            { label: 'Inventory settings', to: '/inventory-settings', icon: 'i-lucide-sliders-horizontal' }
           ]
         },
         {
@@ -202,17 +210,68 @@ const items = computed<SidebarItem[]>(() => [
           ]
         },
         {
+          label: 'Point of Sale',
+          icon: 'i-lucide-store',
+          color: 'fuchsia',
+          children: [
+            { label: 'Checkout', to: '/pos', icon: 'i-lucide-shopping-bag' },
+            { label: 'Dashboard', to: '/pos/dashboard', icon: 'i-lucide-bar-chart-3' },
+            { label: 'Registers', to: '/registers', icon: 'i-lucide-monitor' },
+            { label: 'Sessions', to: '/pos/sessions', icon: 'i-lucide-door-open' },
+            { label: 'Sales', to: '/pos/sales', icon: 'i-lucide-receipt-text' },
+            { label: 'Exchanges', to: '/pos/exchanges', icon: 'i-lucide-repeat' }
+          ]
+        },
+        {
           label: 'Administration',
           icon: 'i-lucide-shield',
           color: 'rose',
           children: [
             { label: 'Users', to: '/users', icon: 'i-lucide-users' },
-            { label: 'Custom roles', to: '/custom-roles', icon: 'i-lucide-shield' }
+            { label: 'Custom roles', to: '/custom-roles', icon: 'i-lucide-shield' },
+            { label: 'Audit log', to: '/audit-logs', icon: 'i-lucide-history' }
           ]
         }
       ]
     : [])
 ])
+
+// Cmd/Ctrl+K command palette — built from the exact same `items` list the
+// sidebar renders, so it always matches (a route missing from one is
+// missing from the other). Top-level links (Dashboard, Reports) land in
+// their own unlabeled group; every collapsible section's children become a
+// group of their own, suffixed with the section name so a search hit like
+// "Invoices" still reads as "Invoices — Sales" if there's ever a clash.
+interface SearchItem {
+  id: string
+  label: string
+  icon?: string
+  suffix?: string
+  onSelect: () => void
+}
+const searchGroups = computed(() => {
+  const groups: { id: string; label?: string; items: SearchItem[] }[] = []
+  const topLevel: SearchItem[] = []
+  for (const item of items.value) {
+    if ('to' in item) {
+      topLevel.push({ id: item.to, label: item.label, icon: item.icon, onSelect: () => navigateTo(item.to) })
+    } else {
+      groups.push({
+        id: item.label,
+        label: item.label,
+        items: item.children.map((child) => ({
+          id: child.to,
+          label: child.label,
+          icon: child.icon,
+          suffix: item.label,
+          onSelect: () => navigateTo(child.to)
+        }))
+      })
+    }
+  }
+  if (topLevel.length > 0) groups.unshift({ id: 'top', items: topLevel })
+  return groups
+})
 
 // Derived from the same nav list so it can never drift out of sync with the
 // sidebar — each top-level item is now a collapsible group with `children`,

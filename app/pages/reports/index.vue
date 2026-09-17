@@ -307,6 +307,7 @@ const pinnedTiles = computed(() => tilesFor(pinned.value))
 const recentTiles = computed(() => tilesFor(recent.value))
 
 const search = ref('')
+
 const searchResults = computed(() => {
   const q = search.value.trim().toLowerCase()
   if (!q) return []

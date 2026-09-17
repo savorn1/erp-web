@@ -44,6 +44,10 @@ export interface Invoice {
   discountAmount: number
   taxAmount: number
   totalAmount: number
+  // Reference-only — see CreateInvoicePayload's own comment.
+  foreignCurrency: string | null
+  exchangeRate: number | null
+  foreignTotalAmount: number | null
   creditedAmount: number
   paidAmount: number
   outstandingAmount: number
@@ -72,6 +76,10 @@ export interface CreateInvoicePayload {
   invoiceDate: string
   dueDate?: string
   notes?: string
+  // Optional reference-only foreign currency, for display/printing only —
+  // never affects totals, GL postings, or payments. Both or neither.
+  foreignCurrency?: string
+  exchangeRate?: number
 }
 
 export interface InvoiceAgingFilter {

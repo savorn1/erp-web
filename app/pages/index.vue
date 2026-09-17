@@ -123,6 +123,7 @@
             to="/accounts-payable"
           />
           <StatTile
+            v-if="stockWarningEnabled"
             label="Low stock items"
             :value="String(lowStockCount)"
             sublabel="Below reorder point"
@@ -227,6 +228,13 @@ const lowStockCount = ref(0)
 const pendingPurchaseOrderCount = ref(0)
 const attentionLoading = ref(false)
 
+// Display-only — hides the "Low stock items" tile when the selected
+// company's Inventory Settings turn Stock Warning off. Stays visible
+// (default true) when no single company is selected ("All companies"),
+// since InventorySettings is per-company.
+const stockWarningEnabled = ref(true)
+const { getForCompany: getInventorySettings } = useInventorySettings()
+
 async function loadAttention() {
   if (!isAdmin.value) return
   attentionLoading.value = true
@@ -251,6 +259,20 @@ async function loadAttention() {
 }
 onMounted(loadAttention)
 watch(companyId, loadAttention)
+
+async function loadStockWarningSetting() {
+  if (!companyId.value) {
+    stockWarningEnabled.value = true
+    return
+  }
+  try {
+    stockWarningEnabled.value = (await getInventorySettings(companyId.value)).stockWarningEnabled
+  } catch {
+    stockWarningEnabled.value = true
+  }
+}
+onMounted(loadStockWarningSetting)
+watch(companyId, loadStockWarningSetting)
 
 // Server-computed, one call per (re)fetch — see /reports's identical trend
 // chart and DashboardServiceImpl.trend() for why this isn't done by looping

@@ -35,6 +35,18 @@
               <UTextarea v-model="form.notes" :disabled="!formEditable" :rows="2" class="w-full" />
             </UFormField>
           </div>
+
+          <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+            <UCheckbox v-model="foreignCurrencyEnabled" :disabled="!formEditable" label="Foreign currency document" />
+            <div v-if="foreignCurrencyEnabled" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-3">
+              <UFormField label="Currency" required>
+                <UInput v-model="form.foreignCurrency" :disabled="!formEditable" placeholder="EUR" maxlength="3" class="w-full uppercase" />
+              </UFormField>
+              <UFormField label="Exchange rate" required>
+                <UInput v-model.number="form.exchangeRate" type="number" min="0" step="0.000001" :disabled="!formEditable" class="w-full" />
+              </UFormField>
+            </div>
+          </div>
         </UCard>
 
         <UCard>
@@ -130,6 +142,9 @@
               >
                 <span>Total</span><span>{{ formatCurrency(formTotal) }}</span>
               </div>
+              <div v-if="formForeignTotal !== null" class="flex justify-between text-xs text-gray-400">
+                <span>≈ {{ form.foreignCurrency }} @ {{ form.exchangeRate }}</span><span>{{ formatCurrency(formForeignTotal, form.foreignCurrency) }}</span>
+              </div>
             </div>
           </div>
         </UCard>
@@ -221,6 +236,8 @@ const form = reactive<{
   orderDate: string
   expectedDate: string
   notes: string
+  foreignCurrency: string
+  exchangeRate: number | undefined
   lines: LineForm[]
 }>({
   companyId: undefined,
@@ -229,8 +246,11 @@ const form = reactive<{
   orderDate: new Date().toISOString().slice(0, 10),
   expectedDate: '',
   notes: '',
+  foreignCurrency: '',
+  exchangeRate: undefined,
   lines: []
 })
+const foreignCurrencyEnabled = ref(false)
 
 const formEditable = computed(() => isNew || editingStatus.value === 'DRAFT')
 const pageTitle = computed(() => (isNew ? 'New sales order' : formEditable.value ? 'Edit sales order' : 'View sales order'))
@@ -251,6 +271,9 @@ const formSubtotal = computed(() => form.lines.reduce((sum, l) => sum + lineSubt
 const formDiscountTotal = computed(() => form.lines.reduce((sum, l) => sum + lineDiscount(l), 0))
 const formTaxTotal = computed(() => form.lines.reduce((sum, l) => sum + lineTax(l), 0))
 const formTotal = computed(() => form.lines.reduce((sum, l) => sum + lineTotal(l), 0))
+const formForeignTotal = computed(() =>
+  foreignCurrencyEnabled.value && form.exchangeRate ? formTotal.value / form.exchangeRate : null
+)
 
 const addLineProductId = ref<number | undefined>(undefined)
 function addLine() {
@@ -267,9 +290,11 @@ function addLine() {
 
 const formSnapshot = ref('')
 function snapshotForm() {
-  formSnapshot.value = JSON.stringify(form)
+  formSnapshot.value = JSON.stringify({ ...form, foreignCurrencyEnabled: foreignCurrencyEnabled.value })
 }
-const isDirty = computed(() => formEditable.value && JSON.stringify(form) !== formSnapshot.value)
+const isDirty = computed(
+  () => formEditable.value && JSON.stringify({ ...form, foreignCurrencyEnabled: foreignCurrencyEnabled.value }) !== formSnapshot.value
+)
 
 const showLeaveConfirm = ref(false)
 function onLeave() {
@@ -312,6 +337,9 @@ async function loadDetail() {
     form.orderDate = detail.orderDate
     form.expectedDate = detail.expectedDate ?? ''
     form.notes = detail.notes ?? ''
+    foreignCurrencyEnabled.value = !!detail.foreignCurrency
+    form.foreignCurrency = detail.foreignCurrency ?? ''
+    form.exchangeRate = detail.exchangeRate ?? undefined
     form.lines = (detail.lines ?? []).map((l) => ({
       productId: l.productId,
       quantityOrdered: l.quantityOrdered,
@@ -338,6 +366,10 @@ async function onSaveForm() {
     formError.value = 'Every line needs a product and quantity'
     return
   }
+  if (foreignCurrencyEnabled.value && (!form.foreignCurrency || !form.exchangeRate)) {
+    formError.value = 'Please fill in both the foreign currency and exchange rate'
+    return
+  }
   const payload: SalesOrderPayload = {
     companyId: form.companyId,
     customerId: form.customerId,
@@ -345,6 +377,8 @@ async function onSaveForm() {
     orderDate: form.orderDate,
     expectedDate: form.expectedDate || undefined,
     notes: form.notes || undefined,
+    foreignCurrency: foreignCurrencyEnabled.value ? form.foreignCurrency.toUpperCase() : undefined,
+    exchangeRate: foreignCurrencyEnabled.value ? form.exchangeRate : undefined,
     lines: form.lines.map((l) => ({
       productId: l.productId!,
       quantityOrdered: l.quantityOrdered!,

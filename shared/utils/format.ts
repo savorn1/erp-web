@@ -1,18 +1,25 @@
 // Auto-imported by Nuxt (files under shared/utils are isomorphic, client + server).
 
-export function formatCurrency(value: number | null | undefined): string {
+// `currencyCode` defaults to 'USD' so every existing call site keeps
+// behaving exactly as before — pass it explicitly only where the amount's
+// own currency is actually known (e.g. a document's optional foreign
+// currency, or a company/bank account's own declared currency). This is
+// deliberately not a global "make every money display currency-aware"
+// change — most pages have no company/document context to know which
+// currency they'd even pass.
+export function formatCurrency(value: number | null | undefined, currencyCode: string = 'USD'): string {
   if (value === null || value === undefined) return '—'
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).format(value)
 }
 
 // For headline figures (stat tiles) that have limited width to work with —
 // full precision (formatCurrency) truncates ($1,000,035.00 → "$1,000,035…")
 // instead of just showing a shorter, still-accurate number ($1.0M).
-export function formatCurrencyCompact(value: number | null | undefined): string {
+export function formatCurrencyCompact(value: number | null | undefined, currencyCode: string = 'USD'): string {
   if (value === null || value === undefined) return '—'
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD',
+    currency: currencyCode,
     notation: 'compact',
     maximumFractionDigits: 1
   }).format(value)

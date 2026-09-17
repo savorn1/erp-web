@@ -38,6 +38,18 @@
               <UTextarea v-model="form.notes" :disabled="!formEditable" class="w-full" />
             </UFormField>
           </div>
+
+          <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+            <UCheckbox v-model="foreignCurrencyEnabled" :disabled="!formEditable" label="Foreign currency document" />
+            <div v-if="foreignCurrencyEnabled" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+              <UFormField label="Currency" required>
+                <UInput v-model="form.foreignCurrency" :disabled="!formEditable" placeholder="EUR" maxlength="3" class="w-full uppercase" />
+              </UFormField>
+              <UFormField label="Exchange rate" required>
+                <UInput v-model.number="form.exchangeRate" type="number" min="0" step="0.000001" :disabled="!formEditable" class="w-full" />
+              </UFormField>
+            </div>
+          </div>
         </UCard>
 
         <UCard>
@@ -69,7 +81,12 @@
             </div>
           </div>
 
-          <div class="flex justify-end text-sm font-medium text-gray-900 dark:text-white mt-4">Total: {{ formatCurrency(formTotal) }}</div>
+          <div class="flex flex-col items-end gap-1 mt-4">
+            <div class="text-sm font-medium text-gray-900 dark:text-white">Total: {{ formatCurrency(formTotal) }}</div>
+            <div v-if="formForeignTotal !== null" class="text-xs text-gray-400">
+              ≈ {{ formatCurrency(formForeignTotal, form.foreignCurrency) }} @ {{ form.exchangeRate }} {{ form.foreignCurrency }}
+            </div>
+          </div>
         </UCard>
 
         <UAlert v-if="formError" color="error" variant="subtle" :title="formError" />
@@ -153,6 +170,8 @@ const form = reactive<{
   quotationDate: string
   validUntil: string
   notes: string
+  foreignCurrency: string
+  exchangeRate: number | undefined
   lines: LineForm[]
 }>({
   companyId: undefined,
@@ -160,12 +179,18 @@ const form = reactive<{
   quotationDate: new Date().toISOString().slice(0, 10),
   validUntil: '',
   notes: '',
+  foreignCurrency: '',
+  exchangeRate: undefined,
   lines: []
 })
+const foreignCurrencyEnabled = ref(false)
 
 const formEditable = computed(() => isNew || editingStatus.value === 'DRAFT')
 const pageTitle = computed(() => (isNew ? 'New quotation' : formEditable.value ? 'Edit quotation' : 'View quotation'))
 const formTotal = computed(() => form.lines.reduce((sum, l) => sum + (l.quantity || 0) * (l.unitPrice || 0), 0))
+const formForeignTotal = computed(() =>
+  foreignCurrencyEnabled.value && form.exchangeRate ? formTotal.value / form.exchangeRate : null
+)
 
 function addLine() {
   form.lines.push({ productId: undefined, quantity: undefined, unitPrice: undefined })
@@ -173,9 +198,11 @@ function addLine() {
 
 const formSnapshot = ref('')
 function snapshotForm() {
-  formSnapshot.value = JSON.stringify(form)
+  formSnapshot.value = JSON.stringify({ ...form, foreignCurrencyEnabled: foreignCurrencyEnabled.value })
 }
-const isDirty = computed(() => formEditable.value && JSON.stringify(form) !== formSnapshot.value)
+const isDirty = computed(
+  () => formEditable.value && JSON.stringify({ ...form, foreignCurrencyEnabled: foreignCurrencyEnabled.value }) !== formSnapshot.value
+)
 
 const showLeaveConfirm = ref(false)
 function onLeave() {
@@ -212,6 +239,9 @@ async function loadDetail() {
     form.quotationDate = detail.quotationDate
     form.validUntil = detail.validUntil ?? ''
     form.notes = detail.notes ?? ''
+    foreignCurrencyEnabled.value = !!detail.foreignCurrency
+    form.foreignCurrency = detail.foreignCurrency ?? ''
+    form.exchangeRate = detail.exchangeRate ?? undefined
     form.lines = (detail.lines ?? []).map((l) => ({ productId: l.productId, quantity: l.quantity, unitPrice: l.unitPrice }))
     snapshotForm()
   } catch (err) {
@@ -231,7 +261,13 @@ async function onSaveForm() {
     formError.value = 'Every line needs a product, quantity, and unit price'
     return
   }
+  if (foreignCurrencyEnabled.value && (!form.foreignCurrency || !form.exchangeRate)) {
+    formError.value = 'Please fill in both the foreign currency and exchange rate'
+    return
+  }
   const linesPayload = form.lines.map((l) => ({ productId: l.productId!, quantity: l.quantity!, unitPrice: l.unitPrice! }))
+  const foreignCurrency = foreignCurrencyEnabled.value ? form.foreignCurrency.toUpperCase() : undefined
+  const exchangeRate = foreignCurrencyEnabled.value ? form.exchangeRate : undefined
   saving.value = true
   try {
     if (isNew) {
@@ -241,6 +277,8 @@ async function onSaveForm() {
         quotationDate: form.quotationDate,
         validUntil: form.validUntil || undefined,
         notes: form.notes || undefined,
+        foreignCurrency,
+        exchangeRate,
         lines: linesPayload
       }
       await create(payload)
@@ -251,6 +289,8 @@ async function onSaveForm() {
         quotationDate: form.quotationDate,
         validUntil: form.validUntil || undefined,
         notes: form.notes || undefined,
+        foreignCurrency,
+        exchangeRate,
         lines: linesPayload
       })
       toast.add({ title: 'Quotation updated', color: 'success' })

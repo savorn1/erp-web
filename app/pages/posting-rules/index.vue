@@ -90,6 +90,18 @@
         </div>
       </UCard>
 
+      <UCard class="mb-4">
+        <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">Point of sale</h2></template>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <UFormField label="Inventory (asset)" hint="Credited when a POS sale relieves inventory.">
+            <USelectMenu v-model="form.inventoryAssetAccountId" :items="accountOptions" value-key="value" placeholder="None" class="w-full" />
+          </UFormField>
+          <UFormField label="Cash over/short" hint="Dr/Cr'd when a session's counted cash doesn't match expected at close.">
+            <USelectMenu v-model="form.cashVarianceAccountId" :items="accountOptions" value-key="value" placeholder="None" class="w-full" />
+          </UFormField>
+        </div>
+      </UCard>
+
       <UAlert v-if="saveError" color="error" variant="subtle" class="mb-4" :title="saveError" />
       <div class="flex justify-end">
         <UButton :loading="saving" icon="i-lucide-check" @click="onSave">Save posting rules</UButton>
@@ -135,6 +147,8 @@ const form = reactive<{
   depreciationExpenseAccountId: number | undefined
   accumulatedDepreciationAccountId: number | undefined
   assetDisposalGainLossAccountId: number | undefined
+  inventoryAssetAccountId: number | undefined
+  cashVarianceAccountId: number | undefined
 }>({
   accountsReceivableAccountId: undefined,
   accountsPayableAccountId: undefined,
@@ -149,7 +163,9 @@ const form = reactive<{
   fixedAssetCostAccountId: undefined,
   depreciationExpenseAccountId: undefined,
   accumulatedDepreciationAccountId: undefined,
-  assetDisposalGainLossAccountId: undefined
+  assetDisposalGainLossAccountId: undefined,
+  inventoryAssetAccountId: undefined,
+  cashVarianceAccountId: undefined
 })
 
 function applyRule(rule: PostingRule) {
@@ -167,6 +183,8 @@ function applyRule(rule: PostingRule) {
   form.depreciationExpenseAccountId = rule.depreciationExpenseAccountId ?? undefined
   form.accumulatedDepreciationAccountId = rule.accumulatedDepreciationAccountId ?? undefined
   form.assetDisposalGainLossAccountId = rule.assetDisposalGainLossAccountId ?? undefined
+  form.inventoryAssetAccountId = rule.inventoryAssetAccountId ?? undefined
+  form.cashVarianceAccountId = rule.cashVarianceAccountId ?? undefined
 }
 
 async function loadRule() {

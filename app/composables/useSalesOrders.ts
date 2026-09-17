@@ -41,6 +41,10 @@ export interface SalesOrder {
   discountAmount: number
   taxAmount: number
   totalAmount: number
+  // Reference-only — see SalesOrderPayload's own comment.
+  foreignCurrency: string | null
+  exchangeRate: number | null
+  foreignTotalAmount: number | null
   lines: SalesOrderLine[] | null
 }
 
@@ -73,6 +77,10 @@ export interface SalesOrderPayload {
   orderDate: string
   expectedDate?: string
   notes?: string
+  // Optional reference-only foreign currency, for display/printing only —
+  // never affects totals, GL postings, or payments. Both or neither.
+  foreignCurrency?: string
+  exchangeRate?: number
   lines: SalesOrderLinePayload[]
 }
 

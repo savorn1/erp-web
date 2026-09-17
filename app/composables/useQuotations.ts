@@ -32,6 +32,10 @@ export interface Quotation {
   notes: string | null
   createdBy: string | null
   totalAmount: number
+  // Reference-only — see QuotationPayload's own comment.
+  foreignCurrency: string | null
+  exchangeRate: number | null
+  foreignTotalAmount: number | null
   lines: QuotationLine[] | null
 }
 
@@ -59,6 +63,10 @@ export interface QuotationPayload {
   quotationDate: string
   validUntil?: string
   notes?: string
+  // Optional reference-only foreign currency, for display/printing only —
+  // never affects totals, GL postings, or payments. Both or neither.
+  foreignCurrency?: string
+  exchangeRate?: number
   lines: QuotationLinePayload[]
 }
 

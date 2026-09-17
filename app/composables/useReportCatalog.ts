@@ -786,6 +786,35 @@ export function useReportCatalog() {
     { to: '/bank-accounts', icon: 'i-lucide-landmark', label: 'Bank & cash', description: 'Accounts, transactions, and bank reconciliation.' }
   ])
 
+  // Single source of truth for which <ReportCategoryCard :id="..."> section
+  // a given report route lives under — shared by the reports index page
+  // (which renders each section with this same id) and ReportBackButton
+  // (which uses it to jump straight back to the right one instead of
+  // landing at the top of a very long page every time).
+  const sectionTiles: Record<string, ReportTile[]> = {
+    sales: salesReportTiles,
+    'more-sales': salesExternalReportTiles,
+    purchase: purchaseReportTiles,
+    'more-purchase': purchaseExternalReportTiles,
+    inventory: inventoryReportTiles,
+    accounting: accountingReportTiles,
+    'more-accounting': accountingExternalReportTiles,
+    ar: arReportTiles,
+    'more-ar': arExternalReportTiles,
+    ap: apReportTiles,
+    'more-ap': apExternalReportTiles,
+    manufacturing: manufacturingReportTiles,
+    'more-manufacturing': manufacturingExternalReportTiles,
+    payments: paymentReportTiles,
+    'more-payments': paymentExternalReportTiles
+  }
+  function sectionIdForPath(path: string): string | undefined {
+    for (const [id, tiles] of Object.entries(sectionTiles)) {
+      if (tiles.some((t) => t.to === path)) return id
+    }
+    return undefined
+  }
+
   return {
     salesReportTiles,
     salesExternalReportTiles,
@@ -801,6 +830,7 @@ export function useReportCatalog() {
     manufacturingReportTiles,
     manufacturingExternalReportTiles,
     paymentReportTiles,
-    paymentExternalReportTiles
+    paymentExternalReportTiles,
+    sectionIdForPath
   }
 }

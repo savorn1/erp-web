@@ -119,6 +119,18 @@
           <UFormField label="Notes">
             <UTextarea v-model="createNotes" class="w-full" />
           </UFormField>
+
+          <div class="pt-2 border-t border-gray-200 dark:border-gray-800">
+            <UCheckbox v-model="createForeignCurrencyEnabled" label="Foreign currency document" />
+            <div v-if="createForeignCurrencyEnabled" class="grid grid-cols-2 gap-4 mt-3">
+              <UFormField label="Currency" required>
+                <UInput v-model="createForeignCurrency" placeholder="EUR" maxlength="3" class="w-full uppercase" />
+              </UFormField>
+              <UFormField label="Exchange rate" required>
+                <UInput v-model.number="createExchangeRate" type="number" min="0" step="0.000001" class="w-full" />
+              </UFormField>
+            </div>
+          </div>
         </div>
 
         <UAlert v-if="createError" color="error" variant="subtle" class="mt-4" :title="createError" />
@@ -189,6 +201,9 @@
             Tax: {{ formatCurrency(viewingInvoice.taxAmount) }}
           </div>
           <div class="flex justify-end text-sm font-medium text-gray-900 dark:text-white mb-1">Total: {{ formatCurrency(viewingInvoice.totalAmount) }}</div>
+          <div v-if="viewingInvoice.foreignCurrency" class="flex justify-end text-xs text-gray-400 mb-1">
+            ≈ {{ formatCurrency(viewingInvoice.foreignTotalAmount, viewingInvoice.foreignCurrency) }} @ {{ viewingInvoice.exchangeRate }}
+          </div>
           <div v-if="viewingInvoice.creditedAmount > 0" class="flex justify-end text-sm text-error mb-1">
             Credited: -{{ formatCurrency(viewingInvoice.creditedAmount) }}
           </div>
@@ -376,6 +391,9 @@ const createSourceId = ref<number | undefined>(undefined)
 const createInvoiceDate = ref(new Date().toISOString().slice(0, 10))
 const createDueDate = ref('')
 const createNotes = ref('')
+const createForeignCurrencyEnabled = ref(false)
+const createForeignCurrency = ref('')
+const createExchangeRate = ref<number | undefined>(undefined)
 const creating = ref(false)
 const createError = ref('')
 
@@ -385,6 +403,9 @@ function openCreate(source?: 'salesOrder' | 'delivery', sourceId?: number) {
   createInvoiceDate.value = new Date().toISOString().slice(0, 10)
   createDueDate.value = ''
   createNotes.value = ''
+  createForeignCurrencyEnabled.value = false
+  createForeignCurrency.value = ''
+  createExchangeRate.value = undefined
   createError.value = ''
   showCreate.value = true
 }
@@ -392,7 +413,17 @@ function openCreate(source?: 'salesOrder' | 'delivery', sourceId?: number) {
 async function onCreateSubmit() {
   if (!createSourceId.value) return
   createError.value = ''
-  const payload = { invoiceDate: createInvoiceDate.value, dueDate: createDueDate.value || undefined, notes: createNotes.value || undefined }
+  if (createForeignCurrencyEnabled.value && (!createForeignCurrency.value || !createExchangeRate.value)) {
+    createError.value = 'Please fill in both the foreign currency and exchange rate'
+    return
+  }
+  const payload = {
+    invoiceDate: createInvoiceDate.value,
+    dueDate: createDueDate.value || undefined,
+    notes: createNotes.value || undefined,
+    foreignCurrency: createForeignCurrencyEnabled.value ? createForeignCurrency.value.toUpperCase() : undefined,
+    exchangeRate: createForeignCurrencyEnabled.value ? createExchangeRate.value : undefined
+  }
   creating.value = true
   try {
     if (createSource.value === 'salesOrder') {

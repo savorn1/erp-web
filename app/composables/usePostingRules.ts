@@ -40,6 +40,10 @@ export interface PostingRule {
   accumulatedDepreciationAccountLabel: string | null
   assetDisposalGainLossAccountId: number | null
   assetDisposalGainLossAccountLabel: string | null
+  inventoryAssetAccountId: number | null
+  inventoryAssetAccountLabel: string | null
+  cashVarianceAccountId: number | null
+  cashVarianceAccountLabel: string | null
 }
 
 export interface PostingRulePayload {
@@ -58,6 +62,8 @@ export interface PostingRulePayload {
   depreciationExpenseAccountId?: number
   accumulatedDepreciationAccountId?: number
   assetDisposalGainLossAccountId?: number
+  inventoryAssetAccountId?: number
+  cashVarianceAccountId?: number
 }
 
 export function usePostingRules() {

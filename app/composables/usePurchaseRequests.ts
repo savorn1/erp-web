@@ -7,6 +7,7 @@
 import type { ApiEnvelope, PageEnvelope } from '#shared/types'
 
 export type PurchaseRequestStatus = 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'
+export type PurchaseRequestSource = 'MANUAL' | 'AUTO_REORDER'
 
 export interface PurchaseRequestLine {
   id: number
@@ -30,6 +31,7 @@ export interface PurchaseRequest {
   notes: string | null
   rejectionReason: string | null
   requestedBy: string | null
+  source: PurchaseRequestSource
   lines: PurchaseRequestLine[] | null
 }
 
@@ -59,6 +61,14 @@ export interface PurchaseRequestPayload {
   lines: PurchaseRequestLinePayload[]
 }
 
+export interface GenerateFromLowStockPayload {
+  companyId: number
+  departmentId: number
+  requestDate: string
+  warehouseId?: number
+  productIds?: number[]
+}
+
 export function usePurchaseRequests() {
   const api = useApi()
 
@@ -81,6 +91,11 @@ export function usePurchaseRequests() {
     return res.data
   }
 
+  async function generateFromLowStock(payload: GenerateFromLowStockPayload) {
+    const res = await api<ApiEnvelope<PurchaseRequest>>('/api/admin/purchase-requests/generate-from-low-stock', { method: 'POST', body: payload })
+    return res.data
+  }
+
   async function submit(id: number) {
     const res = await api<ApiEnvelope<PurchaseRequest>>(`/api/admin/purchase-requests/${id}/submit`, { method: 'POST' })
     return res.data
@@ -100,5 +115,5 @@ export function usePurchaseRequests() {
     await api(`/api/admin/purchase-requests/${id}`, { method: 'DELETE' })
   }
 
-  return { list, get, create, update, submit, approve, reject, remove }
+  return { list, get, create, update, generateFromLowStock, submit, approve, reject, remove }
 }

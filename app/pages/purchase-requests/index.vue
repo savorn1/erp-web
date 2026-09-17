@@ -41,6 +41,12 @@
         :row-number-start="(page - 1) * pageSize"
         @refresh="load"
       >
+        <template #requestNumber-data="{ row }">
+          <div class="flex items-center gap-1.5">
+            <span>{{ row.requestNumber }}</span>
+            <UBadge v-if="row.source === 'AUTO_REORDER'" size="xs" color="info" variant="subtle">Auto</UBadge>
+          </div>
+        </template>
         <template #actions-data="{ row }">
           <div class="flex items-center gap-2">
             <UButton size="xs" color="primary" variant="soft" icon="i-lucide-eye" :to="`/purchase-requests/${row.id}`">

@@ -28,7 +28,8 @@ const GROUP_COLOR_CLASSES: Record<string, string> = {
   emerald: 'text-emerald-600 dark:text-emerald-400 border-emerald-500',
   indigo: 'text-indigo-600 dark:text-indigo-400 border-indigo-500',
   rose: 'text-rose-600 dark:text-rose-400 border-rose-500',
-  cyan: 'text-cyan-600 dark:text-cyan-400 border-cyan-500'
+  cyan: 'text-cyan-600 dark:text-cyan-400 border-cyan-500',
+  fuchsia: 'text-fuchsia-600 dark:text-fuchsia-400 border-fuchsia-500'
 }
 
 export function groupColorClasses(color: string) {
@@ -80,7 +81,8 @@ export function useModuleCatalog() {
         { key: 'stock-transfers', label: 'Stock transfers' },
         { key: 'stock-adjustments', label: 'Stock adjustments' },
         { key: 'stock-counts', label: 'Stock counts' },
-        { key: 'inventory-overview', label: 'Inventory overview' }
+        { key: 'inventory-overview', label: 'Inventory overview' },
+        { key: 'inventory-settings', label: 'Inventory settings' }
       ]
     },
     {
@@ -154,6 +156,17 @@ export function useModuleCatalog() {
         { key: 'ap-reports', label: 'Accounts payable reports' },
         { key: 'payment-reports', label: 'Payment reports' },
         { key: 'tax-report', label: 'Tax report' }
+      ]
+    },
+    {
+      group: 'Point of sale',
+      color: 'fuchsia',
+      modules: [
+        { key: 'registers', label: 'Registers' },
+        { key: 'pos-sessions', label: 'POS sessions' },
+        { key: 'pos-sales', label: 'POS sales' },
+        { key: 'pos-exchanges', label: 'POS exchanges' },
+        { key: 'pos-held-sales', label: 'POS held sales' }
       ]
     },
     {
