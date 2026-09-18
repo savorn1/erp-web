@@ -92,11 +92,19 @@
         <UAlert v-if="formError" color="error" variant="subtle" :title="formError" />
 
         <div class="flex justify-end gap-2">
+          <UButton v-if="!isNew" color="neutral" variant="soft" icon="i-lucide-mail" @click="showEmail = true">Email</UButton>
           <UButton color="neutral" variant="ghost" @click="onLeave">{{ formEditable ? 'Cancel' : 'Back' }}</UButton>
           <UButton v-if="formEditable" :loading="saving" @click="onSaveForm">{{ isNew ? 'Create' : 'Save changes' }}</UButton>
         </div>
       </div>
     </template>
+
+    <EmailDocumentModal
+      v-if="!isNew"
+      v-model:open="showEmail"
+      title="Email quotation"
+      :send-fn="(payload) => emailDocument(Number(idParam), payload)"
+    />
 
     <ConfirmModal
       :model-value="showLeaveConfirm"
@@ -124,7 +132,8 @@ const router = useRouter()
 const idParam = route.params.id as string
 const isNew = idParam === 'new'
 
-const { get, create, update } = useQuotations()
+const { get, create, update, emailDocument } = useQuotations()
+const showEmail = ref(false)
 const { list: listCompanies } = useCompanies()
 const { list: listCustomers } = useCustomers()
 const { list: listProducts } = useProducts()

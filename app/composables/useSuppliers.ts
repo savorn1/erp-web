@@ -3,7 +3,7 @@
 // name. currentBalance only ever changes via adjustBalance — the general
 // update endpoint doesn't accept it. Mirrors useCustomers.
 
-import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+import type { ApiEnvelope, ImportResult, PageEnvelope } from '#shared/types'
 
 export type SupplierStatus = 'ACTIVE' | 'INACTIVE' | 'BLOCKED'
 export type SupplierPaymentTerms = 'DUE_ON_RECEIPT' | 'NET_15' | 'NET_30' | 'NET_45' | 'NET_60' | 'COD'
@@ -121,5 +121,13 @@ export function useSuppliers() {
     return res.data
   }
 
-  return { list, get, create, update, updateStatus, remove, adjustBalance, listActivities, addNote }
+  async function importCsv(file: File, companyId: number) {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('companyId', String(companyId))
+    const res = await api<ApiEnvelope<ImportResult>>('/api/admin/suppliers/import', { method: 'POST', body: formData })
+    return res.data
+  }
+
+  return { list, get, create, update, updateStatus, remove, adjustBalance, listActivities, addNote, importCsv }
 }

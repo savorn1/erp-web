@@ -5,7 +5,7 @@
 // internal sign-off gate; only once approved can a PO be sent to the
 // supplier, and only a sent (or partially received) PO can receive goods.
 
-import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+import type { ApiEnvelope, PageEnvelope, SendDocumentEmailPayload } from '#shared/types'
 
 export type PurchaseOrderStatus = 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'SENT' | 'PARTIALLY_RECEIVED' | 'RECEIVED' | 'CANCELLED'
 
@@ -47,6 +47,10 @@ export interface PurchaseOrder {
   discountAmount: number
   taxAmount: number
   totalAmount: number
+  // Only set while status === 'SUBMITTED' — see ApprovalRule. Null once
+  // finalized (or if no rule ever applied).
+  approvalsRequired: number | null
+  approvalsRecorded: number | null
   lines: PurchaseOrderLine[] | null
 }
 
@@ -128,5 +132,9 @@ export function usePurchaseOrders() {
     await api(`/api/admin/purchase-orders/${id}`, { method: 'DELETE' })
   }
 
-  return { list, get, create, update, submit, approve, send, cancel, remove }
+  async function emailDocument(id: number, payload: SendDocumentEmailPayload = {}) {
+    await api(`/api/admin/purchase-orders/${id}/email`, { method: 'POST', body: payload })
+  }
+
+  return { list, get, create, update, submit, approve, send, cancel, remove, emailDocument }
 }

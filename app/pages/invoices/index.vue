@@ -237,9 +237,23 @@
               <UButton size="sm" color="success" variant="soft" icon="i-lucide-banknote">Record payment</UButton>
             </NuxtLink>
           </template>
+
+          <div class="flex justify-end mt-2">
+            <UButton size="sm" color="neutral" variant="soft" icon="i-lucide-mail" @click="showEmail = true">Email invoice</UButton>
+          </div>
+
+          <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mt-4 mb-2">Attachments</p>
+          <AttachmentList owner-type="INVOICE" :owner-id="viewingInvoice.id" />
         </template>
       </template>
     </UModal>
+
+    <EmailDocumentModal
+      v-if="viewingInvoice"
+      v-model:open="showEmail"
+      :title="`Email invoice ${viewingInvoice.invoiceNumber}`"
+      :send-fn="(payload) => emailDocument(viewingInvoice!.id, payload)"
+    />
 
     <!-- Credit note modal -->
     <UModal v-model:open="showCreditNoteForm" :title="`Issue credit note — ${creditNoteTarget?.invoiceNumber ?? ''}`">
@@ -288,7 +302,8 @@ import type { CreditNote } from '~/composables/useCreditNotes'
 definePageMeta({ middleware: 'admin' })
 
 const route = useRoute()
-const { list, get, createFromSalesOrder, createFromDelivery, approve, cancel, remove } = useInvoices()
+const { list, get, createFromSalesOrder, createFromDelivery, approve, cancel, remove, emailDocument } = useInvoices()
+const showEmail = ref(false)
 const { list: listCreditNotesApi, create: createCreditNote } = useCreditNotes()
 const { list: listCompanies } = useCompanies()
 const { list: listCustomers } = useCustomers()

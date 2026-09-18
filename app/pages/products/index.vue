@@ -2,7 +2,18 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Products</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New product </UButton>
+      <div class="flex items-center gap-2">
+        <UButton
+          color="neutral"
+          variant="soft"
+          icon="i-lucide-upload"
+          :disabled="activeCompanyOptions.length === 0"
+          @click="showImport = true"
+        >
+          Import CSV
+        </UButton>
+        <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New product </UButton>
+      </div>
     </div>
 
     <UAlert
@@ -395,6 +406,15 @@
       "
       @confirm="onVariantDelete"
     />
+
+    <CsvImportModal
+      v-model:open="showImport"
+      title="Import products"
+      template-url="/templates/products-import-template.csv"
+      :company-id="filter.companyId"
+      :import-fn="importCsv"
+      @imported="load"
+    />
   </div>
 </template>
 
@@ -408,7 +428,8 @@ import type { PriceGroup } from '~/composables/usePriceGroups'
 
 definePageMeta({ middleware: 'admin' })
 
-const { list, create, update, updateStatus, remove } = useProducts()
+const { list, create, update, updateStatus, remove, importCsv } = useProducts()
+const showImport = ref(false)
 const { list: listCompanies } = useCompanies()
 const { list: listCategories } = useProductCategories()
 const { list: listBrands } = useProductBrands()
@@ -569,6 +590,13 @@ const productFields = computed<FieldDef[]>(() => [
     default: 0,
     hint: 'Flag this product on the Overstock report once on-hand stock exceeds this. Leave at 0 to never flag it.'
   },
+  {
+    name: 'warrantyMonths',
+    label: 'Warranty (months)',
+    type: 'number',
+    min: 0,
+    hint: 'Optional — used by RMA / Returns to flag whether a return is within warranty. Leave blank if not tracked.'
+  },
   { name: 'description', type: 'textarea', wrapper: 'full' }
 ])
 
@@ -621,6 +649,7 @@ const {
       trackingType: row.trackingType,
       reorderPoint: row.reorderPoint,
       maxStock: row.maxStock,
+      warrantyMonths: row.warrantyMonths ?? undefined,
       description: row.description ?? '',
       imageUrl: row.imageUrl ?? ''
     }),
@@ -641,6 +670,7 @@ const {
       trackingType: values.trackingType ?? 'NONE',
       reorderPoint: values.reorderPoint ?? 0,
       maxStock: values.maxStock ?? 0,
+      warrantyMonths: values.warrantyMonths || undefined,
       imageUrl: values.imageUrl || undefined
     })
   }

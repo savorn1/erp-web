@@ -45,6 +45,10 @@ export interface SalesOrder {
   foreignCurrency: string | null
   exchangeRate: number | null
   foreignTotalAmount: number | null
+  // Only set while status === 'SUBMITTED' — see ApprovalRule. Null once
+  // finalized (or if no rule ever applied).
+  approvalsRequired: number | null
+  approvalsRecorded: number | null
   lines: SalesOrderLine[] | null
 }
 

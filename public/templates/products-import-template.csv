@@ -1,0 +1,2 @@
+name,sku,barcode,description,category,brand,type,unitOfMeasure,supplier,costPrice,sellingPrice,taxRate,trackingType,reorderPoint,maxStock
+Example Product,SKU-0001,,A sample product row - replace with your own,Beverages,,,Each,,5.00,9.99,0,NONE,10,100

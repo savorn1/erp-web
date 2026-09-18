@@ -5,7 +5,7 @@
 // customer's balance; cancelling an approved invoice reverses that charge.
 // A credit note against an approved invoice credits it back (useCreditNotes).
 
-import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+import type { ApiEnvelope, PageEnvelope, SendDocumentEmailPayload } from '#shared/types'
 
 export type InvoiceStatus = 'DRAFT' | 'APPROVED' | 'CANCELLED'
 export type InvoicePaymentStatus = 'UNPAID' | 'PARTIALLY_PAID' | 'PAID'
@@ -148,5 +148,9 @@ export function useInvoices() {
     return res.data
   }
 
-  return { list, get, createFromSalesOrder, createFromDelivery, approve, cancel, remove, agingReport }
+  async function emailDocument(id: number, payload: SendDocumentEmailPayload = {}) {
+    await api(`/api/admin/invoices/${id}/email`, { method: 'POST', body: payload })
+  }
+
+  return { list, get, createFromSalesOrder, createFromDelivery, approve, cancel, remove, agingReport, emailDocument }
 }

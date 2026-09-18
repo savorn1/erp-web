@@ -2,7 +2,18 @@
   <div>
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Customers</h1>
-      <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New customer </UButton>
+      <div class="flex items-center gap-2">
+        <UButton
+          color="neutral"
+          variant="soft"
+          icon="i-lucide-upload"
+          :disabled="activeCompanyOptions.length === 0"
+          @click="showImport = true"
+        >
+          Import CSV
+        </UButton>
+        <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New customer </UButton>
+      </div>
     </div>
 
     <UAlert
@@ -47,6 +58,7 @@
             <UButton size="xs" color="primary" variant="soft" icon="i-lucide-pencil" @click="openEdit(row)">Edit</UButton>
             <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-wallet" @click="openBalanceWith(row)">Balance</UButton>
             <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-history" @click="openHistoryFor(row)">History</UButton>
+            <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-paperclip" @click="openAttachmentsWith(row)">Files</UButton>
             <UDropdownMenu :items="statusMenuItems(row)">
               <UButton size="xs" color="neutral" variant="soft" trailing-icon="i-lucide-chevron-down">Status</UButton>
             </UDropdownMenu>
@@ -160,6 +172,21 @@
       </template>
     </UModal>
 
+    <UModal v-model:open="showAttachments" :title="`Files — ${attachmentsTarget?.name ?? ''}`" :ui="{ content: 'sm:max-w-lg' }">
+      <template #body>
+        <AttachmentList v-if="attachmentsTarget" owner-type="CUSTOMER" :owner-id="attachmentsTarget.id" />
+      </template>
+    </UModal>
+
+    <CsvImportModal
+      v-model:open="showImport"
+      title="Import customers"
+      template-url="/templates/customers-import-template.csv"
+      :company-id="filter.companyId"
+      :import-fn="importCsv"
+      @imported="load"
+    />
+
     <ConfirmModal
       :model-value="confirmDelete !== null"
       title="Delete customer"
@@ -183,7 +210,8 @@ import type { CustomerBalanceAdjustmentType, Customer, CustomerActivity, Custome
 
 definePageMeta({ middleware: 'admin' })
 
-const { list, create, update, updateStatus, remove, adjustBalance, listActivities, addNote } = useCustomers()
+const { list, create, update, updateStatus, remove, adjustBalance, listActivities, addNote, importCsv } = useCustomers()
+const showImport = ref(false)
 const { list: listCompanies } = useCompanies()
 const { list: listTypes } = useCustomerTypes()
 const { list: listGroups } = useCustomerGroups()
@@ -467,6 +495,7 @@ async function onBalanceSubmit(values: Record<string, any>) {
 }
 
 const { open: showHistory, target: historyTarget, openWith: openHistoryWith } = useTargetModal<Customer>()
+const { open: showAttachments, target: attachmentsTarget, openWith: openAttachmentsWith } = useTargetModal<Customer>()
 
 const activities = ref<CustomerActivity[]>([])
 const loadingActivities = ref(false)

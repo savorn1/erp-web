@@ -3,7 +3,7 @@
 // display names. currentBalance only ever changes via adjustBalance — the
 // general update endpoint doesn't accept it.
 
-import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+import type { ApiEnvelope, ImportResult, PageEnvelope } from '#shared/types'
 
 export type CustomerStatus = 'ACTIVE' | 'INACTIVE' | 'BLOCKED'
 export type CustomerPaymentTerms = 'DUE_ON_RECEIPT' | 'NET_15' | 'NET_30' | 'NET_45' | 'NET_60' | 'COD'
@@ -137,5 +137,13 @@ export function useCustomers() {
     return res.data
   }
 
-  return { list, get, create, update, updateStatus, remove, adjustBalance, listActivities, addNote }
+  async function importCsv(file: File, companyId: number) {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('companyId', String(companyId))
+    const res = await api<ApiEnvelope<ImportResult>>('/api/admin/customers/import', { method: 'POST', body: formData })
+    return res.data
+  }
+
+  return { list, get, create, update, updateStatus, remove, adjustBalance, listActivities, addNote, importCsv }
 }

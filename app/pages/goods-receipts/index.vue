@@ -209,6 +209,44 @@
               </div>
             </li>
           </ul>
+
+          <template v-if="viewingReceipt.status === 'COMPLETED'">
+            <div class="border-t border-gray-200 dark:border-gray-800 mt-4 pt-4">
+              <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Landed costs</p>
+              <div v-if="loadingLandedCosts" class="text-sm text-gray-400 py-2">Loading…</div>
+              <ul v-else-if="landedCosts.length > 0" class="space-y-1.5 mb-3">
+                <li
+                  v-for="lc in landedCosts"
+                  :key="lc.id"
+                  class="text-sm rounded-md border border-gray-200 dark:border-gray-800 px-3 py-1.5 flex items-center justify-between gap-2"
+                >
+                  <span>{{ formatEnum(lc.costType) }} — {{ formatEnum(lc.allocationMethod) }}</span>
+                  <span class="text-gray-500 dark:text-gray-400 shrink-0">{{ formatCurrency(lc.amount) }} on {{ formatDate(lc.costDate) }}</span>
+                </li>
+              </ul>
+              <p v-else class="text-sm text-gray-400 mb-3">No landed costs allocated yet.</p>
+
+              <div class="flex flex-wrap items-end gap-2">
+                <UFormField label="Type">
+                  <USelect v-model="landedCostForm.costType" :items="landedCostTypeOptions" class="w-32" />
+                </UFormField>
+                <UFormField label="Allocate by">
+                  <USelect v-model="landedCostForm.allocationMethod" :items="landedCostMethodOptions" class="w-32" />
+                </UFormField>
+                <UFormField label="Amount">
+                  <UInput v-model.number="landedCostForm.amount" type="number" min="0.01" step="0.01" class="w-28" />
+                </UFormField>
+                <UFormField label="Date">
+                  <UInput v-model="landedCostForm.costDate" type="date" class="w-40" />
+                </UFormField>
+                <UFormField label="Reference">
+                  <UInput v-model="landedCostForm.reference" placeholder="Optional" class="w-32" />
+                </UFormField>
+                <UButton :loading="allocatingLandedCost" :disabled="!landedCostForm.amount" @click="onAllocateLandedCost">Allocate</UButton>
+              </div>
+              <UAlert v-if="landedCostError" color="error" variant="subtle" class="mt-2" :title="landedCostError" />
+            </div>
+          </template>
         </template>
       </template>
     </UModal>
@@ -238,6 +276,7 @@
 <script setup lang="ts">
 import type { ColumnDef } from '#shared/types'
 import type { GoodsReceipt, GoodsReceiptLine, GoodsReceiptPayload, GoodsReceiptStatus } from '~/composables/useGoodsReceipts'
+import type { LandedCost, LandedCostAllocationMethod, LandedCostType } from '~/composables/useLandedCosts'
 
 definePageMeta({ middleware: 'admin' })
 
@@ -248,6 +287,7 @@ const { list: listWarehouses } = useWarehouses()
 const { list: listZones } = useWarehouseZones()
 const { list: listBins } = useWarehouseBins()
 const { list: listProducts } = useProducts()
+const { list: listLandedCosts, create: createLandedCost } = useLandedCosts()
 const toast = useToast()
 
 const rows = ref<GoodsReceipt[]>([])
@@ -454,8 +494,74 @@ async function openView(row: GoodsReceipt) {
   loadingView.value = true
   try {
     viewingReceipt.value = await get(row.id)
+    if (viewingReceipt.value.status === 'COMPLETED') {
+      await loadLandedCosts(viewingReceipt.value.id)
+    }
   } finally {
     loadingView.value = false
+  }
+}
+
+// ── Landed costs ─────────────────────────────────────────────────────────
+const landedCosts = ref<LandedCost[]>([])
+const loadingLandedCosts = ref(false)
+const allocatingLandedCost = ref(false)
+const landedCostError = ref('')
+const landedCostTypeOptions = [
+  { label: 'Freight', value: 'FREIGHT' },
+  { label: 'Customs', value: 'CUSTOMS' },
+  { label: 'Insurance', value: 'INSURANCE' },
+  { label: 'Other', value: 'OTHER' }
+]
+const landedCostMethodOptions = [
+  { label: 'By value', value: 'BY_VALUE' },
+  { label: 'By quantity', value: 'BY_QUANTITY' }
+]
+const landedCostForm = reactive<{
+  costType: LandedCostType
+  allocationMethod: LandedCostAllocationMethod
+  amount: number | undefined
+  costDate: string
+  reference: string
+}>({
+  costType: 'FREIGHT',
+  allocationMethod: 'BY_VALUE',
+  amount: undefined,
+  costDate: new Date().toISOString().slice(0, 10),
+  reference: ''
+})
+
+async function loadLandedCosts(goodsReceiptId: number) {
+  loadingLandedCosts.value = true
+  try {
+    const res = await listLandedCosts({ goodsReceiptId, size: 50 })
+    landedCosts.value = res.data
+  } finally {
+    loadingLandedCosts.value = false
+  }
+}
+
+async function onAllocateLandedCost() {
+  if (!viewingReceipt.value || !landedCostForm.amount) return
+  landedCostError.value = ''
+  allocatingLandedCost.value = true
+  try {
+    await createLandedCost({
+      goodsReceiptId: viewingReceipt.value.id,
+      costType: landedCostForm.costType,
+      allocationMethod: landedCostForm.allocationMethod,
+      amount: landedCostForm.amount,
+      costDate: landedCostForm.costDate,
+      reference: landedCostForm.reference || undefined
+    })
+    toast.add({ title: 'Landed cost allocated', color: 'success' })
+    landedCostForm.amount = undefined
+    landedCostForm.reference = ''
+    await loadLandedCosts(viewingReceipt.value.id)
+  } catch (err) {
+    landedCostError.value = apiErrorMessage(err)
+  } finally {
+    allocatingLandedCost.value = false
   }
 }
 

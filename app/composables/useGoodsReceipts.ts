@@ -21,6 +21,9 @@ export interface GoodsReceiptLine {
   conversionFactor: number
   quantityReceived: number
   baseQuantityReceived: number
+  // Snapshot of the PO line's cost at receipt time — null on receipts
+  // posted before landed cost allocation existed.
+  unitCost: number | null
   binId: number | null
   binName: string | null
   batchId: number | null

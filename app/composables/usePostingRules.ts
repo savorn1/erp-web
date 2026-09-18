@@ -44,6 +44,12 @@ export interface PostingRule {
   inventoryAssetAccountLabel: string | null
   cashVarianceAccountId: number | null
   cashVarianceAccountLabel: string | null
+  posCashAccountId: number | null
+  posCashAccountLabel: string | null
+  pettyCashAccountId: number | null
+  pettyCashAccountLabel: string | null
+  cashInTransitAccountId: number | null
+  cashInTransitAccountLabel: string | null
 }
 
 export interface PostingRulePayload {
@@ -64,6 +70,9 @@ export interface PostingRulePayload {
   assetDisposalGainLossAccountId?: number
   inventoryAssetAccountId?: number
   cashVarianceAccountId?: number
+  posCashAccountId?: number
+  pettyCashAccountId?: number
+  cashInTransitAccountId?: number
 }
 
 export function usePostingRules() {

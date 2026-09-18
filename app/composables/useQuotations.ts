@@ -3,7 +3,7 @@
 // rather than create() directly. DRAFT -> SENT -> ACCEPTED/REJECTED; only a
 // DRAFT quotation can be edited or deleted.
 
-import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+import type { ApiEnvelope, PageEnvelope, SendDocumentEmailPayload } from '#shared/types'
 
 export type QuotationStatus = 'DRAFT' | 'SENT' | 'ACCEPTED' | 'REJECTED'
 
@@ -111,5 +111,9 @@ export function useQuotations() {
     await api(`/api/admin/quotations/${id}`, { method: 'DELETE' })
   }
 
-  return { list, get, create, update, send, accept, reject, remove }
+  async function emailDocument(id: number, payload: SendDocumentEmailPayload = {}) {
+    await api(`/api/admin/quotations/${id}/email`, { method: 'POST', body: payload })
+  }
+
+  return { list, get, create, update, send, accept, reject, remove, emailDocument }
 }

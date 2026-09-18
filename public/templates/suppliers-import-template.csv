@@ -1,0 +1,2 @@
+name,contactName,phone,email,supplierType,addressLine1,addressLine2,city,state,postalCode,country,creditLimit,paymentTerms
+Example Supplier,John Smith,555-0200,john@example.com,,,,,,,,0,NET_30

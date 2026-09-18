@@ -121,8 +121,10 @@ export function useModuleCatalog() {
         { key: 'sales-orders', label: 'Sales orders' },
         { key: 'deliveries', label: 'Deliveries' },
         { key: 'invoices', label: 'Invoices' },
+        { key: 'recurring-invoices', label: 'Recurring invoices' },
         { key: 'credit-notes', label: 'Credit notes' },
-        { key: 'payments', label: 'Payments' }
+        { key: 'payments', label: 'Payments' },
+        { key: 'rma-requests', label: 'RMA / Returns' }
       ]
     },
     {
@@ -134,7 +136,9 @@ export function useModuleCatalog() {
         { key: 'journal-entries', label: 'Journal entries' },
         { key: 'posting-rules', label: 'Posting rules' },
         { key: 'bank-accounts', label: 'Bank & cash' },
+        { key: 'petty-cash', label: 'Petty cash' },
         { key: 'cost-centers', label: 'Cost centers' },
+        { key: 'budgets', label: 'Budgets' },
         { key: 'fiscal-years', label: 'Fiscal years' },
         { key: 'accounting-periods', label: 'Accounting periods' },
         { key: 'fixed-assets', label: 'Fixed assets' },
@@ -175,7 +179,10 @@ export function useModuleCatalog() {
       modules: [
         { key: 'users', label: 'Users' },
         { key: 'custom-roles', label: 'Custom roles' },
-        { key: 'audit-logs', label: 'Audit log' }
+        { key: 'audit-logs', label: 'Audit log' },
+        { key: 'approval-rules', label: 'Approval rules' },
+        { key: 'attachments', label: 'Attachments' },
+        { key: 'notifications', label: 'Notifications' }
       ]
     }
   ]

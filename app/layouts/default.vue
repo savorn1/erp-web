@@ -39,6 +39,7 @@
           <template #right>
             <UDashboardSearchButton />
             <UColorModeButton />
+            <NotificationBell />
             <UDropdownMenu :items="profileItems" :content="{ align: 'end' }" :ui="{ content: 'w-56' }">
               <UButton size="sm" color="neutral" variant="ghost" trailing-icon="i-lucide-chevron-down">
                 <UAvatar :alt="username ?? '?'" size="2xs" />
@@ -188,7 +189,9 @@ const items = computed<SidebarItem[]>(() => [
             { label: 'Sales orders', to: '/sales-orders', icon: 'i-lucide-file-text' },
             { label: 'Deliveries', to: '/deliveries', icon: 'i-lucide-truck' },
             { label: 'Invoices', to: '/invoices', icon: 'i-lucide-receipt' },
-            { label: 'Payments', to: '/payments', icon: 'i-lucide-banknote' }
+            { label: 'Recurring invoices', to: '/recurring-invoices', icon: 'i-lucide-repeat' },
+            { label: 'Payments', to: '/payments', icon: 'i-lucide-banknote' },
+            { label: 'RMA / Returns', to: '/rma-requests', icon: 'i-lucide-undo-2' }
           ]
         },
         {
@@ -203,7 +206,9 @@ const items = computed<SidebarItem[]>(() => [
             { label: 'Accounts receivable', to: '/accounts-receivable', icon: 'i-lucide-hand-coins' },
             { label: 'Accounts payable', to: '/accounts-payable', icon: 'i-lucide-credit-card' },
             { label: 'Bank & cash', to: '/bank-accounts', icon: 'i-lucide-landmark' },
+            { label: 'Petty cash', to: '/petty-cash', icon: 'i-lucide-wallet' },
             { label: 'Cost centers', to: '/cost-centers', icon: 'i-lucide-building-2' },
+            { label: 'Budgets', to: '/budgets', icon: 'i-lucide-calculator' },
             { label: 'Fiscal years', to: '/fiscal-years', icon: 'i-lucide-calendar' },
             { label: 'Fixed assets', to: '/fixed-assets', icon: 'i-lucide-briefcase' },
             { label: 'Tax rates', to: '/tax-rates', icon: 'i-lucide-percent' }
@@ -229,7 +234,8 @@ const items = computed<SidebarItem[]>(() => [
           children: [
             { label: 'Users', to: '/users', icon: 'i-lucide-users' },
             { label: 'Custom roles', to: '/custom-roles', icon: 'i-lucide-shield' },
-            { label: 'Audit log', to: '/audit-logs', icon: 'i-lucide-history' }
+            { label: 'Audit log', to: '/audit-logs', icon: 'i-lucide-history' },
+            { label: 'Approval rules', to: '/approval-rules', icon: 'i-lucide-check-check' }
           ]
         }
       ]

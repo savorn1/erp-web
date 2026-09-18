@@ -492,6 +492,12 @@ export function useReportCatalog() {
       icon: 'i-lucide-trending-down',
       label: 'Depreciation schedule',
       description: 'Period-by-period depreciation posted per fixed asset.'
+    },
+    {
+      to: '/reports/accounting/budget-vs-actual',
+      icon: 'i-lucide-calculator',
+      label: 'Budget vs actual',
+      description: 'Planned budget compared against posted GL activity for a period.'
     }
   ])
 

@@ -69,6 +69,12 @@
           <UFormField label="Default bank account" hint="Used for bank transfer / payment gateway payments.">
             <USelectMenu v-model="form.defaultBankAccountId" :items="accountOptions" value-key="value" placeholder="None" class="w-full" />
           </UFormField>
+          <UFormField label="Petty cash account" hint="Selectable for manual journal entries — nothing auto-posts here yet.">
+            <USelectMenu v-model="form.pettyCashAccountId" :items="accountOptions" value-key="value" placeholder="None" class="w-full" />
+          </UFormField>
+          <UFormField label="Cash in transit account" hint="Selectable for manual journal entries — nothing auto-posts here yet.">
+            <USelectMenu v-model="form.cashInTransitAccountId" :items="accountOptions" value-key="value" placeholder="None" class="w-full" />
+          </UFormField>
         </div>
       </UCard>
 
@@ -98,6 +104,9 @@
           </UFormField>
           <UFormField label="Cash over/short" hint="Dr/Cr'd when a session's counted cash doesn't match expected at close.">
             <USelectMenu v-model="form.cashVarianceAccountId" :items="accountOptions" value-key="value" placeholder="None" class="w-full" />
+          </UFormField>
+          <UFormField label="POS cash account" hint="Cash tender for checkout/exchange/session variance. Falls back to the default cash account when unset.">
+            <USelectMenu v-model="form.posCashAccountId" :items="accountOptions" value-key="value" placeholder="None" class="w-full" />
           </UFormField>
         </div>
       </UCard>
@@ -149,6 +158,9 @@ const form = reactive<{
   assetDisposalGainLossAccountId: number | undefined
   inventoryAssetAccountId: number | undefined
   cashVarianceAccountId: number | undefined
+  posCashAccountId: number | undefined
+  pettyCashAccountId: number | undefined
+  cashInTransitAccountId: number | undefined
 }>({
   accountsReceivableAccountId: undefined,
   accountsPayableAccountId: undefined,
@@ -165,7 +177,10 @@ const form = reactive<{
   accumulatedDepreciationAccountId: undefined,
   assetDisposalGainLossAccountId: undefined,
   inventoryAssetAccountId: undefined,
-  cashVarianceAccountId: undefined
+  cashVarianceAccountId: undefined,
+  posCashAccountId: undefined,
+  pettyCashAccountId: undefined,
+  cashInTransitAccountId: undefined
 })
 
 function applyRule(rule: PostingRule) {
@@ -185,6 +200,9 @@ function applyRule(rule: PostingRule) {
   form.assetDisposalGainLossAccountId = rule.assetDisposalGainLossAccountId ?? undefined
   form.inventoryAssetAccountId = rule.inventoryAssetAccountId ?? undefined
   form.cashVarianceAccountId = rule.cashVarianceAccountId ?? undefined
+  form.posCashAccountId = rule.posCashAccountId ?? undefined
+  form.pettyCashAccountId = rule.pettyCashAccountId ?? undefined
+  form.cashInTransitAccountId = rule.cashInTransitAccountId ?? undefined
 }
 
 async function loadRule() {

@@ -139,6 +139,29 @@ export interface StatementOfChangesInEquity {
   endingEquity: number
 }
 
+export interface BudgetVsActualFilter {
+  companyId?: number
+  dateFrom?: string
+  dateTo?: string
+  costCenterId?: number
+}
+
+export interface BudgetVsActualRow {
+  accountId: number
+  accountCode: string
+  accountName: string
+  accountType: string
+  budgetAmount: number
+  actualAmount: number
+  varianceAmount: number
+}
+
+export interface BudgetVsActual {
+  dateFrom: string | null
+  dateTo: string | null
+  rows: BudgetVsActualRow[]
+}
+
 export function useFinancialReports() {
   const api = useApi()
 
@@ -172,5 +195,10 @@ export function useFinancialReports() {
     return res.data
   }
 
-  return { trialBalance, generalLedger, balanceSheet, profitAndLoss, cashFlow, statementOfChangesInEquity }
+  async function budgetVsActual(filter: BudgetVsActualFilter = {}) {
+    const res = await api<ApiEnvelope<BudgetVsActual>>('/api/admin/financial-reports/budget-vs-actual', { query: filter })
+    return res.data
+  }
+
+  return { trialBalance, generalLedger, balanceSheet, profitAndLoss, cashFlow, statementOfChangesInEquity, budgetVsActual }
 }

@@ -41,6 +41,14 @@
         :row-number-start="(page - 1) * pageSize"
         @refresh="load"
       >
+        <template #status-data="{ row }">
+          <div class="flex items-center gap-2">
+            <StatusBadge :status="row.status" />
+            <span v-if="row.status === 'SUBMITTED' && row.approvalsRequired && row.approvalsRequired > 1" class="text-xs text-gray-400">
+              {{ row.approvalsRecorded }}/{{ row.approvalsRequired }} approvals
+            </span>
+          </div>
+        </template>
         <template #actions-data="{ row }">
           <div class="flex items-center gap-2">
             <UButton size="xs" color="primary" variant="soft" icon="i-lucide-eye" :to="`/purchase-orders/${row.id}`">
@@ -245,8 +253,12 @@ async function onSubmit(row: PurchaseOrder) {
 async function onApprove(row: PurchaseOrder) {
   actingId.value = row.id
   try {
-    await approve(row.id)
-    toast.add({ title: 'Purchase order approved', color: 'success' })
+    const updated = await approve(row.id)
+    if (updated.status === 'SUBMITTED') {
+      toast.add({ title: `Approval recorded — ${updated.approvalsRecorded} of ${updated.approvalsRequired} needed`, color: 'success' })
+    } else {
+      toast.add({ title: 'Purchase order approved', color: 'success' })
+    }
     await load()
   } catch (err) {
     toast.add({ title: 'Could not approve', description: apiErrorMessage(err), color: 'error' })

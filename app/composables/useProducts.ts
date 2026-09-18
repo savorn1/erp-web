@@ -3,7 +3,7 @@
 // ApiResponse<T>; list wraps in PageResponse<T>. Category/brand/type/unit of
 // measure/supplier are resolved server-side into display names.
 
-import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+import type { ApiEnvelope, ImportResult, PageEnvelope } from '#shared/types'
 
 export type ProductStatus = 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED'
 export type ProductTrackingType = 'NONE' | 'BATCH' | 'SERIAL'
@@ -44,6 +44,8 @@ export interface Product {
   reorderPoint: number
   // Zero means no threshold configured — never flagged by the Overstock report.
   maxStock: number
+  // Null means no warranty tracked — RMA / Returns leaves "within warranty" unset.
+  warrantyMonths: number | null
 }
 
 export interface ProductFilter {
@@ -79,6 +81,7 @@ export interface ProductPayload {
   imageUrl?: string
   reorderPoint?: number
   maxStock?: number
+  warrantyMonths?: number
 }
 
 export function useProducts() {
@@ -112,5 +115,13 @@ export function useProducts() {
     await api(`/api/admin/products/${id}`, { method: 'DELETE' })
   }
 
-  return { list, get, create, update, updateStatus, remove }
+  async function importCsv(file: File, companyId: number) {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('companyId', String(companyId))
+    const res = await api<ApiEnvelope<ImportResult>>('/api/admin/products/import', { method: 'POST', body: formData })
+    return res.data
+  }
+
+  return { list, get, create, update, updateStatus, remove, importCsv }
 }

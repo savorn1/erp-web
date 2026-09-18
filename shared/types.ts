@@ -29,6 +29,26 @@ export interface PageEnvelope<T> {
   metadata: { hasNext: boolean; hasPrev: boolean; totalPage: number; currentPage: number; limit: number; totalCount: number }
 }
 
+// Result of a bulk CSV import (see ImportResultResponse on the backend) —
+// shared by useProducts/useCustomers/useSuppliers' importCsv() and rendered
+// generically by CsvImportModal.vue.
+export interface ImportResult {
+  totalRows: number
+  successCount: number
+  failureCount: number
+  errors: { rowNumber: number; message: string }[]
+}
+
+// All fields optional — an empty payload means "send to whichever email is
+// already on file, with the default subject/body." Shared by
+// useInvoices/useQuotations/usePurchaseOrders' emailDocument() and
+// EmailDocumentModal.vue.
+export interface SendDocumentEmailPayload {
+  to?: string
+  subject?: string
+  message?: string
+}
+
 // ── Declarative form fields ───────────────────────────────────────────────
 // `name` is the only mandatory attribute; `label` is auto-humanized from the
 // name when omitted; `type` defaults to 'text'. Rendered by <Field> (one

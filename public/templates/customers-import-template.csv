@@ -1,0 +1,2 @@
+name,contactName,phone,email,customerType,customerGroup,billingAddressLine1,billingAddressLine2,billingCity,billingState,billingPostalCode,billingCountry,shippingAddressLine1,shippingAddressLine2,shippingCity,shippingState,shippingPostalCode,shippingCountry,creditLimit,paymentTerms
+Example Customer,Jane Doe,555-0100,jane@example.com,,,,,,,,,,,,,,,0,NET_30

@@ -135,6 +135,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip,
 definePageMeta({ middleware: 'admin' })
 
 const router = useRouter()
+const route = useRoute()
 const {
   salesReportTiles,
   salesExternalReportTiles,
@@ -154,6 +155,25 @@ const {
 } = useReportCatalog()
 const { pinned, isPinned, togglePin, clearAll: clearPinned } = usePinnedReports()
 const { recent, clearAll: clearRecent } = useRecentReports()
+
+// ReportBackButton arrives here as `/reports#<sectionId>`. Nuxt's own router
+// scrollBehavior can't be trusted for this: it scrolls `window`, but this
+// page's actual scroll container is UDashboardPanel's inner `overflow-y-auto`
+// body div (window itself never scrolls in this layout) — so that hash lands
+// as a silent no-op. `scrollIntoView()` walks up to the real scrollable
+// ancestor instead, which is why it's used here (same reason the jump-nav
+// pills above, plain `<a href="#...">` tags relying on the browser's own
+// native anchor-jump, already worked without any of this). Waiting a tick
+// first matters too: pinned/recent are only populated from localStorage
+// inside their composables' own onMounted (registered above, so it already
+// ran by the time this one starts), and until that DOM update lands, those
+// cards are still collapsed and every section below sits higher than its
+// settled position.
+onMounted(async () => {
+  if (!route.hash) return
+  await nextTick()
+  document.getElementById(route.hash.slice(1))?.scrollIntoView({ block: 'start' })
+})
 
 // Colors mirror each category's own tiles (see useReportCatalog.ts) and
 // SidebarNav's group accents.

@@ -149,6 +149,16 @@
           </div>
         </UCard>
 
+        <UCard v-if="!isNew">
+          <template #header>
+            <div class="flex items-center gap-2">
+              <UIcon name="i-lucide-paperclip" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
+              <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Attachments</h2>
+            </div>
+          </template>
+          <AttachmentList owner-type="SALES_ORDER" :owner-id="Number(idParam)" />
+        </UCard>
+
         <UAlert v-if="formError" color="error" variant="subtle" :title="formError" />
 
         <div class="flex justify-end gap-2">

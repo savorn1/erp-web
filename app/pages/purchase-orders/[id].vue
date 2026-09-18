@@ -146,14 +146,32 @@
           </div>
         </UCard>
 
+        <UCard v-if="!isNew">
+          <template #header>
+            <div class="flex items-center gap-2">
+              <UIcon name="i-lucide-paperclip" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
+              <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Attachments</h2>
+            </div>
+          </template>
+          <AttachmentList owner-type="PURCHASE_ORDER" :owner-id="Number(idParam)" />
+        </UCard>
+
         <UAlert v-if="formError" color="error" variant="subtle" :title="formError" />
 
         <div class="flex justify-end gap-2">
+          <UButton v-if="!isNew" color="neutral" variant="soft" icon="i-lucide-mail" @click="showEmail = true">Email</UButton>
           <UButton color="neutral" variant="ghost" @click="onLeave">{{ formEditable ? 'Cancel' : 'Back' }}</UButton>
           <UButton v-if="formEditable" :loading="saving" @click="onSaveForm">{{ isNew ? 'Create' : 'Save changes' }}</UButton>
         </div>
       </div>
     </template>
+
+    <EmailDocumentModal
+      v-if="!isNew"
+      v-model:open="showEmail"
+      title="Email purchase order"
+      :send-fn="(payload) => emailDocument(Number(idParam), payload)"
+    />
 
     <ConfirmModal
       :model-value="showLeaveConfirm"
@@ -181,7 +199,8 @@ const router = useRouter()
 const idParam = route.params.id as string
 const isNew = idParam === 'new'
 
-const { get, create, update } = usePurchaseOrders()
+const { get, create, update, emailDocument } = usePurchaseOrders()
+const showEmail = ref(false)
 const { list: listCompanies } = useCompanies()
 const { list: listSuppliers } = useSuppliers()
 const { list: listWarehouses } = useWarehouses()
