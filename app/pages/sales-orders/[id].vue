@@ -31,6 +31,9 @@
             <UFormField label="Expected date">
               <UInput v-model="form.expectedDate" type="date" :disabled="!formEditable" class="w-full" />
             </UFormField>
+            <UFormField label="Salesperson" hint="Credited for commission on this order">
+              <USelect v-model="form.salesRepUserId" :items="activeUserOptions" placeholder="None" :disabled="!formEditable" class="w-full" />
+            </UFormField>
             <UFormField label="Notes" class="sm:col-span-3">
               <UTextarea v-model="form.notes" :disabled="!formEditable" :rows="2" class="w-full" />
             </UFormField>
@@ -120,7 +123,20 @@
                 class="col-span-12 justify-self-end"
                 @click="form.lines.splice(i, 1)"
               />
-              <span v-else-if="viewingLineDelivered[i]" class="col-span-12 text-xs text-gray-400 text-right">{{ viewingLineDelivered[i] }} delivered</span>
+              <div v-else-if="viewingLineDelivered[i]" class="col-span-12 flex items-center justify-end gap-2">
+                <span class="text-xs text-gray-400">{{ viewingLineDelivered[i] }} delivered</span>
+                <UButton
+                  v-if="editingStatus === 'CONFIRMED' && (line.quantityOrdered || 0) > (line.quantityDelivered || 0)"
+                  size="2xs"
+                  color="warning"
+                  variant="soft"
+                  icon="i-lucide-ban"
+                  :loading="cancellingLineId === line.id"
+                  @click="onCancelLine(line)"
+                >
+                  Cancel remaining
+                </UButton>
+              </div>
             </div>
           </div>
 
@@ -162,11 +178,19 @@
         <UAlert v-if="formError" color="error" variant="subtle" :title="formError" />
 
         <div class="flex justify-end gap-2">
+          <UButton v-if="!isNew" color="neutral" variant="soft" icon="i-lucide-mail" @click="showEmail = true">Email</UButton>
           <UButton color="neutral" variant="ghost" @click="onLeave">{{ formEditable ? 'Cancel' : 'Back' }}</UButton>
           <UButton v-if="formEditable" :loading="saving" @click="onSaveForm">{{ isNew ? 'Create' : 'Save changes' }}</UButton>
         </div>
       </div>
     </template>
+
+    <EmailDocumentModal
+      v-if="!isNew"
+      v-model:open="showEmail"
+      title="Email sales order"
+      :send-fn="(payload) => emailDocument(Number(idParam), payload)"
+    />
 
     <ConfirmModal
       :model-value="showLeaveConfirm"
@@ -194,17 +218,20 @@ const router = useRouter()
 const idParam = route.params.id as string
 const isNew = idParam === 'new'
 
-const { get, create, update } = useSalesOrders()
+const { get, create, update, cancelLine, emailDocument } = useSalesOrders()
+const showEmail = ref(false)
 const { list: listCompanies } = useCompanies()
 const { list: listCustomers } = useCustomers()
 const { list: listWarehouses } = useWarehouses()
 const { list: listProducts } = useProducts()
+const { list: listUsers } = useUsers()
 const toast = useToast()
 
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
 const customers = ref<{ id: number; name: string; companyId: number; status: string }[]>([])
 const warehouses = ref<{ id: number; name: string; companyId: number; active: boolean }[]>([])
 const products = ref<{ id: number; name: string; sku: string; companyId: number; status: string }[]>([])
+const users = ref<{ id: number; username: string; enabled: boolean }[]>([])
 
 const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
 function customerOptionsFor(companyId: number | undefined) {
@@ -215,6 +242,7 @@ function customerOptionsFor(companyId: number | undefined) {
 function warehouseOptionsFor(companyId: number | undefined) {
   return warehouses.value.filter((w) => w.active && (companyId === undefined || w.companyId === companyId)).map((w) => ({ label: w.name, value: w.id }))
 }
+const activeUserOptions = computed(() => users.value.filter((u) => u.enabled).map((u) => ({ label: u.username, value: u.id })))
 function productOptionsFor(companyId: number | undefined) {
   return products.value
     .filter((p) => p.status === 'ACTIVE' && (companyId === undefined || p.companyId === companyId))
@@ -226,11 +254,13 @@ function productLabel(productId: number | undefined) {
 }
 
 interface LineForm {
+  id?: number
   productId: number | undefined
   quantityOrdered: number | undefined
   unitPrice: number | undefined
   discountPercent: number | undefined
   taxRate: number | undefined
+  quantityDelivered?: number
 }
 
 const editingStatus = ref<SalesOrderStatus | null>(null)
@@ -246,6 +276,7 @@ const form = reactive<{
   orderDate: string
   expectedDate: string
   notes: string
+  salesRepUserId: number | undefined
   foreignCurrency: string
   exchangeRate: number | undefined
   lines: LineForm[]
@@ -256,6 +287,7 @@ const form = reactive<{
   orderDate: new Date().toISOString().slice(0, 10),
   expectedDate: '',
   notes: '',
+  salesRepUserId: undefined,
   foreignCurrency: '',
   exchangeRate: undefined,
   lines: []
@@ -322,16 +354,18 @@ function confirmLeave() {
 async function loadDetail() {
   loadingDetail.value = true
   try {
-    const [c, cu, w, p] = await Promise.all([
+    const [c, cu, w, p, u] = await Promise.all([
       listCompanies({ size: 200 }),
       listCustomers({ size: 200 }),
       listWarehouses({ size: 200 }),
-      listProducts({ size: 200 })
+      listProducts({ size: 200 }),
+      listUsers({ size: 200 })
     ])
     companies.value = c.data
     customers.value = cu.data
     warehouses.value = w.data
     products.value = p.data
+    users.value = u.data
 
     if (isNew) {
       form.companyId = activeCompanyOptions.value[0]?.value
@@ -347,15 +381,18 @@ async function loadDetail() {
     form.orderDate = detail.orderDate
     form.expectedDate = detail.expectedDate ?? ''
     form.notes = detail.notes ?? ''
+    form.salesRepUserId = detail.salesRepUserId ?? undefined
     foreignCurrencyEnabled.value = !!detail.foreignCurrency
     form.foreignCurrency = detail.foreignCurrency ?? ''
     form.exchangeRate = detail.exchangeRate ?? undefined
     form.lines = (detail.lines ?? []).map((l) => ({
+      id: l.id,
       productId: l.productId,
       quantityOrdered: l.quantityOrdered,
       unitPrice: l.unitPrice,
       discountPercent: l.discountPercent || undefined,
-      taxRate: l.taxRate || undefined
+      taxRate: l.taxRate || undefined,
+      quantityDelivered: l.quantityDelivered
     }))
     viewingLineDelivered.value = Object.fromEntries((detail.lines ?? []).map((l, i) => [i, `${l.quantityDelivered}/${l.quantityOrdered}`]))
     snapshotForm()
@@ -387,6 +424,7 @@ async function onSaveForm() {
     orderDate: form.orderDate,
     expectedDate: form.expectedDate || undefined,
     notes: form.notes || undefined,
+    salesRepUserId: form.salesRepUserId,
     foreignCurrency: foreignCurrencyEnabled.value ? form.foreignCurrency.toUpperCase() : undefined,
     exchangeRate: foreignCurrencyEnabled.value ? form.exchangeRate : undefined,
     lines: form.lines.map((l) => ({
@@ -411,6 +449,21 @@ async function onSaveForm() {
     formError.value = apiErrorMessage(err)
   } finally {
     saving.value = false
+  }
+}
+
+const cancellingLineId = ref<number | undefined>(undefined)
+async function onCancelLine(line: LineForm) {
+  if (!line.id) return
+  cancellingLineId.value = line.id
+  try {
+    await cancelLine(Number(idParam), line.id)
+    toast.add({ title: 'Line cancelled', color: 'success' })
+    await loadDetail()
+  } catch (err) {
+    toast.add({ title: 'Could not cancel line', description: apiErrorMessage(err), color: 'error' })
+  } finally {
+    cancellingLineId.value = undefined
   }
 }
 

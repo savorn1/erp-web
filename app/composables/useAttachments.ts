@@ -6,7 +6,7 @@
 
 import type { ApiEnvelope } from '#shared/types'
 
-export type AttachmentOwnerType = 'INVOICE' | 'PURCHASE_ORDER' | 'SALES_ORDER' | 'CUSTOMER' | 'SUPPLIER'
+export type AttachmentOwnerType = 'INVOICE' | 'PURCHASE_ORDER' | 'SALES_ORDER' | 'CUSTOMER' | 'SUPPLIER' | 'QUOTATION' | 'RMA_REQUEST' | 'TICKET'
 
 export interface Attachment {
   id: number

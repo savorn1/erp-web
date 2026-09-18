@@ -1,16 +1,16 @@
 // Wraps the backend's admin-only LeadController (/api/admin/leads/**,
-// requires ROLE_ADMIN). Status changes, assignment, follow-ups, and
-// conversion are logged as LeadActivity entries (GET .../{id}/activities —
-// "Lead follow-up" history). Converting a qualified lead creates an
-// Opportunity (see useOpportunities) — not a Customer directly — and moves
-// status to CONVERTED, which is terminal. The Opportunity becomes a
-// Customer only once it's won.
+// requires ROLE_ADMIN). Covers the whole pipeline from a fresh contact
+// through to a closed deal — formerly split across a separate Lead and
+// Opportunity, merged into one entity/flow this session (see
+// LeadOpportunityMergeMigration on the backend). Status changes,
+// assignment, wins/losses, notes, and follow-ups are all logged as
+// LeadActivity entries (GET .../{id}/activities).
 
 import type { ApiEnvelope, PageEnvelope } from '#shared/types'
 
-export type LeadStatus = 'NEW' | 'CONTACTED' | 'QUALIFIED' | 'PROPOSAL' | 'NEGOTIATION' | 'CONVERTED' | 'LOST'
+export type LeadStatus = 'NEW' | 'QUALIFIED' | 'NEEDS_ANALYSIS' | 'QUOTATION' | 'NEGOTIATION' | 'WON' | 'LOST'
 export type LeadSource = 'WEBSITE' | 'REFERRAL' | 'COLD_CALL' | 'SOCIAL_MEDIA' | 'ADVERTISEMENT' | 'TRADE_SHOW' | 'EMAIL_CAMPAIGN' | 'OTHER'
-export type LeadActivityType = 'CREATED' | 'STATUS_CHANGE' | 'ASSIGNED' | 'FOLLOW_UP' | 'CONVERTED' | 'NOTE'
+export type LeadActivityType = 'CREATED' | 'STATUS_CHANGE' | 'ASSIGNED' | 'FOLLOW_UP' | 'NOTE' | 'WON' | 'LOST' | 'QUOTATION_CREATED'
 
 export interface Lead {
   id: number
@@ -26,10 +26,21 @@ export interface Lead {
   assignedToUsername: string | null
   estimatedValue: number | null
   notes: string | null
-  convertedOpportunityId: number | null
-  convertedOpportunityName: string | null
-  convertedAt: string | null
   createdBy: string | null
+  // Scheduled via addFollowUp — separate from the activity log, this is the
+  // one "next contact" date. followUpDue is true once it's arrived and the
+  // lead hasn't closed (WON/LOST).
+  nextFollowUpDate: string | null
+  followUpDue: boolean
+  // ── Deal-specific fields, absorbed from the old separate Opportunity ──
+  // All null until the lead progresses past NEW.
+  dealName: string | null
+  amount: number | null
+  probability: number | null
+  expectedCloseDate: string | null
+  customerId: number | null
+  customerName: string | null
+  closedAt: string | null
 }
 
 export interface LeadActivity {
@@ -47,6 +58,7 @@ export interface LeadFilter {
   status?: LeadStatus
   source?: LeadSource
   assignedToUserId?: number
+  customerId?: number
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
   page?: number
@@ -63,6 +75,11 @@ export interface LeadPayload {
   assignedToUserId?: number
   estimatedValue?: number
   notes?: string
+  dealName?: string
+  amount?: number
+  probability?: number
+  expectedCloseDate?: string
+  customerId?: number
 }
 
 export function useLeads() {
@@ -97,8 +114,14 @@ export function useLeads() {
     return res.data
   }
 
-  async function convert(id: number) {
-    const res = await api<ApiEnvelope<Lead>>(`/api/admin/leads/${id}/convert`, { method: 'POST' })
+  // Closes the deal, creating a Customer if none is linked yet.
+  async function win(id: number) {
+    const res = await api<ApiEnvelope<Lead>>(`/api/admin/leads/${id}/win`, { method: 'POST' })
+    return res.data
+  }
+
+  async function lose(id: number, reason?: string) {
+    const res = await api<ApiEnvelope<Lead>>(`/api/admin/leads/${id}/lose`, { method: 'POST', body: { reason } })
     return res.data
   }
 
@@ -110,10 +133,45 @@ export function useLeads() {
     return api<PageEnvelope<LeadActivity>>(`/api/admin/leads/${id}/activities`, { query: { page, size } })
   }
 
-  async function addFollowUp(id: number, description: string) {
-    const res = await api<ApiEnvelope<LeadActivity>>(`/api/admin/leads/${id}/activities`, { method: 'POST', body: { description } })
+  async function addNote(id: number, description: string) {
+    const res = await api<ApiEnvelope<LeadActivity>>(`/api/admin/leads/${id}/notes`, { method: 'POST', body: { description } })
     return res.data
   }
 
-  return { list, get, create, update, updateStatus, assign, convert, remove, listActivities, addFollowUp }
+  async function addFollowUp(id: number, description: string, nextFollowUpDate?: string) {
+    const res = await api<ApiEnvelope<LeadActivity>>(`/api/admin/leads/${id}/follow-ups`, { method: 'POST', body: { description, nextFollowUpDate } })
+    return res.data
+  }
+
+  async function convertToQuotation(
+    id: number,
+    payload: {
+      quotationDate: string
+      validUntil?: string
+      notes?: string
+      lines: { productId: number; quantity: number; unitPrice: number }[]
+    }
+  ) {
+    const res = await api<ApiEnvelope<import('./useQuotations').Quotation>>(`/api/admin/leads/${id}/convert-to-quotation`, {
+      method: 'POST',
+      body: payload
+    })
+    return res.data
+  }
+
+  return {
+    list,
+    get,
+    create,
+    update,
+    updateStatus,
+    assign,
+    win,
+    lose,
+    remove,
+    listActivities,
+    addNote,
+    addFollowUp,
+    convertToQuotation
+  }
 }

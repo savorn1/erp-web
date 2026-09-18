@@ -4,7 +4,7 @@
 // approve is where stock availability is actually checked and the order
 // becomes eligible for delivery ("Order confirmation").
 
-import type { ApiEnvelope, PageEnvelope } from '#shared/types'
+import type { ApiEnvelope, PageEnvelope, SendDocumentEmailPayload } from '#shared/types'
 
 export type SalesOrderStatus = 'DRAFT' | 'SUBMITTED' | 'CONFIRMED' | 'PARTIALLY_DELIVERED' | 'DELIVERED' | 'CANCELLED'
 
@@ -29,6 +29,8 @@ export interface SalesOrder {
   companyName: string | null
   customerId: number
   customerName: string | null
+  // Set when this order was converted from an accepted Quotation.
+  quotationId: number | null
   warehouseId: number
   warehouseName: string | null
   soNumber: string
@@ -37,6 +39,10 @@ export interface SalesOrder {
   status: SalesOrderStatus
   notes: string | null
   createdBy: string | null
+  // The salesperson credited on this order for commission purposes — see
+  // useCommissions. Null means no commission is tracked for this order.
+  salesRepUserId: number | null
+  salesRepName: string | null
   subtotal: number
   discountAmount: number
   taxAmount: number
@@ -81,6 +87,8 @@ export interface SalesOrderPayload {
   orderDate: string
   expectedDate?: string
   notes?: string
+  // Optional — see SalesOrder.salesRepUserId.
+  salesRepUserId?: number
   // Optional reference-only foreign currency, for display/printing only —
   // never affects totals, GL postings, or payments. Both or neither.
   foreignCurrency?: string
@@ -125,9 +133,20 @@ export function useSalesOrders() {
     return res.data
   }
 
+  // Cancels only the undelivered remainder of one line — only meaningful on
+  // a CONFIRMED order. The rest of the order is unaffected.
+  async function cancelLine(id: number, lineId: number) {
+    const res = await api<ApiEnvelope<SalesOrder>>(`/api/admin/sales-orders/${id}/lines/${lineId}/cancel`, { method: 'POST' })
+    return res.data
+  }
+
   async function remove(id: number) {
     await api(`/api/admin/sales-orders/${id}`, { method: 'DELETE' })
   }
 
-  return { list, get, create, update, submit, approve, cancel, remove }
+  async function emailDocument(id: number, payload: SendDocumentEmailPayload = {}) {
+    await api(`/api/admin/sales-orders/${id}/email`, { method: 'POST', body: payload })
+  }
+
+  return { list, get, create, update, submit, approve, cancel, cancelLine, remove, emailDocument }
 }

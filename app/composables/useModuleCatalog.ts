@@ -116,7 +116,6 @@ export function useModuleCatalog() {
       color: 'emerald',
       modules: [
         { key: 'leads', label: 'Leads' },
-        { key: 'opportunities', label: 'Opportunities' },
         { key: 'quotations', label: 'Quotations' },
         { key: 'sales-orders', label: 'Sales orders' },
         { key: 'deliveries', label: 'Deliveries' },
@@ -124,7 +123,9 @@ export function useModuleCatalog() {
         { key: 'recurring-invoices', label: 'Recurring invoices' },
         { key: 'credit-notes', label: 'Credit notes' },
         { key: 'payments', label: 'Payments' },
-        { key: 'rma-requests', label: 'RMA / Returns' }
+        { key: 'rma-requests', label: 'RMA / Returns' },
+        { key: 'tickets', label: 'Support tickets' },
+        { key: 'commission-rules', label: 'Commission rules' }
       ]
     },
     {

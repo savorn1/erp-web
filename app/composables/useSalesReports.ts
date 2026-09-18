@@ -2,9 +2,9 @@
 // (/api/admin/sales-reports/**, requires ROLE_ADMIN). Built from SalesOrder
 // (booked order-level activity), excluding CANCELLED unless a status is
 // explicitly requested — distinct from Accounting's Revenue, which is
-// invoiced Invoice totals. "Salesperson" is whoever created the order
-// (SalesOrder.createdBy) — there's no dedicated sales-rep assignment
-// anywhere in the schema.
+// invoiced Invoice totals. "Salesperson" here is whoever created the order
+// (SalesOrder.createdBy), a proxy — for the actual assigned sales rep and
+// commission earned, see useCommissions (SalesOrder.salesRepUserId).
 
 import type { ApiEnvelope } from '#shared/types'
 import type { SalesOrderStatus } from '~/composables/useSalesOrders'

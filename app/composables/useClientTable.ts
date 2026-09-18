@@ -61,5 +61,8 @@ export function useClientTable<T extends Record<string, any>>(
     if (page.value > count) page.value = count
   })
 
-  return { search, page, pageSize, sort, total, pageCount, rows, truncated }
+  // `filtered` is search-applied but unpaginated — for callers that need
+  // every matching row at once (e.g. a kanban board grouped by column
+  // instead of paginated), where slicing by page doesn't make sense.
+  return { search, page, pageSize, sort, total, pageCount, rows, truncated, filtered }
 }

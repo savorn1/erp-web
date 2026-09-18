@@ -33,7 +33,7 @@
         variant="subtle"
         class="mb-4"
         title="Grouped by order creator"
-        description="There's no dedicated sales-rep assignment in the system — this groups by whoever created each sales order."
+        description="This groups by whoever entered each sales order, which may not be the actual salesperson. For assigned-rep commission tracking, see the Commissions report."
       />
       <DataTable :rows="salesBySalesperson.rows" :columns="columns" :exportable="false">
         <template #empty-state>

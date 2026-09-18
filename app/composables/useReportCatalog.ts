@@ -94,6 +94,12 @@ export function useReportCatalog() {
       icon: 'i-lucide-trending-up',
       label: 'Growth',
       description: 'Revenue and order count for a period vs. the equivalent period before it.'
+    },
+    {
+      to: '/reports/sales/commissions',
+      icon: 'i-lucide-hand-coins',
+      label: 'Commissions',
+      description: 'Commission earned per salesperson, accrued on the paid portion of invoices.'
     }
   ])
 

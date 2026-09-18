@@ -58,6 +58,7 @@
             <UButton size="xs" color="primary" variant="soft" icon="i-lucide-pencil" @click="openEdit(row)">Edit</UButton>
             <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-wallet" @click="openBalanceWith(row)">Balance</UButton>
             <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-history" @click="openHistoryFor(row)">History</UButton>
+            <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-link" @click="openRelatedFor(row)">Related</UButton>
             <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-paperclip" @click="openAttachmentsWith(row)">Files</UButton>
             <UDropdownMenu :items="statusMenuItems(row)">
               <UButton size="xs" color="neutral" variant="soft" trailing-icon="i-lucide-chevron-down">Status</UButton>
@@ -153,21 +154,7 @@
             <UButton type="submit" :loading="addingNote" :disabled="!noteText.trim()" icon="i-lucide-plus">Add</UButton>
           </UForm>
 
-          <div v-if="loadingActivities" class="text-sm text-gray-400">Loading…</div>
-          <EmptyState v-else-if="activities.length === 0" icon="i-lucide-history" title="No history yet" />
-          <ul v-else class="space-y-2 max-h-96 overflow-y-auto">
-            <li v-for="a in activities" :key="a.id" class="rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm">
-              <div class="flex items-center justify-between gap-2">
-                <span class="font-medium text-gray-900 dark:text-white">{{ a.description }}</span>
-                <span v-if="a.amount != null" :class="Number(a.amount) >= 0 ? 'text-error' : 'text-success'" class="font-semibold shrink-0">
-                  {{ Number(a.amount) >= 0 ? '+' : '' }}{{ formatCurrency(a.amount) }}
-                </span>
-              </div>
-              <p class="text-xs text-gray-400 mt-0.5">
-                {{ formatDateTime(a.createdAt) }}<span v-if="a.createdBy"> · {{ a.createdBy }}</span>
-              </p>
-            </li>
-          </ul>
+          <ActivityTimeline :activities="activities" :loading="loadingActivities" empty-title="No history yet" />
         </div>
       </template>
     </UModal>
@@ -175,6 +162,45 @@
     <UModal v-model:open="showAttachments" :title="`Files — ${attachmentsTarget?.name ?? ''}`" :ui="{ content: 'sm:max-w-lg' }">
       <template #body>
         <AttachmentList v-if="attachmentsTarget" owner-type="CUSTOMER" :owner-id="attachmentsTarget.id" />
+      </template>
+    </UModal>
+
+    <UModal v-model:open="showRelated" :title="`Related — ${relatedTarget?.name ?? ''}`" :ui="{ content: 'sm:max-w-lg' }">
+      <template #body>
+        <div class="space-y-5">
+          <div>
+            <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Leads / deals</p>
+            <div v-if="loadingRelated" class="text-sm text-gray-400">Loading…</div>
+            <EmptyState v-else-if="relatedLeads.length === 0" icon="i-lucide-target" title="No deals yet" />
+            <ul v-else class="space-y-1.5 max-h-56 overflow-y-auto">
+              <li v-for="l in relatedLeads" :key="l.id" class="flex items-center justify-between gap-2 text-sm rounded-md px-2 py-1.5 bg-gray-50 dark:bg-gray-900/40">
+                <span class="text-gray-900 dark:text-white truncate">{{ l.dealName ?? l.contactName }}</span>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span class="text-gray-500 dark:text-gray-400">{{ formatCurrency(l.amount) }}</span>
+                  <UBadge :color="l.status === 'WON' ? 'success' : l.status === 'LOST' ? 'error' : 'neutral'" variant="subtle" size="xs">
+                    {{ formatEnum(l.status) }}
+                  </UBadge>
+                </div>
+              </li>
+            </ul>
+            <NuxtLink to="/leads" class="text-xs text-primary-500 hover:underline mt-2 inline-block">View all leads</NuxtLink>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Quotations</p>
+            <div v-if="loadingRelated" class="text-sm text-gray-400">Loading…</div>
+            <EmptyState v-else-if="relatedQuotations.length === 0" icon="i-lucide-file-text" title="No quotations yet" />
+            <ul v-else class="space-y-1.5 max-h-56 overflow-y-auto">
+              <li v-for="q in relatedQuotations" :key="q.id" class="flex items-center justify-between gap-2 text-sm rounded-md px-2 py-1.5 bg-gray-50 dark:bg-gray-900/40">
+                <span class="text-gray-900 dark:text-white truncate">{{ q.quotationNumber }}</span>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span class="text-gray-500 dark:text-gray-400">{{ formatCurrency(q.totalAmount) }}</span>
+                  <UBadge color="neutral" variant="subtle" size="xs">{{ formatEnum(q.status) }}</UBadge>
+                </div>
+              </li>
+            </ul>
+            <NuxtLink to="/quotations" class="text-xs text-primary-500 hover:underline mt-2 inline-block">View all quotations</NuxtLink>
+          </div>
+        </div>
       </template>
     </UModal>
 
@@ -207,6 +233,8 @@
 <script setup lang="ts">
 import type { ColumnDef, FieldDef } from '#shared/types'
 import type { CustomerBalanceAdjustmentType, Customer, CustomerActivity, CustomerPayload, CustomerStatus } from '~/composables/useCustomers'
+import type { Lead } from '~/composables/useLeads'
+import type { Quotation } from '~/composables/useQuotations'
 
 definePageMeta({ middleware: 'admin' })
 
@@ -496,6 +524,28 @@ async function onBalanceSubmit(values: Record<string, any>) {
 
 const { open: showHistory, target: historyTarget, openWith: openHistoryWith } = useTargetModal<Customer>()
 const { open: showAttachments, target: attachmentsTarget, openWith: openAttachmentsWith } = useTargetModal<Customer>()
+const { open: showRelated, target: relatedTarget, openWith: openRelatedWith } = useTargetModal<Customer>()
+
+const { list: listLeads } = useLeads()
+const { list: listQuotations } = useQuotations()
+const relatedLeads = ref<Lead[]>([])
+const relatedQuotations = ref<Quotation[]>([])
+const loadingRelated = ref(false)
+
+async function openRelatedFor(row: Customer) {
+  openRelatedWith(row)
+  loadingRelated.value = true
+  try {
+    const [o, q] = await Promise.all([
+      listLeads({ customerId: row.id, size: 50 }),
+      listQuotations({ customerId: row.id, size: 50 })
+    ])
+    relatedLeads.value = o.data
+    relatedQuotations.value = q.data
+  } finally {
+    loadingRelated.value = false
+  }
+}
 
 const activities = ref<CustomerActivity[]>([])
 const loadingActivities = ref(false)

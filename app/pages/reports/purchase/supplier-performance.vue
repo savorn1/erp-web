@@ -3,7 +3,7 @@
     <ReportBackButton />
     <PageHeader
       title="Supplier performance"
-      description="On-time delivery rate and average delay per supplier, from expected date to receipt."
+      description="On-time delivery, quality-check pass rate, and price variance vs. the cross-supplier average, per supplier."
       :crumbs="[{ label: 'Reports', to: '/reports' }, { label: 'Purchase reports' }, { label: 'Supplier performance' }]"
     />
 
@@ -18,10 +18,15 @@
         <UFormField label="To">
           <UInput v-model="dateTo" type="date" class="w-40" />
         </UFormField>
+        <UBadge v-if="supplierId" color="primary" variant="subtle" class="gap-1.5">
+          One supplier only
+          <UButton size="2xs" color="primary" variant="link" icon="i-lucide-x" class="p-0" @click="supplierId = undefined" />
+        </UBadge>
       </div>
       <p class="text-xs text-gray-400 mt-3">
         Only orders with an expected date and at least one goods receipt count toward the on-time rate — "On time" means the latest receipt landed on or before
-        the expected date.
+        the expected date. QC pass % covers quality-checked goods-receipt lines only. Price variance compares each supplier's price for a product against the
+        quantity-weighted average price paid to all suppliers for that same product — only shown where another supplier was also paid for it in this period.
       </p>
     </UCard>
 
@@ -44,12 +49,15 @@ import type { SupplierPerformance, SupplierPerformanceRow } from '~/composables/
 
 definePageMeta({ middleware: 'admin' })
 
+const route = useRoute()
 const { companyId, dateFrom, dateTo, activeCompanyOptions, ensureLoaded } = useReportFilters()
 const { supplierPerformance: fetchPerformance } = usePurchaseReports()
 
 const loading = ref(false)
 const error = ref('')
 const performance = ref<SupplierPerformance | null>(null)
+// Pre-filled when the Suppliers page deep-links here for one supplier.
+const supplierId = ref<number | undefined>(route.query.supplierId ? Number(route.query.supplierId) : undefined)
 
 const columns: ColumnDef<SupplierPerformanceRow>[] = [
   { key: 'supplierName', label: 'Supplier', value: (row) => row.supplierName ?? '—' },
@@ -66,6 +74,19 @@ const columns: ColumnDef<SupplierPerformanceRow>[] = [
     label: 'Avg delay (days)',
     value: (row) => (row.averageDelayDays === null ? null : Math.round(row.averageDelayDays * 10) / 10),
     class: (row) => (row.averageDelayDays !== null && row.averageDelayDays > 0 ? 'text-error' : 'text-success')
+  },
+  {
+    key: 'qualityPassPercent',
+    label: 'QC pass %',
+    value: (row) => (row.qualityPassPercent === null ? null : Math.round(row.qualityPassPercent * 10) / 10),
+    suffix: (row) => (row.qualityPassPercent === null ? '' : '%')
+  },
+  {
+    key: 'priceVariancePercent',
+    label: 'Price variance',
+    value: (row) => (row.priceVariancePercent === null ? null : Math.round(row.priceVariancePercent * 10) / 10),
+    suffix: (row) => (row.priceVariancePercent === null ? '' : '%'),
+    class: (row) => (row.priceVariancePercent !== null && row.priceVariancePercent > 0 ? 'text-error' : 'text-success')
   }
 ]
 
@@ -76,7 +97,8 @@ async function load() {
     performance.value = await fetchPerformance({
       companyId: companyId.value,
       dateFrom: dateFrom.value || undefined,
-      dateTo: dateTo.value || undefined
+      dateTo: dateTo.value || undefined,
+      supplierId: supplierId.value
     })
   } catch (err) {
     error.value = apiErrorMessage(err)
@@ -89,5 +111,5 @@ onMounted(async () => {
   await ensureLoaded()
   await load()
 })
-watch([companyId, dateFrom, dateTo], load)
+watch([companyId, dateFrom, dateTo, supplierId], load)
 </script>

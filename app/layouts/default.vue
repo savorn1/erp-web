@@ -184,14 +184,15 @@ const items = computed<SidebarItem[]>(() => [
           color: 'emerald',
           children: [
             { label: 'Leads', to: '/leads', icon: 'i-lucide-user-plus' },
-            { label: 'Opportunities', to: '/opportunities', icon: 'i-lucide-target' },
             { label: 'Quotations', to: '/quotations', icon: 'i-lucide-file-text' },
             { label: 'Sales orders', to: '/sales-orders', icon: 'i-lucide-file-text' },
             { label: 'Deliveries', to: '/deliveries', icon: 'i-lucide-truck' },
             { label: 'Invoices', to: '/invoices', icon: 'i-lucide-receipt' },
             { label: 'Recurring invoices', to: '/recurring-invoices', icon: 'i-lucide-repeat' },
             { label: 'Payments', to: '/payments', icon: 'i-lucide-banknote' },
-            { label: 'RMA / Returns', to: '/rma-requests', icon: 'i-lucide-undo-2' }
+            { label: 'RMA / Returns', to: '/rma-requests', icon: 'i-lucide-undo-2' },
+            { label: 'Support tickets', to: '/tickets', icon: 'i-lucide-life-buoy' },
+            { label: 'Commission rules', to: '/commission-rules', icon: 'i-lucide-hand-coins' }
           ]
         },
         {

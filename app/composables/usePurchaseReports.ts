@@ -12,6 +12,9 @@ export interface PurchaseReportFilter {
   dateFrom?: string
   dateTo?: string
   status?: PurchaseOrderStatus
+  // Only consumed by supplierPerformance() — filters which row is returned,
+  // not which orders feed its cross-supplier price benchmark.
+  supplierId?: number
 }
 
 export interface PurchaseStatusBreakdown {
@@ -324,6 +327,14 @@ export interface SupplierPerformanceRow {
   onTimeOrderCount: number
   onTimePercent: number | null
   averageDelayDays: number | null
+  // PASSED / (PASSED + FAILED) across this supplier's quality-checked
+  // goods-receipt lines. Null when none have been checked yet.
+  qualityPassPercent: number | null
+  // Quantity-weighted average % deviation from the cross-supplier price
+  // benchmark, across only products shared with another supplier in the
+  // filtered period. Positive = above market average. Null when no
+  // comparable products exist.
+  priceVariancePercent: number | null
 }
 
 export interface SupplierPerformance {

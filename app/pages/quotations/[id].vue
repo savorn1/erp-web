@@ -89,9 +89,22 @@
           </div>
         </UCard>
 
+        <UCard v-if="!isNew">
+          <template #header>
+            <div class="flex items-center gap-2">
+              <UIcon name="i-lucide-paperclip" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
+              <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Attachments</h2>
+            </div>
+          </template>
+          <AttachmentList owner-type="QUOTATION" :owner-id="Number(idParam)" />
+        </UCard>
+
         <UAlert v-if="formError" color="error" variant="subtle" :title="formError" />
 
         <div class="flex justify-end gap-2">
+          <UButton v-if="editingStatus === 'ACCEPTED'" color="success" variant="soft" icon="i-lucide-file-check" @click="showConvert = true">
+            Convert to sales order
+          </UButton>
           <UButton v-if="!isNew" color="neutral" variant="soft" icon="i-lucide-mail" @click="showEmail = true">Email</UButton>
           <UButton color="neutral" variant="ghost" @click="onLeave">{{ formEditable ? 'Cancel' : 'Back' }}</UButton>
           <UButton v-if="formEditable" :loading="saving" @click="onSaveForm">{{ isNew ? 'Create' : 'Save changes' }}</UButton>
@@ -105,6 +118,31 @@
       title="Email quotation"
       :send-fn="(payload) => emailDocument(Number(idParam), payload)"
     />
+
+    <UModal v-model:open="showConvert" title="Convert to sales order">
+      <template #body>
+        <div class="space-y-4">
+          <UFormField label="Warehouse" required>
+            <USelect v-model="convertForm.warehouseId" :items="warehouseOptionsFor(form.companyId)" class="w-full" />
+          </UFormField>
+          <UFormField label="Order date" required>
+            <UInput v-model="convertForm.orderDate" type="date" class="w-full" />
+          </UFormField>
+          <UFormField label="Expected date">
+            <UInput v-model="convertForm.expectedDate" type="date" class="w-full" />
+          </UFormField>
+          <UAlert v-if="convertError" color="error" variant="subtle" :title="convertError" />
+        </div>
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <UButton color="neutral" variant="ghost" @click="showConvert = false">Cancel</UButton>
+          <UButton :loading="converting" :disabled="!convertForm.warehouseId || !convertForm.orderDate" @click="onConvertToSalesOrder">
+            Convert
+          </UButton>
+        </div>
+      </template>
+    </UModal>
 
     <ConfirmModal
       :model-value="showLeaveConfirm"
@@ -132,16 +170,21 @@ const router = useRouter()
 const idParam = route.params.id as string
 const isNew = idParam === 'new'
 
-const { get, create, update, emailDocument } = useQuotations()
+const { get, create, update, emailDocument, convertToSalesOrder } = useQuotations()
 const showEmail = ref(false)
 const { list: listCompanies } = useCompanies()
 const { list: listCustomers } = useCustomers()
 const { list: listProducts } = useProducts()
+const { list: listWarehouses } = useWarehouses()
 const toast = useToast()
 
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
 const customers = ref<{ id: number; name: string; companyId: number; status: string }[]>([])
 const products = ref<{ id: number; name: string; sku: string; companyId: number; status: string }[]>([])
+const warehouses = ref<{ id: number; name: string; companyId: number; active: boolean }[]>([])
+function warehouseOptionsFor(companyId: number | undefined) {
+  return warehouses.value.filter((w) => w.active && (companyId === undefined || w.companyId === companyId)).map((w) => ({ label: w.name, value: w.id }))
+}
 
 const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
 function customerOptionsFor(companyId: number | undefined) {
@@ -229,10 +272,16 @@ function confirmLeave() {
 async function loadDetail() {
   loadingDetail.value = true
   try {
-    const [c, cu, p] = await Promise.all([listCompanies({ size: 200 }), listCustomers({ size: 200 }), listProducts({ size: 200 })])
+    const [c, cu, p, w] = await Promise.all([
+      listCompanies({ size: 200 }),
+      listCustomers({ size: 200 }),
+      listProducts({ size: 200 }),
+      listWarehouses({ size: 200 })
+    ])
     companies.value = c.data
     customers.value = cu.data
     products.value = p.data
+    warehouses.value = w.data
 
     if (isNew) {
       form.companyId = activeCompanyOptions.value[0]?.value
@@ -309,6 +358,34 @@ async function onSaveForm() {
     formError.value = apiErrorMessage(err)
   } finally {
     saving.value = false
+  }
+}
+
+const showConvert = ref(false)
+const converting = ref(false)
+const convertError = ref('')
+const convertForm = reactive<{ warehouseId: number | undefined; orderDate: string; expectedDate: string }>({
+  warehouseId: undefined,
+  orderDate: new Date().toISOString().slice(0, 10),
+  expectedDate: ''
+})
+async function onConvertToSalesOrder() {
+  if (!convertForm.warehouseId || !convertForm.orderDate) return
+  convertError.value = ''
+  converting.value = true
+  try {
+    const salesOrder = await convertToSalesOrder(Number(idParam), {
+      warehouseId: convertForm.warehouseId,
+      orderDate: convertForm.orderDate,
+      expectedDate: convertForm.expectedDate || undefined
+    })
+    toast.add({ title: 'Sales order created', color: 'success' })
+    showConvert.value = false
+    router.push(`/sales-orders/${salesOrder.id}`)
+  } catch (err) {
+    convertError.value = apiErrorMessage(err)
+  } finally {
+    converting.value = false
   }
 }
 

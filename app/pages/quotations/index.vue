@@ -95,7 +95,7 @@
               <UButton color="neutral" variant="soft" icon="i-lucide-x" @click="clearFilters">Clear filters</UButton>
             </template>
           </EmptyState>
-          <EmptyState v-else icon="i-lucide-file-text" title="No quotations yet" description="Create the first quotation, or convert an opportunity.">
+          <EmptyState v-else icon="i-lucide-file-text" title="No quotations yet" description="Create the first quotation, or convert a lead.">
             <template #action>
               <UButton :disabled="activeCompanyOptions.length === 0" icon="i-lucide-plus" to="/quotations/new">New quotation</UButton>
             </template>
@@ -168,7 +168,7 @@ const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientT
 
 const columns: ColumnDef<Quotation>[] = [
   { key: 'quotationNumber', label: 'Quotation number', sortable: true },
-  { key: 'opportunityName', label: 'From opportunity', value: (row) => row.opportunityName ?? '—' },
+  { key: 'leadName', label: 'From lead', value: (row) => row.leadName ?? '—' },
   { key: 'customerName', label: 'Customer', value: (row) => row.customerName ?? '—' },
   { key: 'quotationDate', label: 'Date', type: 'date' },
   { key: 'totalAmount', label: 'Total', type: 'currency' },

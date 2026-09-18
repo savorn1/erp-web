@@ -1,9 +1,10 @@
 // Wraps the backend's admin-only QuotationController (/api/admin/quotations/**,
-// requires ROLE_ADMIN). Normally created via useOpportunities().convertToQuotation
+// requires ROLE_ADMIN). Normally created via useLeads().convertToQuotation
 // rather than create() directly. DRAFT -> SENT -> ACCEPTED/REJECTED; only a
 // DRAFT quotation can be edited or deleted.
 
 import type { ApiEnvelope, PageEnvelope, SendDocumentEmailPayload } from '#shared/types'
+import type { SalesOrder } from '~/composables/useSalesOrders'
 
 export type QuotationStatus = 'DRAFT' | 'SENT' | 'ACCEPTED' | 'REJECTED'
 
@@ -21,8 +22,11 @@ export interface Quotation {
   id: number
   companyId: number
   companyName: string | null
+  // Legacy — predates the Lead/Opportunity merge. leadId is the live linkage.
   opportunityId: number | null
   opportunityName: string | null
+  leadId: number | null
+  leadName: string | null
   customerId: number | null
   customerName: string | null
   quotationNumber: string
@@ -43,6 +47,7 @@ export interface QuotationFilter {
   quotationNumber?: string
   companyId?: number
   opportunityId?: number
+  leadId?: number
   customerId?: number
   status?: QuotationStatus
   sortBy?: string
@@ -68,6 +73,13 @@ export interface QuotationPayload {
   foreignCurrency?: string
   exchangeRate?: number
   lines: QuotationLinePayload[]
+}
+
+export interface ConvertQuotationToSalesOrderPayload {
+  // Quotation has no warehouse of its own — the sales order needs one.
+  warehouseId: number
+  orderDate: string
+  expectedDate?: string
 }
 
 export function useQuotations() {
@@ -115,5 +127,10 @@ export function useQuotations() {
     await api(`/api/admin/quotations/${id}/email`, { method: 'POST', body: payload })
   }
 
-  return { list, get, create, update, send, accept, reject, remove, emailDocument }
+  async function convertToSalesOrder(id: number, payload: ConvertQuotationToSalesOrderPayload) {
+    const res = await api<ApiEnvelope<SalesOrder>>(`/api/admin/quotations/${id}/convert-to-sales-order`, { method: 'POST', body: payload })
+    return res.data
+  }
+
+  return { list, get, create, update, send, accept, reject, remove, emailDocument, convertToSalesOrder }
 }

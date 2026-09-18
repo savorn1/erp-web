@@ -67,11 +67,25 @@ const STATUS_META: Record<string, { color: StatusColor; icon: string }> = {
   // CANCELLED already covered above.
   ASSIGNED: { color: 'info', icon: 'i-lucide-user-check' },
   IN_PROGRESS: { color: 'warning', icon: 'i-lucide-loader-circle' },
-  // Lead status (useLeads' LeadStatus) — CONVERTED doubles as SaleReservation's
-  // "became an agreement" state.
-  NEW: { color: 'info', icon: 'i-lucide-sparkle' },
+  // Lead status (useLeads' LeadStatus) — the whole pipeline from a fresh
+  // contact through to a closed deal (formerly split across a separate Lead
+  // and Opportunity; merged into one flow this session). QUALIFIED was
+  // 'success' green before the merge — reassigned to 'info' once WON needed
+  // that slot for real, so the actual best outcome isn't out-shone by an
+  // early-funnel stage. Colors intentionally never repeat across the 7
+  // stages, so status alone is enough to place a lead in the funnel at a
+  // glance. LOST/CONTACTED/CONVERTED are shared with other domains (see
+  // their own notes below/elsewhere) — deliberately left untouched.
+  NEW: { color: 'neutral', icon: 'i-lucide-sparkle' },
   CONTACTED: { color: 'warning', icon: 'i-lucide-phone' },
-  QUALIFIED: { color: 'success', icon: 'i-lucide-check-circle' },
+  QUALIFIED: { color: 'info', icon: 'i-lucide-circle-check' },
+  NEEDS_ANALYSIS: { color: 'secondary', icon: 'i-lucide-search' },
+  QUOTATION: { color: 'warning', icon: 'i-lucide-file-text' },
+  // 'error' here signals "hottest, highest-stakes stage" (most CRM UIs
+  // highlight late-stage deals for urgency), not a bad outcome — LOST
+  // already owns the actual negative-outcome color below.
+  NEGOTIATION: { color: 'error', icon: 'i-lucide-handshake' },
+  WON: { color: 'success', icon: 'i-lucide-trophy' },
   LOST: { color: 'cancelled', icon: 'i-lucide-ban' },
   CONVERTED: { color: 'secondary', icon: 'i-lucide-arrow-right-circle' },
   // Sale listing status (useSaleListings' SaleListingStatus) — ACTIVE/SOLD

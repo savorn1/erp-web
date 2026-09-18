@@ -65,6 +65,25 @@ export function formatDateTime(value: string | null | undefined): string {
   )
 }
 
+// "just now" / "5m ago" / "3h ago" / "2d ago", falling back to formatDate
+// beyond ~30 days where a relative count stops being useful. Used by
+// ActivityTimeline and follow-up due badges — pass the full formatDateTime
+// as a title/tooltip alongside it so the exact moment is never lost.
+export function formatRelativeTime(value: string | null | undefined): string {
+  if (!value) return '—'
+  const then = parseBackendDateTime(value).getTime()
+  const diffMs = Date.now() - then
+  const diffSeconds = Math.round(diffMs / 1000)
+  if (diffSeconds < 45) return 'just now'
+  const diffMinutes = Math.round(diffSeconds / 60)
+  if (diffMinutes < 60) return `${diffMinutes}m ago`
+  const diffHours = Math.round(diffMinutes / 60)
+  if (diffHours < 24) return `${diffHours}h ago`
+  const diffDays = Math.round(diffHours / 24)
+  if (diffDays < 30) return `${diffDays}d ago`
+  return formatDate(value)
+}
+
 // 'PAST_DUE' / 'past_due' both become 'Past due' — shared by <ColumnValue>'s
 // 'enum' column type and any backend enum value shown as plain text.
 export function formatEnum(value: string | null | undefined): string {
