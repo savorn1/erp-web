@@ -84,7 +84,7 @@
         </template>
         <template #actions-data="{ row }">
           <div class="flex items-center gap-2 flex-wrap">
-            <UButton size="xs" color="primary" variant="soft" icon="i-lucide-pencil" :disabled="isClosed(row)" @click="openEdit(row)">Edit</UButton>
+            <UButton size="xs" color="primary" variant="soft" icon="i-lucide-pencil" :disabled="isClosed(row)" @click="openEditLead(row)">Edit</UButton>
             <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-history" @click="openHistoryFor(row)">Activity</UButton>
             <UDropdownMenu v-if="!isClosed(row)" :items="statusMenuItems(row)">
               <UButton size="xs" color="neutral" variant="soft" trailing-icon="i-lucide-chevron-down">Status</UButton>
@@ -131,14 +131,15 @@
       <div
         v-for="column in boardColumns"
         :key="column.status"
-        class="flex-none w-72 rounded-lg bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800"
+        class="flex-none w-72 rounded-lg bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 border-t-4"
+        :class="BOARD_COLUMN_ACCENT[column.status]"
         @dragover.prevent
         @drop="onDropToStatus(column.status)"
       >
         <div class="px-3 py-2 border-b border-gray-200 dark:border-gray-800">
           <div class="flex items-center justify-between">
             <p class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ column.label }}</p>
-            <UBadge color="neutral" variant="subtle" size="xs">{{ column.rows.length }}</UBadge>
+            <UBadge :color="column.color" variant="subtle" size="xs">{{ column.rows.length }}</UBadge>
           </div>
           <p class="text-xs text-gray-400 mt-0.5">{{ formatCurrency(column.total) }}</p>
         </div>
@@ -413,21 +414,38 @@ const {
 
 const visibleRows = computed(() => (followUpDueOnly.value ? pagedRows.value.filter((r) => r.followUpDue) : pagedRows.value))
 
-const BOARD_STATUSES: { status: LeadStatus; label: string }[] = [
-  { status: 'NEW', label: 'New' },
-  { status: 'QUALIFIED', label: 'Qualified' },
-  { status: 'NEEDS_ANALYSIS', label: 'Needs analysis' },
-  { status: 'QUOTATION', label: 'Quotation' },
-  { status: 'NEGOTIATION', label: 'Negotiation' },
-  { status: 'WON', label: 'Won' },
-  { status: 'LOST', label: 'Lost' }
+// Mirrors StatusBadge's LeadStatus -> color mapping so the board's column
+// accents and count badges read as "the same colors" as the table view's
+// status column, not a second palette to learn.
+type BoardColor = 'neutral' | 'info' | 'secondary' | 'warning' | 'error' | 'success' | 'cancelled'
+const BOARD_STATUSES: { status: LeadStatus; label: string; color: BoardColor }[] = [
+  { status: 'NEW', label: 'New', color: 'neutral' },
+  { status: 'QUALIFIED', label: 'Qualified', color: 'info' },
+  { status: 'NEEDS_ANALYSIS', label: 'Needs analysis', color: 'secondary' },
+  { status: 'QUOTATION', label: 'Quotation', color: 'warning' },
+  { status: 'NEGOTIATION', label: 'Negotiation', color: 'error' },
+  { status: 'WON', label: 'Won', color: 'success' },
+  { status: 'LOST', label: 'Lost', color: 'cancelled' }
 ]
+// Written out in full so Tailwind's static scan can find each class name —
+// a template string built from `column.color` at runtime wouldn't appear
+// literally in this file and would silently generate no CSS.
+const BOARD_COLUMN_ACCENT: Record<LeadStatus, string> = {
+  NEW: 'border-t-neutral-400 dark:border-t-neutral-600',
+  QUALIFIED: 'border-t-info-500',
+  NEEDS_ANALYSIS: 'border-t-secondary-500',
+  QUOTATION: 'border-t-warning-500',
+  NEGOTIATION: 'border-t-error-500',
+  WON: 'border-t-success-500',
+  LOST: 'border-t-cancelled-500'
+}
 const boardColumns = computed(() =>
-  BOARD_STATUSES.map(({ status, label }) => {
-    const statusRows = filtered.value.filter((r) => r.status === status)
+  BOARD_STATUSES.map(({ status, label, color }) => {
+    const statusRows = filtered.value.filter((r) => r.status === status && (!followUpDueOnly.value || r.followUpDue))
     return {
       status,
       label,
+      color,
       rows: statusRows,
       total: statusRows.reduce((sum, r) => sum + (r.amount ?? r.estimatedValue ?? 0), 0)
     }
@@ -582,10 +600,20 @@ function openCreate() {
   activeFormCompanyId.value = activeCompanyOptions.value[0]?.value
   openCreateModal()
 }
+function openEditLead(row: Lead) {
+  activeFormCompanyId.value = row.companyId
+  openEdit(row)
+}
 watch(
   () => createForm.value?.companyId,
   (id) => {
-    activeFormCompanyId.value = id
+    if (showCreate.value) activeFormCompanyId.value = id
+  }
+)
+watch(
+  () => editForm.value?.companyId,
+  (id) => {
+    if (showEdit.value) activeFormCompanyId.value = id
   }
 )
 

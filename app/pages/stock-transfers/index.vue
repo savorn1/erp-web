@@ -165,6 +165,12 @@
       <template #body>
         <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingTransfer">
+          <WorkflowStatusStepper
+            :status="viewingTransfer.status"
+            :steps="transferWorkflowSteps"
+            :next-hint="transferWorkflowHint(viewingTransfer.status)"
+            class="mb-4"
+          />
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
             <div>
               <dt class="text-gray-400">Source</dt>
@@ -287,6 +293,19 @@ const statusFilterOptions = [
   { label: 'Rejected', value: 'REJECTED' },
   { label: 'Cancelled', value: 'CANCELLED' }
 ]
+
+const transferWorkflowSteps = [
+  { value: 'REQUESTED', label: 'Requested' },
+  { value: 'APPROVED', label: 'Approved' },
+  { value: 'SHIPPED', label: 'Shipped' },
+  { value: 'RECEIVED', label: 'Received' }
+]
+function transferWorkflowHint(status: StockTransferStatus) {
+  if (status === 'REQUESTED') return 'Next: approve the transfer'
+  if (status === 'APPROVED') return 'Next: ship the goods'
+  if (status === 'SHIPPED') return 'Next: confirm receipt'
+  return ''
+}
 
 const filter = reactive<{
   sourceWarehouseId: number | undefined

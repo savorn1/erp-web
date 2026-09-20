@@ -8,6 +8,7 @@
     <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
     <template v-else>
       <div class="space-y-6">
+        <WorkflowStatusStepper v-if="!isNew && editingStatus" :status="editingStatus" :steps="workflowSteps" :next-hint="workflowHint" />
         <UCard>
           <template #header>
             <div class="flex items-center gap-2">
@@ -296,6 +297,19 @@ const foreignCurrencyEnabled = ref(false)
 
 const formEditable = computed(() => isNew || editingStatus.value === 'DRAFT')
 const pageTitle = computed(() => (isNew ? 'New sales order' : formEditable.value ? 'Edit sales order' : 'View sales order'))
+const workflowSteps = [
+  { value: 'DRAFT', label: 'Draft' },
+  { value: 'SUBMITTED', label: 'Submitted' },
+  { value: 'CONFIRMED', label: 'Confirmed' },
+  { value: 'PARTIALLY_DELIVERED', label: 'Partially delivered' },
+  { value: 'DELIVERED', label: 'Delivered' }
+]
+const workflowHint = computed(() => {
+  if (editingStatus.value === 'DRAFT') return 'Next: submit for approval'
+  if (editingStatus.value === 'SUBMITTED') return 'Next: approve the order'
+  if (editingStatus.value === 'CONFIRMED' || editingStatus.value === 'PARTIALLY_DELIVERED') return 'Next: create or complete a delivery'
+  return ''
+})
 
 function lineSubtotal(l: LineForm) {
   return (l.quantityOrdered || 0) * (l.unitPrice || 0)

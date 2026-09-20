@@ -10,6 +10,7 @@
     <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
     <template v-else>
       <div class="space-y-6">
+        <WorkflowStatusStepper v-if="!isNew && ticket" :status="ticket.status" :steps="workflowSteps" :next-hint="workflowHint" />
         <UCard>
           <template #header>
             <div class="flex items-center gap-2">
@@ -190,6 +191,19 @@ const form = reactive<{
 
 const formEditable = computed(() => isNew || ticket.value?.status === 'OPEN' || ticket.value?.status === 'IN_PROGRESS')
 const pageTitle = computed(() => (isNew ? 'New ticket' : `Ticket ${ticket.value?.ticketNumber ?? ''}`))
+const workflowSteps = [
+  { value: 'OPEN', label: 'Open' },
+  { value: 'IN_PROGRESS', label: 'In progress' },
+  { value: 'RESOLVED', label: 'Resolved' },
+  { value: 'CLOSED', label: 'Closed' }
+]
+const workflowHint = computed(() => {
+  if (ticket.value?.status === 'OPEN') return 'Next: start progress'
+  if (ticket.value?.status === 'IN_PROGRESS') return 'Next: resolve the ticket'
+  if (ticket.value?.status === 'RESOLVED') return 'Next: close, or reopen if more work is needed'
+  if (ticket.value?.status === 'CLOSED') return 'Reopen if the customer needs more help'
+  return ''
+})
 
 function onLeave() {
   router.push('/tickets')

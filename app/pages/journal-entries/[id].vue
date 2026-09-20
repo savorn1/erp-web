@@ -8,6 +8,7 @@
     <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
     <template v-else>
       <div class="space-y-6">
+        <WorkflowStatusStepper v-if="!isNew && editingStatus" :status="editingStatus" :steps="workflowSteps" :next-hint="workflowHint" />
         <dl v-if="detail" class="grid grid-cols-2 gap-3 text-sm">
           <div v-if="detail.reversalOfJournalNumber">
             <dt class="text-gray-400">Reverses</dt>
@@ -196,6 +197,11 @@ const form = reactive<{
 
 const formEditable = computed(() => isNew || editingStatus.value === 'DRAFT')
 const pageTitle = computed(() => (isNew ? 'New journal entry' : formEditable.value ? 'Edit journal entry' : 'View journal entry'))
+const workflowSteps = [
+  { value: 'DRAFT', label: 'Draft' },
+  { value: 'POSTED', label: 'Posted' }
+]
+const workflowHint = computed(() => (editingStatus.value === 'DRAFT' ? 'Next: post to update the ledger' : ''))
 const formTotalDebit = computed(() => form.lines.reduce((sum, l) => sum + (l.debit || 0), 0))
 const formTotalCredit = computed(() => form.lines.reduce((sum, l) => sum + (l.credit || 0), 0))
 

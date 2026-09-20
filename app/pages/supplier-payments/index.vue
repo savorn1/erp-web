@@ -100,7 +100,10 @@
           </UFormField>
         </div>
 
-        <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Allocate to outstanding invoices</p>
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Allocate to outstanding invoices</p>
+          <UButton v-if="outstandingInvoices.length > 0" size="xs" color="neutral" variant="ghost" @click="selectAllOutstanding">Select all</UButton>
+        </div>
         <div v-if="loadingInvoices" class="text-sm text-gray-400 py-4 text-center">Loading…</div>
         <EmptyState
           v-else-if="form.supplierId && outstandingInvoices.length === 0"
@@ -112,10 +115,17 @@
           <div
             v-for="line in outstandingInvoices"
             :key="line.invoiceId"
-            class="grid grid-cols-12 gap-2 items-center rounded-lg border border-gray-200 dark:border-gray-800 p-2"
+            class="grid grid-cols-12 gap-2 items-center rounded-lg border border-gray-200 dark:border-gray-800 p-2 cursor-pointer hover:border-gray-300 dark:hover:border-gray-700"
+            @click="onLineToggle(line, !line.selected)"
           >
-            <UCheckbox v-model="line.selected" class="col-span-1" />
-            <span class="col-span-5 text-sm text-gray-900 dark:text-white truncate">{{ line.invoiceNumber }}</span>
+            <UCheckbox :model-value="line.selected" class="col-span-1 pointer-events-none" />
+            <div class="col-span-5 min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span class="text-sm text-gray-900 dark:text-white truncate">{{ line.invoiceNumber }}</span>
+                <UBadge v-if="line.overdue" color="error" variant="subtle" size="xs">{{ line.daysOverdue }} days overdue</UBadge>
+              </div>
+              <p v-if="line.dueDate" class="text-xs text-gray-400">Due {{ formatDate(line.dueDate) }}</p>
+            </div>
             <span class="col-span-3 text-xs text-gray-400 text-right">Outstanding: {{ formatCurrency(line.outstandingAmount) }}</span>
             <UInput
               v-model.number="line.amount"
@@ -126,7 +136,11 @@
               placeholder="Amount"
               :disabled="!line.selected"
               class="col-span-3"
+              @click.stop
             />
+            <p v-if="line.selected && line.amount && line.amount > line.outstandingAmount" class="col-span-12 text-xs text-error text-right">
+              Exceeds outstanding balance of {{ formatCurrency(line.outstandingAmount) }}
+            </p>
           </div>
         </div>
 
@@ -144,15 +158,13 @@
     <!-- Refund modal -->
     <UModal v-model:open="showRefund" :title="`Issue refund — ${refundTarget?.paymentNumber ?? ''}`">
       <template #body>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-          Refundable: {{ formatCurrency((refundTarget?.amount ?? 0) - (refundTarget?.refundedAmount ?? 0)) }}
-        </p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Refundable: {{ formatCurrency(refundableAmount) }}</p>
         <div class="space-y-4">
           <UFormField label="Refund date" required>
             <UInput v-model="refundForm.refundDate" type="date" class="w-full" />
           </UFormField>
           <UFormField label="Amount" required>
-            <UInput v-model.number="refundForm.amount" type="number" min="0.01" step="0.01" class="w-full" />
+            <UInput v-model.number="refundForm.amount" type="number" min="0.01" :max="refundableAmount" step="0.01" class="w-full" />
           </UFormField>
           <UFormField label="Reason">
             <UInput v-model="refundForm.reason" class="w-full" />
@@ -186,7 +198,7 @@
             </div>
             <div>
               <dt class="text-gray-400">Method</dt>
-              <dd class="text-gray-900 dark:text-white">{{ viewingPayment.method }}</dd>
+              <dd class="text-gray-900 dark:text-white">{{ formatEnum(viewingPayment.method) }}</dd>
             </div>
             <div>
               <dt class="text-gray-400">Amount</dt>
@@ -323,6 +335,9 @@ interface OutstandingLine {
   invoiceId: number
   invoiceNumber: string
   outstandingAmount: number
+  dueDate: string | null
+  overdue: boolean
+  daysOverdue: number
   selected: boolean
   amount: number | undefined
 }
@@ -368,12 +383,32 @@ async function onSupplierChanged(supplierId: number | undefined, preselectInvoic
         invoiceId: inv.id,
         invoiceNumber: inv.invoiceNumber,
         outstandingAmount: inv.outstandingAmount,
+        dueDate: inv.dueDate,
+        overdue: inv.overdue,
+        daysOverdue: inv.daysOverdue,
         selected: inv.id === preselectInvoiceId,
         amount: inv.id === preselectInvoiceId ? inv.outstandingAmount : undefined
       }))
+      // Overdue/soonest-due bills first — the ones most worth paying now.
+      .sort((a, b) => {
+        if (!a.dueDate) return 1
+        if (!b.dueDate) return -1
+        return a.dueDate.localeCompare(b.dueDate)
+      })
   } finally {
     loadingInvoices.value = false
   }
+}
+
+function onLineToggle(line: OutstandingLine, checked: boolean) {
+  line.selected = checked
+  if (checked && !line.amount) line.amount = line.outstandingAmount
+}
+function selectAllOutstanding() {
+  outstandingInvoices.value.forEach((l) => {
+    l.selected = true
+    if (!l.amount) l.amount = l.outstandingAmount
+  })
 }
 
 function openCreate(supplierId?: number, invoiceId?: number) {
@@ -398,6 +433,11 @@ async function onCreateSubmit() {
   const selected = outstandingInvoices.value.filter((l) => l.selected)
   if (selected.length === 0 || selected.some((l) => !l.amount || l.amount <= 0)) {
     createError.value = 'Select at least one invoice and enter a positive amount'
+    return
+  }
+  const overAllocated = selected.find((l) => l.amount! > l.outstandingAmount)
+  if (overAllocated) {
+    createError.value = `${overAllocated.invoiceNumber}'s amount exceeds its outstanding balance of ${formatCurrency(overAllocated.outstandingAmount)}`
     return
   }
   creating.value = true
@@ -432,6 +472,7 @@ const refundForm = reactive<{ refundDate: string; amount: number | undefined; re
 })
 const refunding = ref(false)
 const refundError = ref('')
+const refundableAmount = computed(() => (refundTarget.value?.amount ?? 0) - (refundTarget.value?.refundedAmount ?? 0))
 
 function openRefund(payment: SupplierPayment) {
   refundTarget.value = payment
@@ -445,6 +486,10 @@ function openRefund(payment: SupplierPayment) {
 async function onRefundSubmit() {
   if (!refundTarget.value || !refundForm.amount) {
     refundError.value = 'Enter an amount'
+    return
+  }
+  if (refundForm.amount > refundableAmount.value) {
+    refundError.value = `Amount exceeds the refundable balance of ${formatCurrency(refundableAmount.value)}`
     return
   }
   refunding.value = true
@@ -489,8 +534,8 @@ onMounted(async () => {
       const invoice = await getPurchaseInvoice(fromPurchaseInvoice)
       openCreate(invoice.supplierId, fromPurchaseInvoice)
       form.companyId = invoice.companyId
-    } catch {
-      // ignore — user can still record a payment manually
+    } catch (err) {
+      toast.add({ title: "Couldn't load that purchase invoice", description: apiErrorMessage(err), color: 'error' })
     }
   }
 })

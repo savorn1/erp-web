@@ -10,6 +10,7 @@
     <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
     <template v-else>
       <div class="space-y-6">
+        <WorkflowStatusStepper v-if="!isNew && detail" :status="detail.status" :steps="workflowSteps" :next-hint="workflowHint" />
         <UCard>
           <template #header>
             <div class="flex items-center gap-2">
@@ -311,6 +312,21 @@ const form = reactive<{
 
 const formEditable = computed(() => isNew || detail.value?.status === 'DRAFT')
 const pageTitle = computed(() => (isNew ? 'New manufacturing order' : formEditable.value ? 'Edit manufacturing order' : 'View manufacturing order'))
+const workflowSteps = [
+  { value: 'DRAFT', label: 'Draft' },
+  { value: 'RELEASED', label: 'Released' },
+  { value: 'IN_PROGRESS', label: 'In progress' },
+  { value: 'PENDING_QC', label: 'Pending QC' },
+  { value: 'COMPLETED', label: 'Completed' }
+]
+const workflowHint = computed(() => {
+  const status = detail.value?.status
+  if (status === 'DRAFT') return 'Next: release the order to reserve materials'
+  if (status === 'RELEASED') return 'Next: start the work order(s)'
+  if (status === 'IN_PROGRESS') return 'Next: complete production'
+  if (status === 'PENDING_QC') return 'Next: pass or fail the quality check'
+  return ''
+})
 
 const materialColumns: ColumnDef<ManufacturingOrderMaterial>[] = [
   { key: 'componentProductName', label: 'Component', value: (row) => `${row.componentProductName ?? '—'} (${row.componentProductSku ?? '—'})` },

@@ -8,6 +8,7 @@
     <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
     <template v-else>
       <div class="space-y-6">
+        <WorkflowStatusStepper v-if="!isNew && editingStatus" :status="editingStatus" :steps="workflowSteps" :next-hint="workflowHint" />
         <UCard>
           <template #header>
             <div class="flex items-center gap-2">
@@ -239,6 +240,17 @@ const foreignCurrencyEnabled = ref(false)
 
 const formEditable = computed(() => isNew || editingStatus.value === 'DRAFT')
 const pageTitle = computed(() => (isNew ? 'New quotation' : formEditable.value ? 'Edit quotation' : 'View quotation'))
+const workflowSteps = [
+  { value: 'DRAFT', label: 'Draft' },
+  { value: 'SENT', label: 'Sent' },
+  { value: 'ACCEPTED', label: 'Accepted' }
+]
+const workflowHint = computed(() => {
+  if (editingStatus.value === 'DRAFT') return 'Next: send to the customer'
+  if (editingStatus.value === 'SENT') return 'Next: mark accepted or rejected'
+  if (editingStatus.value === 'ACCEPTED') return 'Next: convert to a sales order'
+  return ''
+})
 const formTotal = computed(() => form.lines.reduce((sum, l) => sum + (l.quantity || 0) * (l.unitPrice || 0), 0))
 const formForeignTotal = computed(() =>
   foreignCurrencyEnabled.value && form.exchangeRate ? formTotal.value / form.exchangeRate : null

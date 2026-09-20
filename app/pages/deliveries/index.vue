@@ -213,6 +213,7 @@
       <template #body>
         <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingDelivery">
+          <WorkflowStatusStepper :status="viewingDelivery.status" :steps="deliveryWorkflowSteps" :next-hint="deliveryWorkflowHint(viewingDelivery.status)" class="mb-4" />
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
             <div>
               <dt class="text-gray-400">Sales order</dt>
@@ -286,6 +287,20 @@ const { list: listSerialNumbers } = useSerialNumbers()
 const toast = useToast()
 
 const rows = ref<Delivery[]>([])
+const deliveryWorkflowSteps = [
+  { value: 'PENDING', label: 'Pending' },
+  { value: 'PICKED', label: 'Picked' },
+  { value: 'PACKED', label: 'Packed' },
+  { value: 'SHIPPED', label: 'Shipped' },
+  { value: 'DELIVERED', label: 'Delivered' }
+]
+function deliveryWorkflowHint(status: DeliveryStatus) {
+  if (status === 'PENDING') return 'Next: pick items'
+  if (status === 'PICKED') return 'Next: pack delivery'
+  if (status === 'PACKED') return 'Next: ship and issue stock'
+  if (status === 'SHIPPED') return 'Next: confirm delivery'
+  return ''
+}
 const loading = ref(false)
 const error = ref('')
 

@@ -140,6 +140,7 @@
       <template #body>
         <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingInvoice">
+          <WorkflowStatusStepper :status="viewingInvoice.status" :steps="invoiceWorkflowSteps" :next-hint="invoiceWorkflowHint(viewingInvoice.status)" class="mb-4" />
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
             <div>
               <dt class="text-gray-400">Supplier</dt>
@@ -287,6 +288,15 @@ const { list: listGoodsReceipts } = useGoodsReceipts()
 const toast = useToast()
 
 const rows = ref<PurchaseInvoice[]>([])
+const invoiceWorkflowSteps = [
+  { value: 'DRAFT', label: 'Draft' },
+  { value: 'APPROVED', label: 'Approved' }
+]
+function invoiceWorkflowHint(status: PurchaseInvoiceStatus) {
+  if (status === 'DRAFT') return 'Next: approve to post the supplier charge'
+  if (status === 'APPROVED') return 'Next: record payment or issue a credit note'
+  return ''
+}
 const loading = ref(false)
 const error = ref('')
 

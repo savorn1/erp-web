@@ -142,6 +142,12 @@
       <template #body>
         <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingReceipt">
+          <WorkflowStatusStepper
+            :status="viewingReceipt.status"
+            :steps="receiptWorkflowSteps"
+            :next-hint="viewingReceipt.status === 'PENDING_QC' ? 'Next: pass or fail quality check on every line' : ''"
+            class="mb-4"
+          />
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
             <div>
               <dt class="text-gray-400">Purchase order</dt>
@@ -332,6 +338,11 @@ const statusFilterOptions = [
 ]
 
 const filter = reactive<{ warehouseId: number | undefined; status: GoodsReceiptStatus | undefined }>({ warehouseId: undefined, status: undefined })
+
+const receiptWorkflowSteps = [
+  { value: 'PENDING_QC', label: 'Pending QC' },
+  { value: 'COMPLETED', label: 'Completed' }
+]
 
 const sort = ref<{ column: string; direction: 'asc' | 'desc' } | undefined>({ column: 'id', direction: 'desc' })
 const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientTable(rows, { pageSize: 10, searchFields: ['receiptNumber'] })

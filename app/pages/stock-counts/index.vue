@@ -80,6 +80,7 @@
       <template #body>
         <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingCount">
+          <WorkflowStatusStepper :status="viewingCount.status" :steps="countWorkflowSteps" :next-hint="countWorkflowHint(viewingCount.status)" class="mb-4" />
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
             <div>
               <dt class="text-gray-400">Warehouse</dt>
@@ -204,6 +205,17 @@ const statusFilterOptions = [
 ]
 
 const filter = reactive<{ warehouseId: number | undefined; status: StockCountStatus | undefined }>({ warehouseId: undefined, status: undefined })
+
+const countWorkflowSteps = [
+  { value: 'DRAFT', label: 'Draft' },
+  { value: 'COMPLETED', label: 'Completed' },
+  { value: 'RECONCILED', label: 'Reconciled' }
+]
+function countWorkflowHint(status: StockCountStatus) {
+  if (status === 'DRAFT') return 'Next: enter counted quantities and complete the count'
+  if (status === 'COMPLETED') return 'Next: reconcile to create a stock adjustment for the variance'
+  return ''
+}
 
 const sort = ref<{ column: string; direction: 'asc' | 'desc' } | undefined>({ column: 'id', direction: 'desc' })
 const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientTable(rows, { pageSize: 10, searchFields: ['countNumber'] })

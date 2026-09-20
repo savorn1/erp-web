@@ -101,6 +101,7 @@
       <template #body>
         <div v-if="loadingDetail" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
         <template v-else>
+          <WorkflowStatusStepper v-if="editingStatus" :status="editingStatus" :steps="workflowSteps" :next-hint="workflowHint" class="mb-4" />
           <UAlert
             v-if="detail?.purchaseRequestNumber"
             color="info"
@@ -413,6 +414,16 @@ const form = reactive<{
 
 const formEditable = computed(() => editingStatus.value === null || editingStatus.value === 'DRAFT')
 const formTitle = computed(() => (editingId.value === null ? 'New RFQ' : formEditable.value ? 'Edit RFQ' : 'View RFQ'))
+const workflowSteps = [
+  { value: 'DRAFT', label: 'Draft' },
+  { value: 'SENT', label: 'Sent' },
+  { value: 'CLOSED', label: 'Closed' }
+]
+const workflowHint = computed(() => {
+  if (editingStatus.value === 'DRAFT') return 'Next: send to invited suppliers'
+  if (editingStatus.value === 'SENT') return 'Next: record quotes and select a supplier'
+  return ''
+})
 
 const addLineProductId = ref<number | undefined>(undefined)
 function addLine() {

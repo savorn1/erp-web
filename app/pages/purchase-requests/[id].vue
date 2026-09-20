@@ -8,6 +8,7 @@
     <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
     <template v-else>
       <div class="space-y-6">
+        <WorkflowStatusStepper v-if="!isNew && editingStatus" :status="editingStatus" :steps="workflowSteps" :next-hint="workflowHint" />
         <UAlert
           v-if="editingStatus === 'REJECTED' && rejectionReasonView"
           color="error"
@@ -169,6 +170,16 @@ const form = reactive<{
 
 const formEditable = computed(() => isNew || editingStatus.value === 'DRAFT')
 const pageTitle = computed(() => (isNew ? 'New purchase request' : formEditable.value ? 'Edit purchase request' : 'View purchase request'))
+const workflowSteps = [
+  { value: 'DRAFT', label: 'Draft' },
+  { value: 'SUBMITTED', label: 'Submitted' },
+  { value: 'APPROVED', label: 'Approved' }
+]
+const workflowHint = computed(() => {
+  if (editingStatus.value === 'DRAFT') return 'Next: submit for approval'
+  if (editingStatus.value === 'SUBMITTED') return 'Next: approve or reject the request'
+  return ''
+})
 
 const addLineProductId = ref<number | undefined>(undefined)
 function addLine() {

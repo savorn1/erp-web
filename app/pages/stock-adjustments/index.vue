@@ -100,6 +100,12 @@
       <template #body>
         <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingAdjustment">
+          <WorkflowStatusStepper
+            :status="viewingAdjustment.status"
+            :steps="adjustmentWorkflowSteps"
+            :next-hint="viewingAdjustment.status === 'PENDING' ? 'Next: approve or reject the adjustment' : ''"
+            class="mb-4"
+          />
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
             <div>
               <dt class="text-gray-400">Warehouse</dt>
@@ -217,6 +223,11 @@ function reasonLabel(reason: string) {
 }
 
 const filter = reactive<{ warehouseId: number | undefined; status: StockAdjustmentStatus | undefined }>({ warehouseId: undefined, status: undefined })
+
+const adjustmentWorkflowSteps = [
+  { value: 'PENDING', label: 'Pending' },
+  { value: 'APPROVED', label: 'Approved' }
+]
 
 const sort = ref<{ column: string; direction: 'asc' | 'desc' } | undefined>({ column: 'id', direction: 'desc' })
 const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientTable(rows, { pageSize: 10, searchFields: ['adjustmentNumber'] })

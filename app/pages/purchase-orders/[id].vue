@@ -8,6 +8,7 @@
     <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
     <template v-else>
       <div class="space-y-6">
+        <WorkflowStatusStepper v-if="!isNew && editingStatus" :status="editingStatus" :steps="workflowSteps" :next-hint="workflowHint" />
         <UCard>
           <template #header>
             <div class="flex items-center gap-2">
@@ -288,6 +289,21 @@ const form = reactive<{
 
 const formEditable = computed(() => isNew || editingStatus.value === 'DRAFT')
 const pageTitle = computed(() => (isNew ? 'New purchase order' : formEditable.value ? 'Edit purchase order' : 'View purchase order'))
+const workflowSteps = [
+  { value: 'DRAFT', label: 'Draft' },
+  { value: 'SUBMITTED', label: 'Submitted' },
+  { value: 'APPROVED', label: 'Approved' },
+  { value: 'SENT', label: 'Sent' },
+  { value: 'PARTIALLY_RECEIVED', label: 'Partially received' },
+  { value: 'RECEIVED', label: 'Received' }
+]
+const workflowHint = computed(() => {
+  if (editingStatus.value === 'DRAFT') return 'Next: submit for approval'
+  if (editingStatus.value === 'SUBMITTED') return 'Next: approve the order'
+  if (editingStatus.value === 'APPROVED') return 'Next: send to supplier'
+  if (editingStatus.value === 'SENT' || editingStatus.value === 'PARTIALLY_RECEIVED') return 'Next: receive goods'
+  return ''
+})
 
 // Company determines which suppliers/warehouses/products are valid — changing
 // it after picking those (or adding lines) would leave stale, mismatched

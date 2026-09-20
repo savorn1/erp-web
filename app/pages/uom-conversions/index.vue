@@ -9,8 +9,8 @@
       color="info"
       variant="subtle"
       class="mb-4"
-      title="Backs the units-of-measure conversion factor"
-      description="Editing a unit's 'conversion factor to base' on the Units of measure page writes a row here. Manage extra direct conversions (e.g. Box ↔ Dozen) below."
+      title="Set a unit's factor to its category base"
+      description="For a reliable category conversion, add one row from each non-base unit to that category's base unit. Use product UOMs—not global conversions—for pack sizes such as a product-specific Box or Carton."
       icon="i-lucide-info"
     />
 
@@ -74,7 +74,7 @@
             v-else
             icon="i-lucide-arrow-left-right"
             title="No UOM conversions yet"
-            description="Setting a non-base unit's conversion factor on the Units of measure page will create one automatically."
+            description="For each non-base unit, create a conversion to its category's base unit."
           >
             <template #action>
               <UButton icon="i-lucide-plus" @click="openCreate">New conversion</UButton>

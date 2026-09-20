@@ -2,7 +2,7 @@
   <div>
     <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Audit log</h1>
     <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-      Approvals, user/role changes, and logins — not every action in the system. See each report's own history for everyday activity.
+      Successful changes to ERP records, approvals, user/role changes, and logins are recorded here.
     </p>
 
     <UCard class="mb-4">
@@ -102,6 +102,7 @@ const columns: ColumnDef<AuditLogEntry>[] = [
   },
   { key: 'module', label: 'Module', value: (row) => row.module ?? '—' },
   { key: 'companyName', label: 'Company', value: (row) => row.companyName ?? '—' },
+  { key: 'description', label: 'Change', value: (row) => row.description ?? '—' },
   { key: 'path', label: 'Path', value: (row) => row.path ?? '—' },
   { key: 'sourceId', label: 'Record #', value: (row) => (row.sourceId != null ? String(row.sourceId) : '—') },
   {

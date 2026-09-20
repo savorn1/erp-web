@@ -9,6 +9,7 @@
     <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
     <template v-else>
       <div class="space-y-6">
+        <WorkflowStatusStepper v-if="!isNew && rma" :status="rma.status" :steps="workflowSteps" :next-hint="workflowHint" />
         <UCard>
           <template #header>
             <div class="flex items-center gap-2">
@@ -243,6 +244,16 @@ const form = reactive<{
 })
 
 const pageTitle = computed(() => (isNew ? 'New RMA' : `RMA ${rma.value?.rmaNumber ?? ''}`))
+const workflowSteps = [
+  { value: 'REQUESTED', label: 'Requested' },
+  { value: 'APPROVED', label: 'Approved' },
+  { value: 'RESOLVED', label: 'Resolved' }
+]
+const workflowHint = computed(() => {
+  if (rma.value?.status === 'REQUESTED') return 'Next: approve or reject the request'
+  if (rma.value?.status === 'APPROVED') return 'Next: resolve with a refund, replacement, or repair'
+  return ''
+})
 
 function onCompanyChanged() {
   form.customerId = undefined

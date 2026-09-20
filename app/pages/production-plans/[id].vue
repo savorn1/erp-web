@@ -9,6 +9,7 @@
     <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
     <template v-else>
       <div class="space-y-6">
+        <WorkflowStatusStepper v-if="!isNew && detail" :status="detail.status" :steps="workflowSteps" :next-hint="workflowHint" />
         <UCard>
           <template #header>
             <div class="flex items-center gap-2">
@@ -109,6 +110,16 @@ const form = reactive<{
 
 const formEditable = computed(() => isNew || detail.value?.status === 'DRAFT')
 const pageTitle = computed(() => (isNew ? 'New production plan' : formEditable.value ? 'Edit production plan' : 'View production plan'))
+const workflowSteps = [
+  { value: 'DRAFT', label: 'Draft' },
+  { value: 'ACTIVE', label: 'Active' },
+  { value: 'CLOSED', label: 'Closed' }
+]
+const workflowHint = computed(() => {
+  if (detail.value?.status === 'DRAFT') return 'Next: activate to start linking manufacturing orders'
+  if (detail.value?.status === 'ACTIVE') return 'Next: close once production for the period is done'
+  return ''
+})
 
 const formSnapshot = ref('')
 function snapshotForm() {

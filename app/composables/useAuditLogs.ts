@@ -1,7 +1,7 @@
 // Wraps the backend's admin-only AuditLogController (/api/admin/audit-logs/**,
-// read-only). Entries are written server-side by AuditLogFilter (approvals,
-// plus users/custom-roles writes) and AuthServiceImpl (login/logout) — there
-// is no create/update/delete here on purpose.
+// read-only). Entries are written server-side by AuditLogFilter for every
+// successful state-changing admin request and by AuthServiceImpl for
+// login/logout — there is no create/update/delete here on purpose.
 
 import type { PageEnvelope } from '#shared/types'
 
