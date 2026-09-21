@@ -39,8 +39,18 @@
             </div>
           </template>
 
-          <div class="flex items-center justify-end mb-3">
-            <UButton size="xs" variant="soft" icon="i-lucide-plus" :disabled="!form.warehouseId" @click="addLine">Add line</UButton>
+          <div class="flex flex-wrap items-end gap-2 mb-4">
+            <UFormField label="Product" class="flex-1 min-w-[240px]">
+              <USelectMenu
+                v-model="addLineProductId"
+                :items="productOptionsFor(form.companyId)"
+                value-key="value"
+                :disabled="!form.warehouseId"
+                :placeholder="form.warehouseId ? 'Search products…' : 'Pick a warehouse first'"
+                class="w-full"
+              />
+            </UFormField>
+            <UButton icon="i-lucide-plus" :disabled="!addLineProductId" @click="addLine">Add line</UButton>
           </div>
 
           <div
@@ -49,62 +59,105 @@
           >
             No line items yet
           </div>
-          <div v-else class="space-y-3">
-            <div v-for="(line, i) in form.lines" :key="i" class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 space-y-2">
-              <div class="grid grid-cols-12 gap-2 items-center">
-                <USelect
-                  v-model="line.productId"
-                  :items="productOptionsFor(form.companyId)"
-                  placeholder="Product"
-                  class="col-span-5"
-                  @update:model-value="resetLineTracking(line)"
-                />
-                <USelect v-model="line.reason" :items="reasonOptions" placeholder="Reason" class="col-span-3" @update:model-value="resetLineTracking(line)" />
-                <UInput v-model.number="line.quantity" type="number" min="0.0001" step="0.0001" placeholder="Qty" class="col-span-2" />
-                <UButton size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-2" @click="form.lines.splice(i, 1)" />
+          <div v-else class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800">
+            <div class="min-w-[880px]">
+              <div
+                class="grid grid-cols-12 gap-2 px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800"
+              >
+                <span class="col-span-3">Product</span>
+                <span class="col-span-2">Reason</span>
+                <span class="col-span-2">Bin</span>
+                <span class="col-span-2">Qty</span>
+                <span class="col-span-2">Available</span>
+                <span class="col-span-1" />
               </div>
-              <div class="grid grid-cols-2 gap-2">
-                <USelect v-model="line.binId" :items="binOptionsForWarehouse" placeholder="No bin" />
-                <span v-if="line.reason && !isIncreaseReason(line.reason)" class="text-xs text-gray-400 self-center">
-                  Available: {{ availableFor(line) }}
-                </span>
-              </div>
+              <div class="divide-y divide-gray-200 dark:divide-gray-800">
+                <div v-for="(line, i) in form.lines" :key="i" class="px-3 py-2 space-y-2">
+                  <div class="grid grid-cols-12 gap-2 items-center">
+                    <div class="col-span-3 min-w-0">
+                      <p class="text-sm text-gray-900 dark:text-white truncate">{{ productLabel(line.productId) }}</p>
+                      <p v-if="trackingTypeFor(line.productId) !== 'NONE'" class="text-xs text-gray-400">
+                        {{ trackingTypeFor(line.productId) === 'BATCH' ? 'Batch tracked' : 'Serial tracked' }}
+                      </p>
+                    </div>
+                    <USelect
+                      v-model="line.reason"
+                      :items="reasonOptions"
+                      placeholder="Reason"
+                      class="col-span-2"
+                      @update:model-value="resetLineTracking(line)"
+                    />
+                    <USelect
+                      v-model="line.binId"
+                      :items="binOptionsForWarehouse"
+                      placeholder="No bin"
+                      class="col-span-2"
+                      @update:model-value="onBinChanged(line)"
+                    />
+                    <UInput
+                      v-model.number="line.quantity"
+                      type="number"
+                      min="0.0001"
+                      step="0.0001"
+                      :placeholder="trackingTypeFor(line.productId) === 'SERIAL' ? 'From serials' : 'Qty'"
+                      :disabled="trackingTypeFor(line.productId) === 'SERIAL'"
+                      class="col-span-2"
+                    />
+                    <span class="col-span-2 text-xs" :class="exceedsAvailable(line) ? 'text-error' : 'text-gray-400'">
+                      {{ availableFor(line) }}<span v-if="exceedsAvailable(line)"> — not enough</span>
+                    </span>
+                    <UButton size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-1 justify-self-end" @click="form.lines.splice(i, 1)" />
+                  </div>
 
-              <template v-if="trackingTypeFor(line.productId) === 'BATCH'">
-                <USelect
-                  v-if="line.reason && !isIncreaseReason(line.reason)"
-                  v-model="line.batchNumber"
-                  :items="batchOptionsFor(line)"
-                  placeholder="Select existing batch / lot"
-                  class="w-full"
-                />
-                <div v-else class="grid grid-cols-2 gap-2">
-                  <UInput v-model="line.batchNumber" placeholder="Batch / lot number (new or existing)" />
-                  <UInput v-model="line.expirationDate" type="date" placeholder="Expiration date" />
+                  <!-- Tracking details need the full row width, so they sit under the
+                       aligned columns rather than inside them. -->
+                  <template v-if="trackingTypeFor(line.productId) === 'BATCH'">
+                    <!-- Known batches are only discoverable via serial-number records, which a
+                         batch-tracked product doesn't have — so the picker is offered when we
+                         happen to know some, and free text otherwise, rather than a dropdown
+                         that can't be populated blocking the line entirely. -->
+                    <USelect
+                      v-if="line.reason && !isIncreaseReason(line.reason) && batchOptionsFor(line).length > 0"
+                      v-model="line.batchNumber"
+                      :items="batchOptionsFor(line)"
+                      placeholder="Select existing batch / lot"
+                      class="w-full"
+                    />
+                    <UInput
+                      v-else-if="line.reason && !isIncreaseReason(line.reason)"
+                      v-model="line.batchNumber"
+                      placeholder="Batch / lot number being adjusted"
+                      class="w-full"
+                    />
+                    <div v-else class="grid grid-cols-2 gap-2">
+                      <UInput v-model="line.batchNumber" placeholder="Batch / lot number (new or existing)" />
+                      <UInput v-model="line.expirationDate" type="date" placeholder="Expiration date" />
+                    </div>
+                  </template>
+
+                  <template v-else-if="trackingTypeFor(line.productId) === 'SERIAL'">
+                    <UTextarea
+                      v-if="isIncreaseReason(line.reason)"
+                      v-model="line.serialNumbersText"
+                      placeholder="One new serial number per line"
+                      :rows="3"
+                      class="w-full"
+                      @update:model-value="syncSerialQuantity(line)"
+                    />
+                    <USelectMenu
+                      v-else
+                      v-model="line.selectedSerials"
+                      multiple
+                      :items="serialOptionsFor(line)"
+                      value-key="value"
+                      placeholder="Select existing serial numbers"
+                      class="w-full"
+                      @update:model-value="syncSerialQuantity(line)"
+                    />
+                    <p class="text-xs text-gray-400">{{ serialCountFor(line) }} serial number(s) — quantity follows this count</p>
+                  </template>
                 </div>
-              </template>
-
-              <template v-else-if="trackingTypeFor(line.productId) === 'SERIAL'">
-                <UTextarea
-                  v-if="isIncreaseReason(line.reason)"
-                  v-model="line.serialNumbersText"
-                  placeholder="One new serial number per line"
-                  :rows="3"
-                  class="w-full"
-                />
-                <USelectMenu
-                  v-else
-                  v-model="line.selectedSerials"
-                  multiple
-                  :items="serialOptionsFor(line)"
-                  value-key="value"
-                  placeholder="Select existing serial numbers"
-                  class="w-full"
-                />
-                <p class="text-xs" :class="serialCountFor(line) === (line.quantity || 0) ? 'text-gray-400' : 'text-error'">
-                  {{ serialCountFor(line) }} of {{ line.quantity || 0 }} serial number(s)
-                </p>
-              </template>
+              </div>
             </div>
           </div>
         </UCard>
@@ -176,6 +229,10 @@ function productOptionsFor(companyId: number | undefined) {
 function trackingTypeFor(productId: number | undefined) {
   return products.value.find((p) => p.id === productId)?.trackingType ?? 'NONE'
 }
+function productLabel(productId: number | undefined) {
+  const product = products.value.find((p) => p.id === productId)
+  return product ? `${product.name} (${product.sku})` : '—'
+}
 
 interface LineForm {
   productId: number | undefined
@@ -246,11 +303,36 @@ function resetLineTracking(line: LineForm) {
   line.expirationDate = ''
   line.serialNumbersText = ''
   line.selectedSerials = []
+  syncSerialQuantity(line)
+}
+
+// For serial-tracked lines the quantity isn't an independent input — it's exactly how many
+// serials were listed or picked. Deriving it removes the double entry (and with it the
+// whole "expected N serial numbers" class of submit error).
+function syncSerialQuantity(line: LineForm) {
+  if (trackingTypeFor(line.productId) === 'SERIAL') {
+    line.quantity = serialCountFor(line)
+  }
+}
+
+// Only the pickers that read *existing* stock are bin-scoped: serials come from
+// serialOptionsFor(bin) and a chosen batch from that bin's known list. Serials and batch
+// numbers typed for an increase are new stock the user is entering, so they survive.
+function onBinChanged(line: LineForm) {
+  if (isIncreaseReason(line.reason)) return
+  line.selectedSerials = []
+  line.batchNumber = ''
+  syncSerialQuantity(line)
+}
+
+function exceedsAvailable(line: LineForm): boolean {
+  return !isIncreaseReason(line.reason) && (line.quantity ?? 0) > availableFor(line)
 }
 
 function onFormCompanyChanged() {
   form.warehouseId = undefined
   form.lines = []
+  addLineProductId.value = undefined
   stockLevels.value = []
   availableSerials.value = []
   productBatches.value = []
@@ -258,6 +340,7 @@ function onFormCompanyChanged() {
 
 async function onWarehouseChanged(warehouseId: number | undefined) {
   form.lines = []
+  addLineProductId.value = undefined
   stockLevels.value = []
   availableSerials.value = []
   productBatches.value = []
@@ -277,9 +360,12 @@ async function onWarehouseChanged(warehouseId: number | undefined) {
   ]
 }
 
+const addLineProductId = ref<number | undefined>(undefined)
+
 function addLine() {
+  if (!addLineProductId.value) return
   form.lines.push({
-    productId: undefined,
+    productId: addLineProductId.value,
     reason: undefined,
     quantity: undefined,
     binId: undefined,
@@ -288,6 +374,7 @@ function addLine() {
     serialNumbersText: '',
     selectedSerials: []
   })
+  addLineProductId.value = undefined
 }
 
 const formSnapshot = ref('')
@@ -295,6 +382,10 @@ function snapshotForm() {
   formSnapshot.value = JSON.stringify(form)
 }
 const isDirty = computed(() => JSON.stringify(form) !== formSnapshot.value)
+
+// Confirms before a sidebar link, browser back, refresh or tab close throws
+// this form away — the page's own back button is only one way out.
+useUnsavedChangesGuard(isDirty)
 
 const showLeaveConfirm = ref(false)
 function onLeave() {
@@ -315,22 +406,29 @@ async function onSaveForm() {
     formError.value = 'Please fill in company, warehouse, and adjustment date'
     return
   }
-  if (form.lines.length === 0 || form.lines.some((l) => !l.productId || !l.reason || !l.quantity)) {
-    formError.value = 'Every line needs a product, reason, and quantity'
+  if (form.lines.length === 0) {
+    formError.value = 'Add at least one line item'
     return
   }
-  for (const line of form.lines) {
+  // Errors name the offending line — with several lines on screen, "one of the decrease
+  // lines" left you hunting for which one.
+  for (const [index, line] of form.lines.entries()) {
+    const label = `Line ${index + 1}`
+    if (!line.reason) {
+      formError.value = `${label}: pick a reason`
+      return
+    }
     const trackingType = trackingTypeFor(line.productId)
+    if (!line.quantity) {
+      formError.value = trackingType === 'SERIAL' ? `${label}: add at least one serial number` : `${label}: enter a quantity`
+      return
+    }
     if (trackingType === 'BATCH' && !line.batchNumber) {
-      formError.value = 'Every batch-tracked line needs a batch/lot'
+      formError.value = `${label}: enter the batch / lot number`
       return
     }
-    if (trackingType === 'SERIAL' && serialCountFor(line) !== line.quantity) {
-      formError.value = `Every serial-tracked line needs exactly its quantity in serial numbers (expected ${line.quantity})`
-      return
-    }
-    if (!isIncreaseReason(line.reason) && line.quantity! > availableFor(line)) {
-      formError.value = `Only ${availableFor(line)} available in stock for one of the decrease lines`
+    if (exceedsAvailable(line)) {
+      formError.value = `${label}: only ${availableFor(line)} in stock, cannot remove ${line.quantity}`
       return
     }
   }

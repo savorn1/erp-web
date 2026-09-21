@@ -100,7 +100,7 @@
           :error="createError"
           submit-label="Create"
           cancelable
-          @submit="onCreate"
+          @submit="onCreateSubmit"
           @cancel="showCreate = false"
         />
       </template>
@@ -315,6 +315,7 @@ async function onResetPasswordSubmit(newPassword: string) {
 const createFields = computed<FieldDef[]>(() => [
   { name: 'username', required: true },
   { name: 'password', type: 'password', required: true, hint: 'Minimum 6 characters.' },
+  { name: 'confirmPassword', label: 'Confirm password', type: 'password', required: true },
   { name: 'email', type: 'email', hint: 'Optional — needed for the user to use "forgot password".' },
   { name: 'role', type: 'select', required: true, options: roleOptions },
   {
@@ -436,6 +437,14 @@ const {
     })
   }
 )
+
+function onCreateSubmit(values: Record<string, any>) {
+  if (values.password !== values.confirmPassword) {
+    createError.value = "Password and confirmation don't match"
+    return
+  }
+  onCreate(values)
+}
 
 onMounted(async () => {
   await loadLookups()

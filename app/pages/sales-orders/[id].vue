@@ -5,7 +5,7 @@
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ pageTitle }}</h1>
     </div>
 
-    <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
+    <DetailSkeleton v-if="loadingDetail" />
     <template v-else>
       <div class="space-y-6">
         <WorkflowStatusStepper v-if="!isNew && editingStatus" :status="editingStatus" :steps="workflowSteps" :next-hint="workflowHint" />
@@ -80,63 +80,85 @@
           >
             No line items yet
           </div>
-          <div v-else class="space-y-2">
-            <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center">
-              <div class="col-span-4 text-sm text-gray-900 dark:text-white truncate">{{ productLabel(line.productId) }}</div>
-              <UInput
-                v-model.number="line.quantityOrdered"
-                type="number"
-                min="0.0001"
-                step="0.0001"
-                placeholder="Qty"
-                :disabled="!formEditable"
-                class="col-span-2"
-              />
-              <UInput
-                v-model.number="line.unitPrice"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="Price (auto)"
-                :disabled="!formEditable"
-                class="col-span-2"
-              />
-              <UInput
-                v-model.number="line.discountPercent"
-                type="number"
-                min="0"
-                max="100"
-                step="0.01"
-                placeholder="Disc %"
-                :disabled="!formEditable"
-                class="col-span-1"
-              />
-              <UInput v-model.number="line.taxRate" type="number" min="0" step="0.01" placeholder="Tax % (auto)" :disabled="!formEditable" class="col-span-2" />
-              <div class="col-span-1 text-sm text-gray-500 dark:text-gray-400 text-right">
-                {{ formatCurrency(lineTotal(line)) }}
+          <div v-else class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800">
+            <div class="min-w-[820px]">
+              <div
+                class="grid grid-cols-12 gap-2 px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800"
+              >
+                <span class="col-span-3">Product</span>
+                <span class="col-span-2">Unit</span>
+                <span class="col-span-2">Qty</span>
+                <span class="col-span-2">Unit price</span>
+                <span class="col-span-1">Disc %</span>
+                <span class="col-span-1">Tax %</span>
+                <span class="col-span-1 text-right">Total</span>
               </div>
-              <UButton
-                v-if="formEditable"
-                size="xs"
-                color="error"
-                variant="ghost"
-                icon="i-lucide-x"
-                class="col-span-12 justify-self-end"
-                @click="form.lines.splice(i, 1)"
-              />
-              <div v-else-if="viewingLineDelivered[i]" class="col-span-12 flex items-center justify-end gap-2">
-                <span class="text-xs text-gray-400">{{ viewingLineDelivered[i] }} delivered</span>
-                <UButton
-                  v-if="editingStatus === 'CONFIRMED' && (line.quantityOrdered || 0) > (line.quantityDelivered || 0)"
-                  size="2xs"
-                  color="warning"
-                  variant="soft"
-                  icon="i-lucide-ban"
-                  :loading="cancellingLineId === line.id"
-                  @click="onCancelLine(line)"
-                >
-                  Cancel remaining
-                </UButton>
+              <div class="divide-y divide-gray-200 dark:divide-gray-800">
+                <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center px-3 py-2">
+                  <div class="col-span-3 text-sm text-gray-900 dark:text-white truncate">{{ productLabel(line.productId) }}</div>
+                  <USelect
+                    v-model="line.unitOfMeasureId"
+                    :items="unitOptionsForProduct(line.productId)"
+                    placeholder="Unit"
+                    :disabled="!formEditable"
+                    class="col-span-2"
+                  />
+                  <UInput
+                    v-model.number="line.quantityOrdered"
+                    type="number"
+                    min="0.0001"
+                    step="0.0001"
+                    placeholder="Qty"
+                    :disabled="!formEditable"
+                    class="col-span-2"
+                  />
+                  <UInput
+                    v-model.number="line.unitPrice"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="Price (auto)"
+                    :disabled="!formEditable"
+                    class="col-span-2"
+                  />
+                  <UInput
+                    v-model.number="line.discountPercent"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    placeholder="Disc %"
+                    :disabled="!formEditable"
+                    class="col-span-1"
+                  />
+                  <UInput v-model.number="line.taxRate" type="number" min="0" step="0.01" placeholder="Tax %" :disabled="!formEditable" class="col-span-1" />
+                  <div class="col-span-1 text-sm text-gray-500 dark:text-gray-400 text-right">
+                    {{ formatCurrency(lineTotal(line)) }}
+                  </div>
+                  <UButton
+                    v-if="formEditable"
+                    size="xs"
+                    color="error"
+                    variant="ghost"
+                    icon="i-lucide-x"
+                    class="col-span-12 justify-self-end"
+                    @click="form.lines.splice(i, 1)"
+                  />
+                  <div v-else-if="viewingLineDelivered[i]" class="col-span-12 flex items-center justify-end gap-2">
+                    <span class="text-xs text-gray-400">{{ viewingLineDelivered[i] }} delivered</span>
+                    <UButton
+                      v-if="editingStatus === 'CONFIRMED' && (line.quantityOrdered || 0) > (line.quantityDelivered || 0)"
+                      size="2xs"
+                      color="warning"
+                      variant="soft"
+                      icon="i-lucide-ban"
+                      :loading="cancellingLineId === line.id"
+                      @click="onCancelLine(line)"
+                    >
+                      Cancel remaining
+                    </UButton>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -160,7 +182,8 @@
                 <span>Total</span><span>{{ formatCurrency(formTotal) }}</span>
               </div>
               <div v-if="formForeignTotal !== null" class="flex justify-between text-xs text-gray-400">
-                <span>≈ {{ form.foreignCurrency }} @ {{ form.exchangeRate }}</span><span>{{ formatCurrency(formForeignTotal, form.foreignCurrency) }}</span>
+                <span>≈ {{ form.foreignCurrency }} @ {{ form.exchangeRate }}</span
+                ><span>{{ formatCurrency(formForeignTotal, form.foreignCurrency) }}</span>
               </div>
             </div>
           </div>
@@ -186,12 +209,7 @@
       </div>
     </template>
 
-    <EmailDocumentModal
-      v-if="!isNew"
-      v-model:open="showEmail"
-      title="Email sales order"
-      :send-fn="(payload) => emailDocument(Number(idParam), payload)"
-    />
+    <EmailDocumentModal v-if="!isNew" v-model:open="showEmail" title="Email sales order" :send-fn="(payload) => emailDocument(Number(idParam), payload)" />
 
     <ConfirmModal
       :model-value="showLeaveConfirm"
@@ -231,7 +249,32 @@ const toast = useToast()
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
 const customers = ref<{ id: number; name: string; companyId: number; status: string }[]>([])
 const warehouses = ref<{ id: number; name: string; companyId: number; active: boolean }[]>([])
-const products = ref<{ id: number; name: string; sku: string; companyId: number; status: string }[]>([])
+const products = ref<
+  { id: number; name: string; sku: string; companyId: number; status: string; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]
+>([])
+
+// Same shape as purchase-orders/[id].vue, but gated on allowSales — and the unit
+// matters beyond display here: deliveries convert stock through the factor the
+// backend snapshots onto the line.
+const { list: listProductUoms } = useProductUoms()
+const productUomOptions = ref<Record<number, { label: string; value: number }[]>>({})
+async function ensureProductUomOptions(productId: number) {
+  if (productUomOptions.value[productId]) return
+  try {
+    const uoms = await listProductUoms(productId)
+    productUomOptions.value[productId] = uoms
+      .filter((u) => u.active && u.allowSales && !u.baseUnit)
+      .map((u) => ({ label: u.unitOfMeasureAbbreviation ?? '', value: u.unitOfMeasureId }))
+  } catch {
+    productUomOptions.value[productId] = []
+  }
+}
+function unitOptionsForProduct(productId: number | undefined) {
+  if (!productId) return []
+  const product = products.value.find((p) => p.id === productId)
+  const base = product ? [{ label: product.unitOfMeasureAbbreviation ?? 'Base unit', value: product.unitOfMeasureId }] : []
+  return [...base, ...(productUomOptions.value[productId] ?? [])]
+}
 const users = ref<{ id: number; username: string; enabled: boolean }[]>([])
 
 const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
@@ -257,6 +300,7 @@ function productLabel(productId: number | undefined) {
 interface LineForm {
   id?: number
   productId: number | undefined
+  unitOfMeasureId: number | undefined
   quantityOrdered: number | undefined
   unitPrice: number | undefined
   discountPercent: number | undefined
@@ -327,20 +371,21 @@ const formSubtotal = computed(() => form.lines.reduce((sum, l) => sum + lineSubt
 const formDiscountTotal = computed(() => form.lines.reduce((sum, l) => sum + lineDiscount(l), 0))
 const formTaxTotal = computed(() => form.lines.reduce((sum, l) => sum + lineTax(l), 0))
 const formTotal = computed(() => form.lines.reduce((sum, l) => sum + lineTotal(l), 0))
-const formForeignTotal = computed(() =>
-  foreignCurrencyEnabled.value && form.exchangeRate ? formTotal.value / form.exchangeRate : null
-)
+const formForeignTotal = computed(() => (foreignCurrencyEnabled.value && form.exchangeRate ? formTotal.value / form.exchangeRate : null))
 
 const addLineProductId = ref<number | undefined>(undefined)
 function addLine() {
   if (!addLineProductId.value) return
+  const product = products.value.find((p) => p.id === addLineProductId.value)
   form.lines.push({
     productId: addLineProductId.value,
+    unitOfMeasureId: product?.unitOfMeasureId,
     quantityOrdered: undefined,
     unitPrice: undefined,
     discountPercent: undefined,
     taxRate: undefined
   })
+  ensureProductUomOptions(addLineProductId.value)
   addLineProductId.value = undefined
 }
 
@@ -348,9 +393,11 @@ const formSnapshot = ref('')
 function snapshotForm() {
   formSnapshot.value = JSON.stringify({ ...form, foreignCurrencyEnabled: foreignCurrencyEnabled.value })
 }
-const isDirty = computed(
-  () => formEditable.value && JSON.stringify({ ...form, foreignCurrencyEnabled: foreignCurrencyEnabled.value }) !== formSnapshot.value
-)
+const isDirty = computed(() => formEditable.value && JSON.stringify({ ...form, foreignCurrencyEnabled: foreignCurrencyEnabled.value }) !== formSnapshot.value)
+
+// Confirms before a sidebar link, browser back, refresh or tab close throws
+// this form away — the page's own back button is only one way out.
+useUnsavedChangesGuard(isDirty)
 
 const showLeaveConfirm = ref(false)
 function onLeave() {
@@ -402,13 +449,20 @@ async function loadDetail() {
     form.lines = (detail.lines ?? []).map((l) => ({
       id: l.id,
       productId: l.productId,
+      unitOfMeasureId: l.unitOfMeasureId ?? undefined,
       quantityOrdered: l.quantityOrdered,
       unitPrice: l.unitPrice,
       discountPercent: l.discountPercent || undefined,
       taxRate: l.taxRate || undefined,
       quantityDelivered: l.quantityDelivered
     }))
-    viewingLineDelivered.value = Object.fromEntries((detail.lines ?? []).map((l, i) => [i, `${l.quantityDelivered}/${l.quantityOrdered}`]))
+    await Promise.all([...new Set((detail.lines ?? []).map((l) => l.productId))].map((id) => ensureProductUomOptions(id)))
+    viewingLineDelivered.value = Object.fromEntries(
+      (detail.lines ?? []).map((l, i) => [
+        i,
+        `${l.quantityDelivered}/${l.quantityOrdered}${l.unitOfMeasureAbbreviation ? ` ${l.unitOfMeasureAbbreviation}` : ''}`
+      ])
+    )
     snapshotForm()
   } catch (err) {
     formError.value = apiErrorMessage(err)
@@ -443,6 +497,7 @@ async function onSaveForm() {
     exchangeRate: foreignCurrencyEnabled.value ? form.exchangeRate : undefined,
     lines: form.lines.map((l) => ({
       productId: l.productId!,
+      unitOfMeasureId: l.unitOfMeasureId,
       quantityOrdered: l.quantityOrdered!,
       unitPrice: l.unitPrice,
       discountPercent: l.discountPercent,

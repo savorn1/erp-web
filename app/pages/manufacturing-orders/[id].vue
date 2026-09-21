@@ -7,7 +7,7 @@
       <UBadge v-if="detail?.qualityStatus === 'FAILED'" color="error" variant="soft">QC failed</UBadge>
     </div>
 
-    <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
+    <DetailSkeleton v-if="loadingDetail" />
     <template v-else>
       <div class="space-y-6">
         <WorkflowStatusStepper v-if="!isNew && detail" :status="detail.status" :steps="workflowSteps" :next-hint="workflowHint" />
@@ -36,13 +36,7 @@
               <USelect v-model="form.warehouseId" :items="warehouseOptionsFor(form.companyId)" :disabled="!formEditable" class="w-full" />
             </UFormField>
             <UFormField label="Production plan">
-              <USelect
-                v-model="form.productionPlanId"
-                :items="planOptionsFor(form.companyId)"
-                placeholder="None"
-                :disabled="!formEditable"
-                class="w-full"
-              />
+              <USelect v-model="form.productionPlanId" :items="planOptionsFor(form.companyId)" placeholder="None" :disabled="!formEditable" class="w-full" />
             </UFormField>
             <UFormField label="Planned quantity" required>
               <UInput v-model.number="form.plannedQuantity" type="number" min="0.0001" step="0.0001" :disabled="!formEditable" class="w-full" />
@@ -80,37 +74,50 @@
               <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Work orders</h2>
             </div>
           </template>
-          <div class="divide-y divide-gray-200 dark:divide-gray-800">
-            <div v-for="wo in detail.workOrders" :key="wo.id" class="flex items-center justify-between py-2 text-sm gap-3">
-              <div class="flex items-center gap-2 min-w-0">
-                <span class="text-gray-400">#{{ wo.sequenceNumber }}</span>
-                <span class="font-medium truncate">{{ wo.name }}</span>
-                <span class="text-gray-400 truncate">{{ wo.workCenterName ?? '—' }}{{ wo.machineName ? ` / ${wo.machineName}` : '' }}</span>
+          <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800">
+            <div class="min-w-[720px]">
+              <div
+                class="grid grid-cols-12 gap-2 px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800"
+              >
+                <span class="col-span-1">#</span>
+                <span class="col-span-4">Operation</span>
+                <span class="col-span-3">Work centre / machine</span>
+                <span class="col-span-2">Status</span>
+                <span class="col-span-2" />
               </div>
-              <div class="flex items-center gap-2 shrink-0">
-                <UBadge size="xs">{{ wo.status }}</UBadge>
-                <UButton
-                  v-if="wo.status === 'PENDING'"
-                  size="xs"
-                  color="info"
-                  variant="soft"
-                  icon="i-lucide-play"
-                  :loading="workOrderActingId === wo.id"
-                  @click="onStartWorkOrder(wo)"
-                >
-                  Start
-                </UButton>
-                <UButton
-                  v-if="wo.status === 'IN_PROGRESS'"
-                  size="xs"
-                  color="success"
-                  variant="soft"
-                  icon="i-lucide-check"
-                  :loading="workOrderActingId === wo.id"
-                  @click="onCompleteWorkOrder(wo)"
-                >
-                  Complete
-                </UButton>
+              <div class="divide-y divide-gray-200 dark:divide-gray-800">
+                <div v-for="wo in detail.workOrders" :key="wo.id" class="grid grid-cols-12 gap-2 items-center px-3 py-2 text-sm">
+                  <span class="col-span-1 text-gray-400">{{ wo.sequenceNumber }}</span>
+                  <span class="col-span-4 font-medium truncate">{{ wo.name }}</span>
+                  <span class="col-span-3 text-gray-400 truncate"> {{ wo.workCenterName ?? '—' }}{{ wo.machineName ? ` / ${wo.machineName}` : '' }} </span>
+                  <div class="col-span-2">
+                    <StatusBadge :status="wo.status" />
+                  </div>
+                  <div class="col-span-2 flex items-center justify-end gap-2">
+                    <UButton
+                      v-if="wo.status === 'PENDING'"
+                      size="xs"
+                      color="info"
+                      variant="soft"
+                      icon="i-lucide-play"
+                      :loading="workOrderActingId === wo.id"
+                      @click="onStartWorkOrder(wo)"
+                    >
+                      Start
+                    </UButton>
+                    <UButton
+                      v-if="wo.status === 'IN_PROGRESS'"
+                      size="xs"
+                      color="success"
+                      variant="soft"
+                      icon="i-lucide-check"
+                      :loading="workOrderActingId === wo.id"
+                      @click="onCompleteWorkOrder(wo)"
+                    >
+                      Complete
+                    </UButton>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -209,11 +216,26 @@
             </div>
           </template>
           <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 text-sm">
-            <div><div class="text-gray-400">Material</div><div class="font-medium">{{ formatCurrency(detail.materialCost) }}</div></div>
-            <div><div class="text-gray-400">Labor</div><div class="font-medium">{{ formatCurrency(detail.laborCost) }}</div></div>
-            <div><div class="text-gray-400">Overhead</div><div class="font-medium">{{ formatCurrency(detail.overheadCost) }}</div></div>
-            <div><div class="text-gray-400">Total</div><div class="font-medium">{{ formatCurrency(detail.totalCost) }}</div></div>
-            <div><div class="text-gray-400">Unit cost</div><div class="font-medium">{{ formatCurrency(detail.unitCost) }}</div></div>
+            <div>
+              <div class="text-gray-400">Material</div>
+              <div class="font-medium">{{ formatCurrency(detail.materialCost) }}</div>
+            </div>
+            <div>
+              <div class="text-gray-400">Labor</div>
+              <div class="font-medium">{{ formatCurrency(detail.laborCost) }}</div>
+            </div>
+            <div>
+              <div class="text-gray-400">Overhead</div>
+              <div class="font-medium">{{ formatCurrency(detail.overheadCost) }}</div>
+            </div>
+            <div>
+              <div class="text-gray-400">Total</div>
+              <div class="font-medium">{{ formatCurrency(detail.totalCost) }}</div>
+            </div>
+            <div>
+              <div class="text-gray-400">Unit cost</div>
+              <div class="font-medium">{{ formatCurrency(detail.unitCost) }}</div>
+            </div>
           </div>
         </UCard>
 
@@ -378,6 +400,10 @@ function snapshotForm() {
 }
 const isDirty = computed(() => formEditable.value && JSON.stringify(form) !== formSnapshot.value)
 
+// Confirms before a sidebar link, browser back, refresh or tab close throws
+// this form away — the page's own back button is only one way out.
+useUnsavedChangesGuard(isDirty)
+
 const showLeaveConfirm = ref(false)
 function onLeave() {
   if (isDirty.value) {
@@ -512,7 +538,10 @@ async function onQualityCheck(status: 'PASSED' | 'FAILED') {
   qcSubmitting.value = true
   try {
     detail.value = await qualityCheck(Number(idParam), { status, notes: qcForm.notes || undefined })
-    toast.add({ title: status === 'PASSED' ? 'Quality check passed — stock updated' : 'Quality check failed — units scrapped', color: status === 'PASSED' ? 'success' : 'warning' })
+    toast.add({
+      title: status === 'PASSED' ? 'Quality check passed — stock updated' : 'Quality check failed — units scrapped',
+      color: status === 'PASSED' ? 'success' : 'warning'
+    })
   } catch (err) {
     qcError.value = apiErrorMessage(err)
   } finally {

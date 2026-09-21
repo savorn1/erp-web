@@ -54,6 +54,10 @@
         <slot />
       </template>
     </UDashboardPanel>
+
+    <!-- Shared by every page using useUnsavedChangesGuard — mounted once here so
+         navigating away from a dirty form is confirmed the same way anywhere. -->
+    <UnsavedChangesDialog />
   </UDashboardGroup>
 </template>
 

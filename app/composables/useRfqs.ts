@@ -16,7 +16,11 @@ export interface RfqLine {
   productId: number
   productName: string | null
   productSku: string | null
+  unitOfMeasureId: number | null
+  unitOfMeasureAbbreviation: string | null
+  conversionFactor: number
   quantity: number
+  baseQuantity: number
 }
 
 export interface RfqQuotationLine {
@@ -72,6 +76,9 @@ export interface RfqFilter {
 
 export interface RfqLinePayload {
   productId: number
+  // Omit for the product's own base unit; any other value must already be
+  // registered as a purchase-allowed ProductUom for this product.
+  unitOfMeasureId?: number
   quantity: number
 }
 

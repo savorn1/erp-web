@@ -38,6 +38,15 @@
         </template>
       </UInput>
 
+      <UAlert
+        v-if="sessionExpired"
+        color="warning"
+        variant="subtle"
+        title="Your session expired"
+        description="Sign in again and we'll take you back to what you were doing."
+        icon="i-lucide-clock"
+      />
+
       <UAlert v-if="error" color="error" variant="subtle" :title="error" icon="i-lucide-triangle-alert" />
 
       <UButton type="submit" block size="lg" :loading="loading">Sign in</UButton>
@@ -51,6 +60,19 @@ import type { LoginRequest } from '~/composables/useAuth'
 definePageMeta({ layout: 'auth' })
 
 const { login } = useAuth()
+const route = useRoute()
+
+const sessionExpired = computed(() => route.query.reason === 'expired')
+
+// Only ever return to an internal path. A `redirect` of "//evil.com" or
+// "https://evil.com" would otherwise turn the login form into an open redirect.
+const redirectTarget = computed(() => {
+  const target = route.query.redirect
+  if (typeof target !== 'string' || !target.startsWith('/') || target.startsWith('//') || target.startsWith('/\\')) {
+    return '/'
+  }
+  return target
+})
 const form = reactive<LoginRequest>({ username: '', password: '' })
 const loading = ref(false)
 const error = ref('')
@@ -61,7 +83,7 @@ async function onSubmit() {
   error.value = ''
   try {
     await login(form)
-    await navigateTo('/')
+    await navigateTo(redirectTarget.value)
   } catch (err) {
     error.value = apiErrorMessage(err)
   } finally {

@@ -5,7 +5,7 @@
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ pageTitle }}</h1>
     </div>
 
-    <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
+    <DetailSkeleton v-if="loadingDetail" :lines="false" />
     <template v-else>
       <div class="space-y-6">
         <UCard>

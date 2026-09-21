@@ -33,7 +33,14 @@ export function useApi() {
         return await client<T>(url, opts)
       } catch {
         await logout()
-        await navigateTo('/login')
+        // Carry both why they're here and where they were, so the login page can
+        // explain itself and put them back afterwards — otherwise an expired
+        // session looks like the app randomly logged them out.
+        const from = useRoute().fullPath
+        await navigateTo({
+          path: '/login',
+          query: { reason: 'expired', ...(from && from !== '/' ? { redirect: from } : {}) }
+        })
         throw err
       }
     }

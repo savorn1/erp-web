@@ -5,7 +5,7 @@
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ pageTitle }}</h1>
     </div>
 
-    <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
+    <DetailSkeleton v-if="loadingDetail" />
     <template v-else>
       <div class="space-y-6">
         <WorkflowStatusStepper v-if="!isNew && editingStatus" :status="editingStatus" :steps="workflowSteps" :next-hint="workflowHint" />
@@ -167,12 +167,7 @@
       </div>
     </template>
 
-    <EmailDocumentModal
-      v-if="!isNew"
-      v-model:open="showEmail"
-      title="Email purchase order"
-      :send-fn="(payload) => emailDocument(Number(idParam), payload)"
-    />
+    <EmailDocumentModal v-if="!isNew" v-model:open="showEmail" title="Email purchase order" :send-fn="(payload) => emailDocument(Number(idParam), payload)" />
 
     <ConfirmModal
       :model-value="showLeaveConfirm"
@@ -327,6 +322,10 @@ function snapshotForm() {
   formSnapshot.value = JSON.stringify(form)
 }
 const isDirty = computed(() => formEditable.value && JSON.stringify(form) !== formSnapshot.value)
+
+// Confirms before a sidebar link, browser back, refresh or tab close throws
+// this form away — the page's own back button is only one way out.
+useUnsavedChangesGuard(isDirty)
 
 const showLeaveConfirm = ref(false)
 function onLeave() {

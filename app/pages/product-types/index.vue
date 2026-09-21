@@ -108,11 +108,26 @@
 
 <script setup lang="ts">
 import type { ColumnDef, FieldDef } from '#shared/types'
-import type { ProductType, ProductTypePayload } from '~/composables/useProductTypes'
+import type { ProductType, ProductTypeCode, ProductTypePayload } from '~/composables/useProductTypes'
 
 definePageMeta({ middleware: 'admin' })
 
 const { list, create, update, remove } = useProductTypes()
+
+// Ordered stocked kinds first, then the three that never touch inventory —
+// the split matters more when picking than alphabetical order would.
+const productTypeCodeOptions = [
+  { label: 'Goods', value: 'GOODS' },
+  { label: 'Raw material', value: 'RAW_MATERIAL' },
+  { label: 'Consumable', value: 'CONSUMABLE' },
+  { label: 'Non-stock', value: 'NON_STOCK' },
+  { label: 'Service', value: 'SERVICE' },
+  { label: 'Asset', value: 'ASSET' }
+]
+
+function codeLabel(code: ProductTypeCode) {
+  return productTypeCodeOptions.find((option) => option.value === code)?.label ?? formatEnum(code)
+}
 
 const rows = ref<ProductType[]>([])
 const loading = ref(false)
@@ -129,6 +144,9 @@ const sort = ref<{ column: string; direction: 'asc' | 'desc' } | undefined>({ co
 const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientTable(rows, { pageSize: 10, searchFields: ['name'] })
 
 const columns: ColumnDef<ProductType>[] = [
+  // Read the label off the options rather than formatEnum so the column and the
+  // form's select agree ("Non-stock", not "Non stock").
+  { key: 'code', label: 'Kind', sortable: true, value: (row) => (row.code ? codeLabel(row.code) : '—') },
   { key: 'name', sortable: true },
   { key: 'active', type: 'boolean', trueLabel: 'Active', trueColor: 'success', falseLabel: 'Inactive', falseColor: 'neutral' },
   { key: 'actions', label: '' }
@@ -148,6 +166,14 @@ async function load() {
 }
 
 const formFields = computed<FieldDef[]>(() => [
+  {
+    name: 'code',
+    label: 'Kind',
+    type: 'select',
+    required: true,
+    options: productTypeCodeOptions,
+    hint: 'How the system should treat this type. Goods, raw materials and consumables are held in stock; non-stock, services and assets are not. Several types can share a kind.'
+  },
   { name: 'name', required: true },
   { name: 'active', type: 'switch', onLabel: 'Active', offLabel: 'Inactive', default: true }
 ])
@@ -179,8 +205,8 @@ const {
   {
     entityName: 'Type',
     createDefaults: () => ({ active: true }),
-    toForm: (row) => ({ name: row.name, active: row.active }),
-    toPayload: (values) => ({ name: values.name, active: values.active ?? true })
+    toForm: (row) => ({ code: row.code ?? undefined, name: row.name, active: row.active }),
+    toPayload: (values) => ({ code: values.code, name: values.name, active: values.active ?? true })
   }
 )
 

@@ -5,7 +5,7 @@
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ pageTitle }}</h1>
     </div>
 
-    <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
+    <DetailSkeleton v-if="loadingDetail" />
     <template v-else>
       <div class="space-y-6">
         <UCard>
@@ -46,7 +46,10 @@
             </div>
           </template>
 
-          <div v-if="form.operations.length === 0" class="text-sm text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg mb-4">
+          <div
+            v-if="form.operations.length === 0"
+            class="text-sm text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg mb-4"
+          >
             No operations yet
           </div>
           <div v-else class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800 mb-4">
@@ -66,12 +69,7 @@
                   <UInput v-model.number="op.sequenceNumber" type="number" min="1" class="col-span-1" />
                   <UInput v-model="op.name" placeholder="e.g. Mix" class="col-span-3" />
                   <USelect v-model="op.workCenterId" :items="workCenterOptionsFor(form.companyId)" placeholder="Work center" class="col-span-3" />
-                  <USelect
-                    v-model="op.machineId"
-                    :items="machineOptionsFor(op.workCenterId)"
-                    placeholder="None"
-                    class="col-span-3"
-                  />
+                  <USelect v-model="op.machineId" :items="machineOptionsFor(op.workCenterId)" placeholder="None" class="col-span-3" />
                   <UInput v-model.number="op.standardTimeMinutes" type="number" min="0" step="0.1" class="col-span-3" />
                   <UButton size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-1" @click="form.operations.splice(i, 1)" />
                 </div>
@@ -178,6 +176,10 @@ function snapshotForm() {
 }
 const isDirty = computed(() => JSON.stringify(form) !== formSnapshot.value)
 
+// Confirms before a sidebar link, browser back, refresh or tab close throws
+// this form away — the page's own back button is only one way out.
+useUnsavedChangesGuard(isDirty)
+
 const showLeaveConfirm = ref(false)
 function onLeave() {
   if (isDirty.value) {
@@ -194,12 +196,7 @@ function confirmLeave() {
 async function loadDetail() {
   loadingDetail.value = true
   try {
-    const [c, b, w, m] = await Promise.all([
-      listCompanies({ size: 200 }),
-      listBoms({ size: 200 }),
-      listWorkCenters({ size: 200 }),
-      listMachines({ size: 200 })
-    ])
+    const [c, b, w, m] = await Promise.all([listCompanies({ size: 200 }), listBoms({ size: 200 }), listWorkCenters({ size: 200 }), listMachines({ size: 200 })])
     companies.value = c.data
     boms.value = b.data
     workCenters.value = w.data

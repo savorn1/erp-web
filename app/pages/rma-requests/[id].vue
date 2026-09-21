@@ -3,10 +3,10 @@
     <div class="flex items-center gap-3 mb-6">
       <UButton icon="i-lucide-arrow-left" color="neutral" variant="ghost" @click="onLeave" />
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ pageTitle }}</h1>
-      <StatusBadge v-if="!isNew" :status="rma?.status" />
+      <StatusBadge v-if="rma" :status="rma.status" />
     </div>
 
-    <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
+    <DetailSkeleton v-if="loadingDetail" :lines="false" />
     <template v-else>
       <div class="space-y-6">
         <WorkflowStatusStepper v-if="!isNew && rma" :status="rma.status" :steps="workflowSteps" :next-hint="workflowHint" />
@@ -22,13 +22,26 @@
               <USelect v-model="form.companyId" :items="activeCompanyOptions" :disabled="!isNew" class="w-full" @update:model-value="onCompanyChanged" />
             </UFormField>
             <UFormField label="Customer" required>
-              <USelect v-model="form.customerId" :items="customerOptionsFor(form.companyId)" :disabled="!isNew" class="w-full" @update:model-value="onCustomerChanged" />
+              <USelect
+                v-model="form.customerId"
+                :items="customerOptionsFor(form.companyId)"
+                :disabled="!isNew"
+                class="w-full"
+                @update:model-value="onCustomerChanged"
+              />
             </UFormField>
             <UFormField label="Warehouse" required>
               <USelect v-model="form.warehouseId" :items="warehouseOptionsFor(form.companyId)" :disabled="!isNew" class="w-full" />
             </UFormField>
             <UFormField label="Original invoice" hint="Optional — required for a refund resolution">
-              <USelect v-model="form.invoiceId" :items="invoiceOptionsFor(form.customerId)" :disabled="!isNew" placeholder="None" class="w-full" @update:model-value="onInvoiceChanged" />
+              <USelect
+                v-model="form.invoiceId"
+                :items="invoiceOptionsFor(form.customerId)"
+                :disabled="!isNew"
+                placeholder="None"
+                class="w-full"
+                @update:model-value="onInvoiceChanged"
+              />
             </UFormField>
             <UFormField label="Request date" required>
               <UInput v-model="form.requestDate" type="date" :disabled="!isNew" class="w-full" />
@@ -78,7 +91,13 @@
           </template>
           <div class="flex flex-wrap items-end gap-2">
             <UFormField label="Product" class="flex-1 min-w-[200px]">
-              <USelectMenu v-model="addLineProductId" :items="productOptionsFor(form.companyId)" value-key="value" placeholder="Search products…" class="w-full" />
+              <USelectMenu
+                v-model="addLineProductId"
+                :items="productOptionsFor(form.companyId)"
+                value-key="value"
+                placeholder="Search products…"
+                class="w-full"
+              />
             </UFormField>
             <UFormField label="Qty">
               <UInput v-model.number="addLineQuantity" type="number" min="0.0001" step="0.0001" class="w-28" />
@@ -96,7 +115,10 @@
           <template #header>
             <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Lines</h2>
           </template>
-          <div v-if="form.lines.length === 0" class="text-sm text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg">
+          <div
+            v-if="form.lines.length === 0"
+            class="text-sm text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
+          >
             No lines yet
           </div>
           <div v-else class="space-y-2">
@@ -105,7 +127,15 @@
               <div class="col-span-2 text-gray-500 dark:text-gray-400">{{ line.quantity }}</div>
               <div class="col-span-2 text-gray-500 dark:text-gray-400">{{ formatCurrency(line.unitPrice) }}</div>
               <div class="col-span-2 text-right font-medium">{{ formatCurrency((line.quantity || 0) * (line.unitPrice || 0)) }}</div>
-              <UButton v-if="isNew" size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-1 justify-self-end" @click="form.lines.splice(i, 1)" />
+              <UButton
+                v-if="isNew"
+                size="xs"
+                color="error"
+                variant="ghost"
+                icon="i-lucide-x"
+                class="col-span-1 justify-self-end"
+                @click="form.lines.splice(i, 1)"
+              />
             </div>
           </div>
           <div v-if="!isNew" class="flex justify-end mt-4">
@@ -124,8 +154,8 @@
             <UButton :loading="resolving" @click="onResolve">Resolve</UButton>
           </div>
           <p class="text-xs text-gray-400 mt-2">
-            Refund issues a credit note against the original invoice and restocks the returned items. Replacement restocks the return and ships an
-            identical replacement. Repair is a status-only record.
+            Refund issues a credit note against the original invoice and restocks the returned items. Replacement restocks the return and ships an identical
+            replacement. Repair is a status-only record.
           </p>
         </UCard>
 
@@ -143,10 +173,22 @@
 
         <div class="flex justify-end gap-2">
           <UButton v-if="!isNew && rma?.status === 'REQUESTED'" color="success" variant="soft" :loading="acting" @click="onApprove">Approve</UButton>
-          <UButton v-if="!isNew && (rma?.status === 'REQUESTED' || rma?.status === 'APPROVED')" color="warning" variant="soft" :loading="acting" @click="onReject">
+          <UButton
+            v-if="!isNew && (rma?.status === 'REQUESTED' || rma?.status === 'APPROVED')"
+            color="warning"
+            variant="soft"
+            :loading="acting"
+            @click="onReject"
+          >
             Reject
           </UButton>
-          <UButton v-if="!isNew && (rma?.status === 'REQUESTED' || rma?.status === 'APPROVED')" color="error" variant="soft" :loading="acting" @click="onCancel">
+          <UButton
+            v-if="!isNew && (rma?.status === 'REQUESTED' || rma?.status === 'APPROVED')"
+            color="error"
+            variant="soft"
+            :loading="acting"
+            @click="onCancel"
+          >
             Cancel
           </UButton>
           <UButton color="neutral" variant="ghost" @click="onLeave">{{ isNew ? 'Cancel' : 'Back' }}</UButton>
@@ -183,13 +225,17 @@ const serials = ref<{ id: number; serialNumber: string; productId: number; statu
 
 const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
 function customerOptionsFor(companyId: number | undefined) {
-  return customers.value.filter((c) => c.status === 'ACTIVE' && (companyId === undefined || c.companyId === companyId)).map((c) => ({ label: c.name, value: c.id }))
+  return customers.value
+    .filter((c) => c.status === 'ACTIVE' && (companyId === undefined || c.companyId === companyId))
+    .map((c) => ({ label: c.name, value: c.id }))
 }
 function warehouseOptionsFor(companyId: number | undefined) {
   return warehouses.value.filter((w) => w.active && (companyId === undefined || w.companyId === companyId)).map((w) => ({ label: w.name, value: w.id }))
 }
 function productOptionsFor(companyId: number | undefined) {
-  return products.value.filter((p) => p.status === 'ACTIVE' && (companyId === undefined || p.companyId === companyId)).map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
+  return products.value
+    .filter((p) => p.status === 'ACTIVE' && (companyId === undefined || p.companyId === companyId))
+    .map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
 }
 function productLabel(productId: number | undefined) {
   const product = products.value.find((p) => p.id === productId)
@@ -198,13 +244,17 @@ function productLabel(productId: number | undefined) {
 function invoiceOptionsFor(customerId: number | undefined) {
   return [
     { label: 'None', value: undefined },
-    ...invoices.value.filter((i) => i.status === 'APPROVED' && (customerId === undefined || i.customerId === customerId)).map((i) => ({ label: i.invoiceNumber, value: i.id }))
+    ...invoices.value
+      .filter((i) => i.status === 'APPROVED' && (customerId === undefined || i.customerId === customerId))
+      .map((i) => ({ label: i.invoiceNumber, value: i.id }))
   ]
 }
 function serialOptionsFor(productId: number | undefined) {
   return [
     { label: 'None', value: undefined },
-    ...serials.value.filter((s) => s.status === 'ISSUED' && (productId === undefined || s.productId === productId)).map((s) => ({ label: s.serialNumber, value: s.id }))
+    ...serials.value
+      .filter((s) => s.status === 'ISSUED' && (productId === undefined || s.productId === productId))
+      .map((s) => ({ label: s.serialNumber, value: s.id }))
   ]
 }
 

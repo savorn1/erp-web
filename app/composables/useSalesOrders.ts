@@ -13,7 +13,15 @@ export interface SalesOrderLine {
   productId: number
   productName: string | null
   productSku: string | null
+  unitOfMeasureId: number | null
+  unitOfMeasureAbbreviation: string | null
+  // How many of the product's inventory unit equal 1 of unitOfMeasureId.
+  // Snapshotted at order time; deliveries convert stock through it.
+  conversionFactor: number
   quantityOrdered: number
+  // quantityOrdered/quantityDelivered restated in the product's inventory unit.
+  baseQuantityOrdered: number
+  baseQuantityDelivered: number
   unitPrice: number
   discountPercent: number
   discountAmount: number
@@ -72,6 +80,9 @@ export interface SalesOrderFilter {
 
 export interface SalesOrderLinePayload {
   productId: number
+  // Omit for the product's own base unit; any other value must already be
+  // registered as a sales-allowed ProductUom for this product.
+  unitOfMeasureId?: number
   quantityOrdered: number
   // Omit to default to the product's own selling price.
   unitPrice?: number

@@ -14,7 +14,7 @@
       icon="i-lucide-triangle-alert"
     />
 
-    <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
+    <DetailSkeleton v-if="loadingDetail" />
     <template v-else>
       <div class="space-y-6">
         <UCard>
@@ -71,7 +71,10 @@
             <UButton icon="i-lucide-plus" :disabled="!addLineProductId" @click="addLine">Add component</UButton>
           </div>
 
-          <div v-if="form.lines.length === 0" class="text-sm text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg">
+          <div
+            v-if="form.lines.length === 0"
+            class="text-sm text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
+          >
             No components yet
           </div>
           <div v-else class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800">
@@ -229,6 +232,10 @@ function snapshotForm() {
   formSnapshot.value = JSON.stringify(form)
 }
 const isDirty = computed(() => JSON.stringify(form) !== formSnapshot.value)
+
+// Confirms before a sidebar link, browser back, refresh or tab close throws
+// this form away — the page's own back button is only one way out.
+useUnsavedChangesGuard(isDirty)
 
 const showLeaveConfirm = ref(false)
 function onLeave() {

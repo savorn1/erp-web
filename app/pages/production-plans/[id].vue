@@ -6,7 +6,7 @@
       <UBadge v-if="!isNew && detail" class="ml-auto">{{ detail.status }}</UBadge>
     </div>
 
-    <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
+    <DetailSkeleton v-if="loadingDetail" :lines="false" />
     <template v-else>
       <div class="space-y-6">
         <WorkflowStatusStepper v-if="!isNew && detail" :status="detail.status" :steps="workflowSteps" :next-hint="workflowHint" />
@@ -44,9 +44,18 @@
             </div>
           </template>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm mb-4">
-            <div><div class="text-gray-400">Orders</div><div class="font-medium">{{ detail.orderCount }}</div></div>
-            <div><div class="text-gray-400">Planned quantity</div><div class="font-medium">{{ detail.totalPlannedQuantity }}</div></div>
-            <div><div class="text-gray-400">Produced quantity</div><div class="font-medium">{{ detail.totalProducedQuantity }}</div></div>
+            <div>
+              <div class="text-gray-400">Orders</div>
+              <div class="font-medium">{{ detail.orderCount }}</div>
+            </div>
+            <div>
+              <div class="text-gray-400">Planned quantity</div>
+              <div class="font-medium">{{ detail.totalPlannedQuantity }}</div>
+            </div>
+            <div>
+              <div class="text-gray-400">Produced quantity</div>
+              <div class="font-medium">{{ detail.totalProducedQuantity }}</div>
+            </div>
           </div>
           <UButton size="sm" color="neutral" variant="soft" icon="i-lucide-external-link" :to="`/manufacturing-orders?productionPlanId=${detail.id}`">
             View orders
@@ -126,6 +135,10 @@ function snapshotForm() {
   formSnapshot.value = JSON.stringify(form)
 }
 const isDirty = computed(() => formEditable.value && JSON.stringify(form) !== formSnapshot.value)
+
+// Confirms before a sidebar link, browser back, refresh or tab close throws
+// this form away — the page's own back button is only one way out.
+useUnsavedChangesGuard(isDirty)
 
 const showLeaveConfirm = ref(false)
 function onLeave() {

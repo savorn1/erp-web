@@ -159,6 +159,10 @@ function snapshotForm() {
 }
 const isDirty = computed(() => JSON.stringify(form) !== formSnapshot.value)
 
+// Confirms before a sidebar link, browser back, refresh or tab close throws
+// this form away — the page's own back button is only one way out.
+useUnsavedChangesGuard(isDirty)
+
 const showLeaveConfirm = ref(false)
 function onLeave() {
   if (isDirty.value) {

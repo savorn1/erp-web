@@ -13,7 +13,12 @@ export interface QuotationLine {
   productId: number
   productName: string | null
   productSku: string | null
+  unitOfMeasureId: number | null
+  unitOfMeasureAbbreviation: string | null
+  conversionFactor: number
   quantity: number
+  // quantity restated in the product's inventory unit.
+  baseQuantity: number
   unitPrice: number
   lineTotal: number
 }
@@ -58,6 +63,9 @@ export interface QuotationFilter {
 
 export interface QuotationLinePayload {
   productId: number
+  // Omit for the product's own base unit; any other value must already be
+  // registered as a sales-allowed ProductUom for this product.
+  unitOfMeasureId?: number
   quantity: number
   unitPrice: number
 }

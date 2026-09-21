@@ -100,10 +100,39 @@
           </UFormField>
         </div>
 
-        <div class="flex items-center justify-between mb-2">
-          <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Allocate to outstanding invoices</p>
-          <UButton v-if="outstandingInvoices.length > 0" size="xs" color="neutral" variant="ghost" @click="selectAllOutstanding">Select all</UButton>
+        <div
+          v-if="selectedSupplier"
+          class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2 mb-4 text-sm"
+        >
+          <span class="text-gray-500 dark:text-gray-400">
+            Balance owed to this supplier
+            <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(selectedSupplier!.currentBalance) }}</span>
+          </span>
+          <UBadge color="neutral" variant="subtle" size="xs">{{ formatEnum(selectedSupplier!.paymentTerms) }}</UBadge>
         </div>
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Allocate to outstanding invoices</p>
+          <div class="flex items-center gap-2">
+            <UInput
+              v-model="invoiceSearch"
+              size="xs"
+              icon="i-lucide-search"
+              placeholder="Find invoice no."
+              :loading="loadingInvoices && invoiceSearch !== ''"
+              class="w-44"
+            />
+            <UButton v-if="outstandingInvoices.length > 0" size="xs" color="neutral" variant="ghost" @click="selectAllOutstanding"> Select all </UButton>
+          </div>
+        </div>
+        <UAlert
+          v-if="invoiceListTruncated"
+          color="warning"
+          variant="subtle"
+          class="mb-2"
+          icon="i-lucide-triangle-alert"
+          title="Not every invoice is listed"
+          :description="`This supplier has more than ${INVOICE_FETCH_LIMIT} approved invoices, so older unpaid ones may be missing. Search by invoice number to find a specific one.`"
+        />
         <div v-if="loadingInvoices" class="text-sm text-gray-400 py-4 text-center">Loading…</div>
         <EmptyState
           v-else-if="form.supplierId && outstandingInvoices.length === 0"
@@ -111,40 +140,73 @@
           title="Nothing outstanding"
           description="This supplier has no unpaid approved purchase invoices."
         />
-        <div v-else class="space-y-2 mb-4">
-          <div
-            v-for="line in outstandingInvoices"
-            :key="line.invoiceId"
-            class="grid grid-cols-12 gap-2 items-center rounded-lg border border-gray-200 dark:border-gray-800 p-2 cursor-pointer hover:border-gray-300 dark:hover:border-gray-700"
-            @click="onLineToggle(line, !line.selected)"
-          >
-            <UCheckbox :model-value="line.selected" class="col-span-1 pointer-events-none" />
-            <div class="col-span-5 min-w-0">
-              <div class="flex items-center gap-1.5">
-                <span class="text-sm text-gray-900 dark:text-white truncate">{{ line.invoiceNumber }}</span>
-                <UBadge v-if="line.overdue" color="error" variant="subtle" size="xs">{{ line.daysOverdue }} days overdue</UBadge>
-              </div>
-              <p v-if="line.dueDate" class="text-xs text-gray-400">Due {{ formatDate(line.dueDate) }}</p>
+        <div v-else class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800 mb-4">
+          <div class="min-w-[560px]">
+            <div
+              class="grid grid-cols-12 gap-2 px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800"
+            >
+              <span class="col-span-1" />
+              <span class="col-span-5">Invoice</span>
+              <span class="col-span-3 text-right">Outstanding</span>
+              <span class="col-span-3">Amount</span>
             </div>
-            <span class="col-span-3 text-xs text-gray-400 text-right">Outstanding: {{ formatCurrency(line.outstandingAmount) }}</span>
-            <UInput
-              v-model.number="line.amount"
-              type="number"
-              min="0.01"
-              :max="line.outstandingAmount"
-              step="0.01"
-              placeholder="Amount"
-              :disabled="!line.selected"
-              class="col-span-3"
-              @click.stop
-            />
-            <p v-if="line.selected && line.amount && line.amount > line.outstandingAmount" class="col-span-12 text-xs text-error text-right">
-              Exceeds outstanding balance of {{ formatCurrency(line.outstandingAmount) }}
-            </p>
+            <div class="divide-y divide-gray-200 dark:divide-gray-800">
+              <div
+                v-for="line in outstandingInvoices"
+                :key="line.invoiceId"
+                class="grid grid-cols-12 gap-2 items-center px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/40"
+                @click="onLineToggle(line, !isSelected(line.invoiceId))"
+              >
+                <UCheckbox :model-value="isSelected(line.invoiceId)" class="col-span-1 pointer-events-none" />
+                <div class="col-span-5 min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-sm text-gray-900 dark:text-white truncate">{{ line.invoiceNumber }}</span>
+                    <UBadge v-if="line.overdue" color="error" variant="subtle" size="xs">{{ line.daysOverdue }} days overdue</UBadge>
+                  </div>
+                  <p v-if="line.dueDate" class="text-xs text-gray-400">Due {{ formatDate(line.dueDate) }}</p>
+                </div>
+                <span class="col-span-3 text-xs text-gray-400 text-right">{{ formatCurrency(line.outstandingAmount) }}</span>
+                <UInput
+                  :model-value="amountFor(line.invoiceId)"
+                  type="number"
+                  min="0.01"
+                  :max="line.outstandingAmount"
+                  step="0.01"
+                  placeholder="Amount"
+                  :disabled="!isSelected(line.invoiceId)"
+                  class="col-span-3"
+                  @click.stop
+                  @update:model-value="(v: string | number) => setAmountFor(line.invoiceId, v === '' ? undefined : Number(v))"
+                />
+                <p
+                  v-if="isSelected(line.invoiceId) && (amountFor(line.invoiceId) ?? 0) > line.outstandingAmount"
+                  class="col-span-12 text-xs text-error text-right"
+                >
+                  Exceeds outstanding balance of {{ formatCurrency(line.outstandingAmount) }}
+                </p>
+              </div>
+            </div>
+            <p v-if="outstandingInvoices.length === 0" class="text-sm text-gray-400 text-center py-4">No unpaid invoice matches “{{ invoiceSearch }}”</p>
           </div>
         </div>
 
-        <div class="flex justify-end text-sm font-medium text-gray-900 dark:text-white mb-4">Total to record: {{ formatCurrency(formTotal) }}</div>
+        <div v-if="outstandingInvoices.length > 0 || selectedCount > 0" class="flex justify-end mb-4">
+          <div class="w-full sm:w-72 rounded-lg border border-gray-200 dark:border-gray-800 p-3 space-y-1.5 text-sm">
+            <div v-if="fullListKnown" class="flex justify-between text-gray-600 dark:text-gray-300">
+              <span>Total outstanding</span><span>{{ formatCurrency(totalOutstanding) }}</span>
+            </div>
+            <div class="flex justify-between text-gray-600 dark:text-gray-300">
+              <span>Invoices selected</span><span>{{ selectedCount }}</span>
+            </div>
+            <div class="flex justify-between font-medium text-gray-900 dark:text-white pt-1.5 border-t border-gray-200 dark:border-gray-800">
+              <span>Total to record</span><span>{{ formatCurrency(formTotal) }}</span>
+            </div>
+            <div v-if="fullListKnown" class="flex justify-between" :class="remainingAfterPayment > 0 ? 'text-gray-500 dark:text-gray-400' : 'text-success'">
+              <span>{{ remainingAfterPayment > 0 ? 'Still owing after' : 'Settles in full' }}</span>
+              <span v-if="remainingAfterPayment > 0">{{ formatCurrency(remainingAfterPayment) }}</span>
+            </div>
+          </div>
+        </div>
 
         <UAlert v-if="createError" color="error" variant="subtle" class="mb-3" :title="createError" />
 
@@ -158,7 +220,19 @@
     <!-- Refund modal -->
     <UModal v-model:open="showRefund" :title="`Issue refund — ${refundTarget?.paymentNumber ?? ''}`">
       <template #body>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Refundable: {{ formatCurrency(refundableAmount) }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Refundable: {{ formatCurrency(refundableAmount) }}</p>
+        <!-- What the original payment actually settled — without this you're choosing
+             a refund amount with no view of what it was paying for. -->
+        <div
+          v-if="refundTarget?.allocations?.length"
+          class="rounded-lg border border-gray-200 dark:border-gray-800 divide-y divide-gray-200 dark:divide-gray-800 mb-4"
+        >
+          <div class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50">Originally applied to</div>
+          <div v-for="a in refundTarget.allocations" :key="a.id" class="flex items-center justify-between px-3 py-1.5 text-sm">
+            <span class="text-gray-700 dark:text-gray-300">{{ a.invoiceNumber }}</span>
+            <span class="text-gray-900 dark:text-white">{{ formatCurrency(a.amount) }}</span>
+          </div>
+        </div>
         <div class="space-y-4">
           <UFormField label="Refund date" required>
             <UInput v-model="refundForm.refundDate" type="date" class="w-full" />
@@ -256,7 +330,12 @@ const loading = ref(false)
 const error = ref('')
 
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
-const suppliers = ref<{ id: number; name: string; companyId: number; status: string }[]>([])
+const suppliers = ref<{ id: number; name: string; companyId: number; status: string; currentBalance: number; paymentTerms: string }[]>([])
+
+// The supplier's ledger balance and terms, shown once one is picked. This balance is
+// authoritative and independent of the invoice list, so it stays meaningful even
+// when that list is capped and the per-invoice total has to be withheld.
+const selectedSupplier = computed(() => suppliers.value.find((c) => c.id === form.supplierId))
 const loadingLookups = ref(false)
 
 async function loadLookups() {
@@ -331,6 +410,8 @@ async function load() {
 
 // ── Record payment ──────────────────────────────────────────────────────────
 
+// A row as fetched for display. Whether it's ticked, and for how much, lives in
+// `selections` instead — that has to outlive the list being replaced by a search.
 interface OutstandingLine {
   invoiceId: number
   invoiceNumber: string
@@ -338,8 +419,6 @@ interface OutstandingLine {
   dueDate: string | null
   overdue: boolean
   daysOverdue: number
-  selected: boolean
-  amount: number | undefined
 }
 
 const showCreate = ref(false)
@@ -364,19 +443,68 @@ const form = reactive<{
   notes: ''
 })
 
-const formTotal = computed(() => outstandingInvoices.value.filter((l) => l.selected).reduce((sum, l) => sum + (l.amount || 0), 0))
+// Selections live outside the fetched page. The invoice list is searched on the
+// server (the only way to reach invoices beyond the fetch cap), so the displayed
+// rows get replaced as you type — anything already ticked has to survive that, and
+// has to still be submitted even while hidden behind a search.
+interface SelectedLine {
+  invoiceId: number
+  invoiceNumber: string
+  outstandingAmount: number
+  amount: number | undefined
+}
+const selections = ref<Record<number, SelectedLine>>({})
+
+const invoiceSearch = ref('')
+// True when the customer has more approved invoices than we fetched, so the list
+// on screen is not the whole picture.
+const invoiceListTruncated = ref(false)
+const INVOICE_FETCH_LIMIT = 200
+
+const formTotal = computed(() => Object.values(selections.value).reduce((sum, l) => sum + (l.amount || 0), 0))
+const selectedCount = computed(() => Object.keys(selections.value).length)
+
+// Only meaningful when we actually hold every outstanding invoice: a truncated
+// fetch or an active search means the rows on screen are a subset, and summing
+// them would state a total we can't stand behind.
+const fullListKnown = computed(() => !invoiceListTruncated.value && invoiceSearch.value.trim() === '')
+const totalOutstanding = computed(() => outstandingInvoices.value.reduce((sum, l) => sum + l.outstandingAmount, 0))
+const remainingAfterPayment = computed(() => totalOutstanding.value - formTotal.value)
+
+function isSelected(invoiceId: number) {
+  return selections.value[invoiceId] !== undefined
+}
+function amountFor(invoiceId: number) {
+  return selections.value[invoiceId]?.amount
+}
+function setAmountFor(invoiceId: number, amount: number | undefined) {
+  const selected = selections.value[invoiceId]
+  if (selected) selected.amount = amount
+}
 
 function onCompanyChanged() {
   form.supplierId = undefined
   outstandingInvoices.value = []
+  selections.value = {}
 }
 
 async function onSupplierChanged(supplierId: number | undefined, preselectInvoiceId?: number) {
   outstandingInvoices.value = []
+  selections.value = {}
+  invoiceSearch.value = ''
+  invoiceListTruncated.value = false
   if (!supplierId) return
+  await loadOutstandingInvoices(supplierId, preselectInvoiceId)
+}
+
+async function loadOutstandingInvoices(supplierId: number, preselectInvoiceId?: number) {
   loadingInvoices.value = true
   try {
-    const res = await listPurchaseInvoices({ supplierId, status: 'APPROVED', size: 200 })
+    const invoiceNumber = invoiceSearch.value.trim() || undefined
+    const res = await listPurchaseInvoices({ supplierId, status: 'APPROVED', invoiceNumber, size: INVOICE_FETCH_LIMIT })
+    // The cap applies to *approved* invoices, not unpaid ones, so a supplier with a
+    // long settled history can overflow it and hide invoices they still owe on.
+    invoiceListTruncated.value = (res.metadata?.totalCount ?? 0) > res.data.length
     outstandingInvoices.value = res.data
       .filter((inv) => inv.outstandingAmount > 0)
       .map((inv) => ({
@@ -385,29 +513,54 @@ async function onSupplierChanged(supplierId: number | undefined, preselectInvoic
         outstandingAmount: inv.outstandingAmount,
         dueDate: inv.dueDate,
         overdue: inv.overdue,
-        daysOverdue: inv.daysOverdue,
-        selected: inv.id === preselectInvoiceId,
-        amount: inv.id === preselectInvoiceId ? inv.outstandingAmount : undefined
+        daysOverdue: inv.daysOverdue
       }))
-      // Overdue/soonest-due bills first — the ones most worth paying now.
+      // Overdue/soonest-due invoices first — the ones most worth collecting now.
       .sort((a, b) => {
         if (!a.dueDate) return 1
         if (!b.dueDate) return -1
         return a.dueDate.localeCompare(b.dueDate)
       })
+    if (preselectInvoiceId) {
+      const preselect = outstandingInvoices.value.find((l) => l.invoiceId === preselectInvoiceId)
+      if (preselect) selectLine(preselect)
+    }
   } finally {
     loadingInvoices.value = false
   }
 }
 
-function onLineToggle(line: OutstandingLine, checked: boolean) {
-  line.selected = checked
-  if (checked && !line.amount) line.amount = line.outstandingAmount
+// Typing re-queries the server, so it's debounced rather than fired per keystroke.
+let invoiceSearchTimer: ReturnType<typeof setTimeout> | undefined
+watch(invoiceSearch, () => {
+  if (!form.supplierId) return
+  clearTimeout(invoiceSearchTimer)
+  invoiceSearchTimer = setTimeout(() => {
+    if (form.supplierId) loadOutstandingInvoices(form.supplierId)
+  }, 300)
+})
+
+function selectLine(line: OutstandingLine) {
+  selections.value[line.invoiceId] = {
+    invoiceId: line.invoiceId,
+    invoiceNumber: line.invoiceNumber,
+    outstandingAmount: line.outstandingAmount,
+    amount: line.outstandingAmount
+  }
 }
+
+function onLineToggle(line: OutstandingLine, checked: boolean) {
+  if (checked) {
+    if (!isSelected(line.invoiceId)) selectLine(line)
+    return
+  }
+  delete selections.value[line.invoiceId]
+}
+// Applies to the rows on screen — with a search active, selecting invoices the
+// server didn't return would be a surprise. Existing selections are untouched.
 function selectAllOutstanding() {
   outstandingInvoices.value.forEach((l) => {
-    l.selected = true
-    if (!l.amount) l.amount = l.outstandingAmount
+    if (!isSelected(l.invoiceId)) selectLine(l)
   })
 }
 
@@ -420,6 +573,7 @@ function openCreate(supplierId?: number, invoiceId?: number) {
   form.notes = ''
   createError.value = ''
   outstandingInvoices.value = []
+  invoiceSearch.value = ''
   showCreate.value = true
   if (supplierId) onSupplierChanged(supplierId, invoiceId)
 }
@@ -430,7 +584,7 @@ async function onCreateSubmit() {
     createError.value = 'Please fill in company, supplier, and payment date'
     return
   }
-  const selected = outstandingInvoices.value.filter((l) => l.selected)
+  const selected = Object.values(selections.value)
   if (selected.length === 0 || selected.some((l) => !l.amount || l.amount <= 0)) {
     createError.value = 'Select at least one invoice and enter a positive amount'
     return
@@ -442,7 +596,7 @@ async function onCreateSubmit() {
   }
   creating.value = true
   try {
-    await record({
+    const created = await record({
       companyId: form.companyId,
       supplierId: form.supplierId,
       paymentDate: form.paymentDate,
@@ -451,7 +605,7 @@ async function onCreateSubmit() {
       notes: form.notes || undefined,
       allocations: selected.map((l) => ({ purchaseInvoiceId: l.invoiceId, amount: l.amount! }))
     })
-    toast.add({ title: 'Payment recorded', color: 'success' })
+    toast.add({ title: `Payment ${created.paymentNumber} recorded`, color: 'success' })
     showCreate.value = false
     await load()
   } catch (err) {

@@ -3,11 +3,11 @@
     <div class="flex items-center gap-3 mb-6">
       <UButton icon="i-lucide-arrow-left" color="neutral" variant="ghost" @click="onLeave" />
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ pageTitle }}</h1>
-      <StatusBadge v-if="!isNew" :status="ticket?.status" />
+      <StatusBadge v-if="ticket" :status="ticket.status" />
       <UBadge v-if="ticket?.overdue" color="error" variant="subtle">Overdue</UBadge>
     </div>
 
-    <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
+    <DetailSkeleton v-if="loadingDetail" :lines="false" />
     <template v-else>
       <div class="space-y-6">
         <WorkflowStatusStepper v-if="!isNew && ticket" :status="ticket.status" :steps="workflowSteps" :next-hint="workflowHint" />
@@ -143,10 +143,14 @@ const users = ref<{ id: number; username: string }[]>([])
 
 const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
 function customerOptionsFor(companyId: number | undefined) {
-  return customers.value.filter((c) => c.status === 'ACTIVE' && (companyId === undefined || c.companyId === companyId)).map((c) => ({ label: c.name, value: c.id }))
+  return customers.value
+    .filter((c) => c.status === 'ACTIVE' && (companyId === undefined || c.companyId === companyId))
+    .map((c) => ({ label: c.name, value: c.id }))
 }
 function productOptionsFor(companyId: number | undefined) {
-  return products.value.filter((p) => p.status === 'ACTIVE' && (companyId === undefined || p.companyId === companyId)).map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
+  return products.value
+    .filter((p) => p.status === 'ACTIVE' && (companyId === undefined || p.companyId === companyId))
+    .map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
 }
 const userOptions = computed(() => users.value.map((u) => ({ label: u.username, value: u.id })))
 const priorityOptions = [

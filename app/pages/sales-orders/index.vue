@@ -195,6 +195,10 @@ const filter = reactive<{
 const sort = ref<{ column: string; direction: 'asc' | 'desc' } | undefined>({ column: 'id', direction: 'desc' })
 const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientTable(rows, { pageSize: 10, searchFields: ['soNumber'] })
 
+// Keeps filters/search/page in the URL so opening an order and coming back
+// doesn't reset the list. Must run before onMounted's load().
+useListQuerySync({ filter, search, page })
+
 const columns: ColumnDef<SalesOrder>[] = [
   { key: 'soNumber', label: 'SO number', sortable: true },
   { key: 'customerName', label: 'Customer', value: (row) => row.customerName ?? '—' },

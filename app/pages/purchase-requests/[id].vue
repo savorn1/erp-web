@@ -5,7 +5,7 @@
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ pageTitle }}</h1>
     </div>
 
-    <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
+    <DetailSkeleton v-if="loadingDetail" />
     <template v-else>
       <div class="space-y-6">
         <WorkflowStatusStepper v-if="!isNew && editingStatus" :status="editingStatus" :steps="workflowSteps" :next-hint="workflowHint" />
@@ -71,12 +71,48 @@
           >
             No line items yet
           </div>
-          <div v-else class="space-y-2">
-            <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center">
-              <div class="col-span-5 text-sm text-gray-900 dark:text-white truncate">{{ productLabel(line.productId) }}</div>
-              <UInput v-model.number="line.quantity" type="number" min="0.0001" step="0.0001" placeholder="Qty" :disabled="!formEditable" class="col-span-2" />
-              <UInput v-model="line.notes" placeholder="Notes (optional)" :disabled="!formEditable" class="col-span-4" />
-              <UButton v-if="formEditable" size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-1" @click="form.lines.splice(i, 1)" />
+          <div v-else class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800">
+            <div class="min-w-[620px]">
+              <div
+                class="grid grid-cols-12 gap-2 px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800"
+              >
+                <span class="col-span-4">Product</span>
+                <span class="col-span-2">Unit</span>
+                <span class="col-span-2">Qty</span>
+                <span class="col-span-3">Notes</span>
+                <span class="col-span-1" />
+              </div>
+              <div class="divide-y divide-gray-200 dark:divide-gray-800">
+                <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center px-3 py-2">
+                  <div class="col-span-4 text-sm text-gray-900 dark:text-white truncate">{{ productLabel(line.productId) }}</div>
+                  <USelect
+                    v-model="line.unitOfMeasureId"
+                    :items="unitOptionsForProduct(line.productId)"
+                    placeholder="Unit"
+                    :disabled="!formEditable"
+                    class="col-span-2"
+                  />
+                  <UInput
+                    v-model.number="line.quantity"
+                    type="number"
+                    min="0.0001"
+                    step="0.0001"
+                    placeholder="Qty"
+                    :disabled="!formEditable"
+                    class="col-span-2"
+                  />
+                  <UInput v-model="line.notes" placeholder="Notes (optional)" :disabled="!formEditable" class="col-span-3" />
+                  <UButton
+                    v-if="formEditable"
+                    size="xs"
+                    color="error"
+                    variant="ghost"
+                    icon="i-lucide-x"
+                    class="col-span-1 justify-self-end"
+                    @click="form.lines.splice(i, 1)"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </UCard>
@@ -124,7 +160,31 @@ const toast = useToast()
 
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
 const departments = ref<{ id: number; name: string; active: boolean }[]>([])
-const products = ref<{ id: number; name: string; sku: string; companyId: number; status: string }[]>([])
+const products = ref<
+  { id: number; name: string; sku: string; companyId: number; status: string; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]
+>([])
+
+// Mirrors purchase-orders/[id].vue — a request's units have to be the same set a
+// purchase order will accept, since an approved request becomes one.
+const { list: listProductUoms } = useProductUoms()
+const productUomOptions = ref<Record<number, { label: string; value: number }[]>>({})
+async function ensureProductUomOptions(productId: number) {
+  if (productUomOptions.value[productId]) return
+  try {
+    const uoms = await listProductUoms(productId)
+    productUomOptions.value[productId] = uoms
+      .filter((u) => u.active && u.allowPurchase && !u.baseUnit)
+      .map((u) => ({ label: u.unitOfMeasureAbbreviation ?? '', value: u.unitOfMeasureId }))
+  } catch {
+    productUomOptions.value[productId] = []
+  }
+}
+function unitOptionsForProduct(productId: number | undefined) {
+  if (!productId) return []
+  const product = products.value.find((p) => p.id === productId)
+  const base = product ? [{ label: product.unitOfMeasureAbbreviation ?? 'Base unit', value: product.unitOfMeasureId }] : []
+  return [...base, ...(productUomOptions.value[productId] ?? [])]
+}
 
 const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
 function departmentOptionsFor() {
@@ -142,6 +202,7 @@ function productLabel(productId: number | undefined) {
 
 interface LineForm {
   productId: number | undefined
+  unitOfMeasureId: number | undefined
   quantity: number | undefined
   notes: string
 }
@@ -184,7 +245,14 @@ const workflowHint = computed(() => {
 const addLineProductId = ref<number | undefined>(undefined)
 function addLine() {
   if (!addLineProductId.value) return
-  form.lines.push({ productId: addLineProductId.value, quantity: undefined, notes: '' })
+  const product = products.value.find((p) => p.id === addLineProductId.value)
+  form.lines.push({
+    productId: addLineProductId.value,
+    unitOfMeasureId: product?.unitOfMeasureId,
+    quantity: undefined,
+    notes: ''
+  })
+  ensureProductUomOptions(addLineProductId.value)
   addLineProductId.value = undefined
 }
 
@@ -193,6 +261,10 @@ function snapshotForm() {
   formSnapshot.value = JSON.stringify(form)
 }
 const isDirty = computed(() => formEditable.value && JSON.stringify(form) !== formSnapshot.value)
+
+// Confirms before a sidebar link, browser back, refresh or tab close throws
+// this form away — the page's own back button is only one way out.
+useUnsavedChangesGuard(isDirty)
 
 const showLeaveConfirm = ref(false)
 function onLeave() {
@@ -217,7 +289,8 @@ function applyPrefillFromQuery() {
   const companyId = Number(route.query.prefillCompanyId)
   if (!productId || !quantity) return
   if (companyId) form.companyId = companyId
-  form.lines = [{ productId, quantity, notes: '' }]
+  form.lines = [{ productId, unitOfMeasureId: products.value.find((p) => p.id === productId)?.unitOfMeasureId, quantity, notes: '' }]
+  ensureProductUomOptions(productId)
 }
 
 async function loadDetail() {
@@ -242,7 +315,13 @@ async function loadDetail() {
     form.requestDate = detail.requestDate
     form.requiredDate = detail.requiredDate ?? ''
     form.notes = detail.notes ?? ''
-    form.lines = (detail.lines ?? []).map((l) => ({ productId: l.productId, quantity: l.quantity, notes: l.notes ?? '' }))
+    form.lines = (detail.lines ?? []).map((l) => ({
+      productId: l.productId,
+      unitOfMeasureId: l.unitOfMeasureId ?? undefined,
+      quantity: l.quantity,
+      notes: l.notes ?? ''
+    }))
+    await Promise.all([...new Set((detail.lines ?? []).map((l) => l.productId))].map((id) => ensureProductUomOptions(id)))
     rejectionReasonView.value = detail.rejectionReason ?? ''
     snapshotForm()
   } catch (err) {
@@ -271,7 +350,12 @@ async function onSaveForm() {
         requestDate: form.requestDate,
         requiredDate: form.requiredDate || undefined,
         notes: form.notes || undefined,
-        lines: form.lines.map((l) => ({ productId: l.productId!, quantity: l.quantity!, notes: l.notes || undefined }))
+        lines: form.lines.map((l) => ({
+          productId: l.productId!,
+          unitOfMeasureId: l.unitOfMeasureId,
+          quantity: l.quantity!,
+          notes: l.notes || undefined
+        }))
       }
       await create(payload)
       toast.add({ title: 'Purchase request created', color: 'success' })
@@ -281,7 +365,12 @@ async function onSaveForm() {
         requestDate: form.requestDate,
         requiredDate: form.requiredDate || undefined,
         notes: form.notes || undefined,
-        lines: form.lines.map((l) => ({ productId: l.productId!, quantity: l.quantity!, notes: l.notes || undefined }))
+        lines: form.lines.map((l) => ({
+          productId: l.productId!,
+          unitOfMeasureId: l.unitOfMeasureId,
+          quantity: l.quantity!,
+          notes: l.notes || undefined
+        }))
       })
       toast.add({ title: 'Purchase request updated', color: 'success' })
     }

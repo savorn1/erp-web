@@ -5,7 +5,7 @@
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ pageTitle }}</h1>
     </div>
 
-    <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
+    <DetailSkeleton v-if="loadingDetail" />
     <template v-else>
       <div class="space-y-6">
         <WorkflowStatusStepper v-if="!isNew && editingStatus" :status="editingStatus" :steps="workflowSteps" :next-hint="workflowHint" />
@@ -70,15 +70,67 @@
           >
             No line items yet
           </div>
-          <div v-else class="space-y-2">
-            <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center">
-              <USelect v-model="line.productId" :items="productOptionsFor(form.companyId)" placeholder="Product" :disabled="!formEditable" class="col-span-5" />
-              <UInput v-model.number="line.quantity" type="number" min="0.0001" step="0.0001" placeholder="Qty" :disabled="!formEditable" class="col-span-2" />
-              <UInput v-model.number="line.unitPrice" type="number" min="0" step="0.01" placeholder="Unit price" :disabled="!formEditable" class="col-span-2" />
-              <div class="col-span-2 text-sm text-gray-500 dark:text-gray-400 text-right">
-                {{ formatCurrency((line.quantity || 0) * (line.unitPrice || 0)) }}
+          <div v-else class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800">
+            <div class="min-w-[640px]">
+              <div
+                class="grid grid-cols-12 gap-2 px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800"
+              >
+                <span class="col-span-4">Product</span>
+                <span class="col-span-2">Unit</span>
+                <span class="col-span-2">Qty</span>
+                <span class="col-span-2">Unit price</span>
+                <span class="col-span-1 text-right">Total</span>
+                <span class="col-span-1" />
               </div>
-              <UButton v-if="formEditable" size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-1" @click="form.lines.splice(i, 1)" />
+              <div class="divide-y divide-gray-200 dark:divide-gray-800">
+                <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center px-3 py-2">
+                  <USelect
+                    v-model="line.productId"
+                    :items="productOptionsFor(form.companyId)"
+                    placeholder="Product"
+                    :disabled="!formEditable"
+                    class="col-span-4"
+                    @update:model-value="onLineProductChanged(line)"
+                  />
+                  <USelect
+                    v-model="line.unitOfMeasureId"
+                    :items="unitOptionsForProduct(line.productId)"
+                    placeholder="Unit"
+                    :disabled="!formEditable"
+                    class="col-span-2"
+                  />
+                  <UInput
+                    v-model.number="line.quantity"
+                    type="number"
+                    min="0.0001"
+                    step="0.0001"
+                    placeholder="Qty"
+                    :disabled="!formEditable"
+                    class="col-span-2"
+                  />
+                  <UInput
+                    v-model.number="line.unitPrice"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="Unit price"
+                    :disabled="!formEditable"
+                    class="col-span-2"
+                  />
+                  <div class="col-span-1 text-sm text-gray-500 dark:text-gray-400 text-right">
+                    {{ formatCurrency((line.quantity || 0) * (line.unitPrice || 0)) }}
+                  </div>
+                  <UButton
+                    v-if="formEditable"
+                    size="xs"
+                    color="error"
+                    variant="ghost"
+                    icon="i-lucide-x"
+                    class="col-span-1 justify-self-end"
+                    @click="form.lines.splice(i, 1)"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -113,12 +165,7 @@
       </div>
     </template>
 
-    <EmailDocumentModal
-      v-if="!isNew"
-      v-model:open="showEmail"
-      title="Email quotation"
-      :send-fn="(payload) => emailDocument(Number(idParam), payload)"
-    />
+    <EmailDocumentModal v-if="!isNew" v-model:open="showEmail" title="Email quotation" :send-fn="(payload) => emailDocument(Number(idParam), payload)" />
 
     <UModal v-model:open="showConvert" title="Convert to sales order">
       <template #body>
@@ -138,9 +185,7 @@
       <template #footer>
         <div class="flex justify-end gap-2">
           <UButton color="neutral" variant="ghost" @click="showConvert = false">Cancel</UButton>
-          <UButton :loading="converting" :disabled="!convertForm.warehouseId || !convertForm.orderDate" @click="onConvertToSalesOrder">
-            Convert
-          </UButton>
+          <UButton :loading="converting" :disabled="!convertForm.warehouseId || !convertForm.orderDate" @click="onConvertToSalesOrder"> Convert </UButton>
         </div>
       </template>
     </UModal>
@@ -181,7 +226,37 @@ const toast = useToast()
 
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
 const customers = ref<{ id: number; name: string; companyId: number; status: string }[]>([])
-const products = ref<{ id: number; name: string; sku: string; companyId: number; status: string }[]>([])
+const products = ref<
+  { id: number; name: string; sku: string; companyId: number; status: string; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]
+>([])
+
+// A quote converts straight into a sales order, so it offers the same
+// sales-allowed units the order will accept.
+const { list: listProductUoms } = useProductUoms()
+const productUomOptions = ref<Record<number, { label: string; value: number }[]>>({})
+async function ensureProductUomOptions(productId: number) {
+  if (productUomOptions.value[productId]) return
+  try {
+    const uoms = await listProductUoms(productId)
+    productUomOptions.value[productId] = uoms
+      .filter((u) => u.active && u.allowSales && !u.baseUnit)
+      .map((u) => ({ label: u.unitOfMeasureAbbreviation ?? '', value: u.unitOfMeasureId }))
+  } catch {
+    productUomOptions.value[productId] = []
+  }
+}
+function unitOptionsForProduct(productId: number | undefined) {
+  if (!productId) return []
+  const product = products.value.find((p) => p.id === productId)
+  const base = product ? [{ label: product.unitOfMeasureAbbreviation ?? 'Base unit', value: product.unitOfMeasureId }] : []
+  return [...base, ...(productUomOptions.value[productId] ?? [])]
+}
+// The unit list is per product, so a line's unit can't outlive a product change.
+function onLineProductChanged(line: LineForm) {
+  const product = products.value.find((p) => p.id === line.productId)
+  line.unitOfMeasureId = product?.unitOfMeasureId
+  if (line.productId) ensureProductUomOptions(line.productId)
+}
 const warehouses = ref<{ id: number; name: string; companyId: number; active: boolean }[]>([])
 function warehouseOptionsFor(companyId: number | undefined) {
   return warehouses.value.filter((w) => w.active && (companyId === undefined || w.companyId === companyId)).map((w) => ({ label: w.name, value: w.id }))
@@ -208,6 +283,7 @@ function onFormCompanyChanged() {
 
 interface LineForm {
   productId: number | undefined
+  unitOfMeasureId: number | undefined
   quantity: number | undefined
   unitPrice: number | undefined
 }
@@ -252,21 +328,21 @@ const workflowHint = computed(() => {
   return ''
 })
 const formTotal = computed(() => form.lines.reduce((sum, l) => sum + (l.quantity || 0) * (l.unitPrice || 0), 0))
-const formForeignTotal = computed(() =>
-  foreignCurrencyEnabled.value && form.exchangeRate ? formTotal.value / form.exchangeRate : null
-)
+const formForeignTotal = computed(() => (foreignCurrencyEnabled.value && form.exchangeRate ? formTotal.value / form.exchangeRate : null))
 
 function addLine() {
-  form.lines.push({ productId: undefined, quantity: undefined, unitPrice: undefined })
+  form.lines.push({ productId: undefined, unitOfMeasureId: undefined, quantity: undefined, unitPrice: undefined })
 }
 
 const formSnapshot = ref('')
 function snapshotForm() {
   formSnapshot.value = JSON.stringify({ ...form, foreignCurrencyEnabled: foreignCurrencyEnabled.value })
 }
-const isDirty = computed(
-  () => formEditable.value && JSON.stringify({ ...form, foreignCurrencyEnabled: foreignCurrencyEnabled.value }) !== formSnapshot.value
-)
+const isDirty = computed(() => formEditable.value && JSON.stringify({ ...form, foreignCurrencyEnabled: foreignCurrencyEnabled.value }) !== formSnapshot.value)
+
+// Confirms before a sidebar link, browser back, refresh or tab close throws
+// this form away — the page's own back button is only one way out.
+useUnsavedChangesGuard(isDirty)
 
 const showLeaveConfirm = ref(false)
 function onLeave() {
@@ -312,7 +388,13 @@ async function loadDetail() {
     foreignCurrencyEnabled.value = !!detail.foreignCurrency
     form.foreignCurrency = detail.foreignCurrency ?? ''
     form.exchangeRate = detail.exchangeRate ?? undefined
-    form.lines = (detail.lines ?? []).map((l) => ({ productId: l.productId, quantity: l.quantity, unitPrice: l.unitPrice }))
+    form.lines = (detail.lines ?? []).map((l) => ({
+      productId: l.productId,
+      unitOfMeasureId: l.unitOfMeasureId ?? undefined,
+      quantity: l.quantity,
+      unitPrice: l.unitPrice
+    }))
+    await Promise.all([...new Set((detail.lines ?? []).map((l) => l.productId))].map((id) => ensureProductUomOptions(id)))
     snapshotForm()
   } catch (err) {
     formError.value = apiErrorMessage(err)
@@ -335,7 +417,12 @@ async function onSaveForm() {
     formError.value = 'Please fill in both the foreign currency and exchange rate'
     return
   }
-  const linesPayload = form.lines.map((l) => ({ productId: l.productId!, quantity: l.quantity!, unitPrice: l.unitPrice! }))
+  const linesPayload = form.lines.map((l) => ({
+    productId: l.productId!,
+    unitOfMeasureId: l.unitOfMeasureId,
+    quantity: l.quantity!,
+    unitPrice: l.unitPrice!
+  }))
   const foreignCurrency = foreignCurrencyEnabled.value ? form.foreignCurrency.toUpperCase() : undefined
   const exchangeRate = foreignCurrencyEnabled.value ? form.exchangeRate : undefined
   saving.value = true

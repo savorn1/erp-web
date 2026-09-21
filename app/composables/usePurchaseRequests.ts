@@ -14,7 +14,14 @@ export interface PurchaseRequestLine {
   productId: number
   productName: string | null
   productSku: string | null
+  unitOfMeasureId: number | null
+  unitOfMeasureAbbreviation: string | null
+  // How many of the product's base unit equal 1 of unitOfMeasureId. Snapshotted
+  // when the request was saved, so it reflects the factor at that time.
+  conversionFactor: number
   quantity: number
+  // quantity × conversionFactor — the ask restated in the product's base unit.
+  baseQuantity: number
   notes: string | null
 }
 
@@ -48,6 +55,9 @@ export interface PurchaseRequestFilter {
 
 export interface PurchaseRequestLinePayload {
   productId: number
+  // Omit for the product's own base unit; any other value must already be
+  // registered as a purchase-allowed ProductUom for this product.
+  unitOfMeasureId?: number
   quantity: number
   notes?: string
 }

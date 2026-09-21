@@ -152,17 +152,54 @@
             <UButton icon="i-lucide-plus" :disabled="!addLineProductId" @click="addLine">Add line</UButton>
           </div>
 
-          <div class="space-y-2 mb-4">
+          <div class="mb-4">
             <div
               v-if="form.lines.length === 0"
               class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
             >
               No line items yet
             </div>
-            <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center">
-              <div class="col-span-8 text-sm text-gray-900 dark:text-white truncate">{{ productLabel(line.productId) }}</div>
-              <UInput v-model.number="line.quantity" type="number" min="0.0001" step="0.0001" placeholder="Qty" :disabled="!formEditable" class="col-span-3" />
-              <UButton v-if="formEditable" size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-1" @click="form.lines.splice(i, 1)" />
+            <div v-else class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800">
+              <div class="min-w-[480px]">
+                <div
+                  class="grid grid-cols-12 gap-2 px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800"
+                >
+                  <span class="col-span-6">Product</span>
+                  <span class="col-span-2">Unit</span>
+                  <span class="col-span-3">Qty</span>
+                  <span class="col-span-1" />
+                </div>
+                <div class="divide-y divide-gray-200 dark:divide-gray-800">
+                  <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center px-3 py-2">
+                    <div class="col-span-6 text-sm text-gray-900 dark:text-white truncate">{{ productLabel(line.productId) }}</div>
+                    <USelect
+                      v-model="line.unitOfMeasureId"
+                      :items="unitOptionsForProduct(line.productId)"
+                      placeholder="Unit"
+                      :disabled="!formEditable"
+                      class="col-span-2"
+                    />
+                    <UInput
+                      v-model.number="line.quantity"
+                      type="number"
+                      min="0.0001"
+                      step="0.0001"
+                      placeholder="Qty"
+                      :disabled="!formEditable"
+                      class="col-span-3"
+                    />
+                    <UButton
+                      v-if="formEditable"
+                      size="xs"
+                      color="error"
+                      variant="ghost"
+                      icon="i-lucide-x"
+                      class="col-span-1 justify-self-end"
+                      @click="form.lines.splice(i, 1)"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -299,7 +336,31 @@ const error = ref('')
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
 const suppliers = ref<{ id: number; name: string; companyId: number; status: string }[]>([])
 const warehouses = ref<{ id: number; name: string; companyId: number; active: boolean }[]>([])
-const products = ref<{ id: number; name: string; sku: string; companyId: number; status: string }[]>([])
+const products = ref<
+  { id: number; name: string; sku: string; companyId: number; status: string; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]
+>([])
+
+// An awarded RFQ becomes a purchase order, so it offers the same
+// purchase-allowed units the order will accept.
+const { list: listProductUoms } = useProductUoms()
+const productUomOptions = ref<Record<number, { label: string; value: number }[]>>({})
+async function ensureProductUomOptions(productId: number) {
+  if (productUomOptions.value[productId]) return
+  try {
+    const uoms = await listProductUoms(productId)
+    productUomOptions.value[productId] = uoms
+      .filter((u) => u.active && u.allowPurchase && !u.baseUnit)
+      .map((u) => ({ label: u.unitOfMeasureAbbreviation ?? '', value: u.unitOfMeasureId }))
+  } catch {
+    productUomOptions.value[productId] = []
+  }
+}
+function unitOptionsForProduct(productId: number | undefined) {
+  if (!productId) return []
+  const product = products.value.find((p) => p.id === productId)
+  const base = product ? [{ label: product.unitOfMeasureAbbreviation ?? 'Base unit', value: product.unitOfMeasureId }] : []
+  return [...base, ...(productUomOptions.value[productId] ?? [])]
+}
 const loadingLookups = ref(false)
 
 async function loadLookups() {
@@ -383,6 +444,7 @@ async function load() {
 
 interface LineForm {
   productId: number | undefined
+  unitOfMeasureId: number | undefined
   quantity: number | undefined
 }
 
@@ -428,7 +490,9 @@ const workflowHint = computed(() => {
 const addLineProductId = ref<number | undefined>(undefined)
 function addLine() {
   if (!addLineProductId.value) return
-  form.lines.push({ productId: addLineProductId.value, quantity: undefined })
+  const product = products.value.find((p) => p.id === addLineProductId.value)
+  form.lines.push({ productId: addLineProductId.value, unitOfMeasureId: product?.unitOfMeasureId, quantity: undefined })
+  ensureProductUomOptions(addLineProductId.value)
   addLineProductId.value = undefined
 }
 
@@ -466,7 +530,12 @@ async function openView(row: Rfq) {
     form.issueDate = full.issueDate
     form.notes = full.notes ?? ''
     form.supplierIds = (full.suppliers ?? []).map((s) => s.supplierId)
-    form.lines = (full.lines ?? []).map((l) => ({ productId: l.productId, quantity: l.quantity }))
+    form.lines = (full.lines ?? []).map((l) => ({
+      productId: l.productId,
+      unitOfMeasureId: l.unitOfMeasureId ?? undefined,
+      quantity: l.quantity
+    }))
+    await Promise.all([...new Set((full.lines ?? []).map((l) => l.productId))].map((id) => ensureProductUomOptions(id)))
   } catch (err) {
     formError.value = apiErrorMessage(err)
   } finally {
@@ -498,7 +567,7 @@ async function onSaveForm() {
         issueDate: form.issueDate,
         notes: form.notes || undefined,
         supplierIds: form.supplierIds,
-        lines: form.lines.map((l) => ({ productId: l.productId!, quantity: l.quantity! }))
+        lines: form.lines.map((l) => ({ productId: l.productId!, unitOfMeasureId: l.unitOfMeasureId, quantity: l.quantity! }))
       }
       await create(payload)
       toast.add({ title: 'RFQ created', color: 'success' })
@@ -508,7 +577,7 @@ async function onSaveForm() {
         issueDate: form.issueDate,
         notes: form.notes || undefined,
         supplierIds: form.supplierIds,
-        lines: form.lines.map((l) => ({ productId: l.productId!, quantity: l.quantity! }))
+        lines: form.lines.map((l) => ({ productId: l.productId!, unitOfMeasureId: l.unitOfMeasureId, quantity: l.quantity! }))
       })
       toast.add({ title: 'RFQ updated', color: 'success' })
     }
@@ -648,7 +717,14 @@ async function prefillFromPurchaseRequest(id: number) {
     form.companyId = pr.companyId
     form.purchaseRequestId = pr.id
     form.notes = `From purchase request ${pr.requestNumber}`
-    form.lines = (pr.lines ?? []).map((l) => ({ productId: l.productId, quantity: l.quantity }))
+    // Carry the unit the request asked in — it flows PR → RFQ → PO, so dropping
+    // it here would quietly restate the ask in the product's base unit.
+    form.lines = (pr.lines ?? []).map((l) => ({
+      productId: l.productId,
+      unitOfMeasureId: l.unitOfMeasureId ?? undefined,
+      quantity: l.quantity
+    }))
+    await Promise.all([...new Set((pr.lines ?? []).map((l) => l.productId))].map((id) => ensureProductUomOptions(id)))
     showForm.value = true
   } catch (err) {
     toast.add({ title: 'Could not load purchase request', description: apiErrorMessage(err), color: 'error' })

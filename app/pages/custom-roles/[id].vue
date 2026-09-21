@@ -5,7 +5,7 @@
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ pageTitle }}</h1>
     </div>
 
-    <div v-if="loadingDetail" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
+    <DetailSkeleton v-if="loadingDetail" :lines="false" />
     <template v-else>
       <div class="space-y-6">
         <UAlert
@@ -39,7 +39,7 @@
                 <UIcon name="i-lucide-grid-3x3" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
                 <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Permissions</h2>
               </div>
-              <UCheckbox :model-value="allSelected" label="Select all" @update:model-value="(v: boolean) => toggleAll(v)" />
+              <UCheckbox :model-value="allSelected" label="Select all" @update:model-value="(v: boolean | 'indeterminate') => toggleAll(v === true)" />
             </div>
           </template>
           <div class="divide-y divide-gray-200 dark:divide-gray-800">
@@ -51,11 +51,11 @@
                   <UCheckbox
                     :model-value="isModuleFullySelected(mod.key)"
                     label="All"
-                    @update:model-value="(v: boolean) => toggleModule(mod.key, v)"
+                    @update:model-value="(v: boolean | 'indeterminate') => toggleModule(mod.key, v === true)"
                   />
-                  <UCheckbox v-model="form.grid[mod.key].READ" label="Read" />
-                  <UCheckbox v-model="form.grid[mod.key].WRITE" label="Write" />
-                  <UCheckbox v-model="form.grid[mod.key].APPROVE" label="Approve" />
+                  <UCheckbox v-model="ensureRow(form.grid, mod.key).READ" label="Read" />
+                  <UCheckbox v-model="ensureRow(form.grid, mod.key).WRITE" label="Write" />
+                  <UCheckbox v-model="ensureRow(form.grid, mod.key).APPROVE" label="Approve" />
                 </div>
               </div>
             </div>
@@ -106,7 +106,32 @@ const loadingDetail = ref(true)
 const saving = ref(false)
 const formError = ref('')
 
-type Grid = Record<string, Record<PermissionAction, boolean>>
+type PermissionRow = Record<PermissionAction, boolean>
+type Grid = Record<string, PermissionRow>
+
+// `noUncheckedIndexedAccess` types every `grid[key]` as possibly undefined, but
+// emptyGrid() seeds a row for every key in `allModuleKeys` — which is derived
+// from the very catalog the template iterates — so a lookup can't miss in
+// practice. These two state that once, instead of a non-null assertion at each
+// of the eight call sites.
+//
+// Reads and writes are split deliberately: readRow is reachable from the
+// `allSelected` computed, and creating a row there would mean mutating reactive
+// state during a computed's evaluation, which risks recursive-update loops.
+const EMPTY_ROW: PermissionRow = Object.freeze({ READ: false, WRITE: false, APPROVE: false })
+
+function readRow(grid: Grid, key: string): PermissionRow {
+  return grid[key] ?? EMPTY_ROW
+}
+
+function ensureRow(grid: Grid, key: string): PermissionRow {
+  let row = grid[key]
+  if (!row) {
+    row = { READ: false, WRITE: false, APPROVE: false }
+    grid[key] = row
+  }
+  return row
+}
 
 function emptyGrid(): Grid {
   const grid: Grid = {}
@@ -119,7 +144,10 @@ function emptyGrid(): Grid {
 function gridFromPermissions(permissions: PermissionGrant[]): Grid {
   const grid = emptyGrid()
   for (const grant of permissions) {
-    if (grid[grant.module]) grid[grant.module][grant.action] = true
+    // A grant for a module no longer in the catalog is dropped rather than
+    // resurrected — the UI has nowhere to show or unset it.
+    const row = grid[grant.module]
+    if (row) row[grant.action] = true
   }
   return grid
 }
@@ -147,13 +175,14 @@ function toggleAll(value: boolean) {
   }
 }
 function isModuleFullySelected(key: string) {
-  const actions = form.grid[key]
+  const actions = readRow(form.grid, key)
   return actions.READ && actions.WRITE && actions.APPROVE
 }
 function toggleModule(key: string, value: boolean) {
-  form.grid[key].READ = value
-  form.grid[key].WRITE = value
-  form.grid[key].APPROVE = value
+  const actions = ensureRow(form.grid, key)
+  actions.READ = value
+  actions.WRITE = value
+  actions.APPROVE = value
 }
 
 const pageTitle = computed(() => (isNew ? 'New custom role' : 'Edit custom role'))
@@ -163,6 +192,10 @@ function snapshotForm() {
   formSnapshot.value = JSON.stringify(form)
 }
 const isDirty = computed(() => JSON.stringify(form) !== formSnapshot.value)
+
+// Confirms before a sidebar link, browser back, refresh or tab close throws
+// this form away — the page's own back button is only one way out.
+useUnsavedChangesGuard(isDirty)
 
 const showLeaveConfirm = ref(false)
 function onLeave() {

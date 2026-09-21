@@ -139,7 +139,16 @@ const loadingLookups = ref(true)
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
 const warehouses = ref<{ id: number; name: string; companyId: number; active: boolean }[]>([])
 const products = ref<
-  { id: number; name: string; sku: string; companyId: number; status: string; trackingType: string; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]
+  {
+    id: number
+    name: string
+    sku: string
+    companyId: number
+    status: string
+    trackingType: string
+    unitOfMeasureId: number
+    unitOfMeasureAbbreviation: string | null
+  }[]
 >([])
 const bins = ref<{ id: number; name: string; warehouseId: number | null; active: boolean }[]>([])
 
@@ -295,6 +304,10 @@ function snapshotForm() {
   formSnapshot.value = JSON.stringify(form)
 }
 const isDirty = computed(() => JSON.stringify(form) !== formSnapshot.value)
+
+// Confirms before a sidebar link, browser back, refresh or tab close throws
+// this form away — the page's own back button is only one way out.
+useUnsavedChangesGuard(isDirty)
 
 const showLeaveConfirm = ref(false)
 function onLeave() {

@@ -3,13 +3,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Products</h1>
       <div class="flex items-center gap-2">
-        <UButton
-          color="neutral"
-          variant="soft"
-          icon="i-lucide-upload"
-          :disabled="activeCompanyOptions.length === 0"
-          @click="showImport = true"
-        >
+        <UButton color="neutral" variant="soft" icon="i-lucide-upload" :disabled="activeCompanyOptions.length === 0" @click="showImport = true">
           Import CSV
         </UButton>
         <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New product </UButton>
@@ -523,7 +517,13 @@ const columns: ColumnDef<Product>[] = [
   { key: 'costPrice', label: 'Cost price', type: 'currency' },
   { key: 'sellingPrice', label: 'Selling price', type: 'currency' },
   { key: 'taxRate', label: 'Tax', type: 'percent' },
-  { key: 'trackingType', label: 'Tracking', value: (row) => (row.trackingType === 'NONE' ? '—' : row.trackingType) },
+  // A service has no tracking to speak of, so say what it is rather than "—",
+  // which would read the same as a stocked item with tracking switched off.
+  {
+    key: 'trackingType',
+    label: 'Tracking',
+    value: (row) => (!row.stockable ? 'Service' : row.trackingType === 'NONE' ? '—' : row.trackingType)
+  },
   { key: 'status', type: 'status' },
   { key: 'actions', label: '' }
 ]
@@ -563,10 +563,21 @@ const productFields = computed<FieldDef[]>(() => [
   { name: 'sellingPrice', label: 'Selling price', type: 'currency', required: true },
   { name: 'taxRate', label: 'Tax rate', type: 'number', suffix: '%', min: 0, max: 100, default: 0 },
   {
+    name: 'stockable',
+    label: 'Stocked item',
+    type: 'switch',
+    onLabel: 'Stocked',
+    offLabel: 'Service / non-stock',
+    default: true,
+    wrapper: 'full',
+    hint: 'Turn off for services, labour or fees — things you sell but never hold. Non-stock items skip availability checks, reservations and stock movements.'
+  },
+  {
     name: 'trackingType',
     label: 'Inventory tracking',
     type: 'select',
     default: 'NONE',
+    showIf: (values) => values.stockable !== false,
     options: [
       { label: 'None', value: 'NONE' },
       { label: 'Batch / lot', value: 'BATCH' },
@@ -576,6 +587,7 @@ const productFields = computed<FieldDef[]>(() => [
   },
   {
     name: 'reorderPoint',
+    showIf: (values) => values.stockable !== false,
     label: 'Reorder point',
     type: 'number',
     min: 0,
@@ -584,6 +596,7 @@ const productFields = computed<FieldDef[]>(() => [
   },
   {
     name: 'maxStock',
+    showIf: (values) => values.stockable !== false,
     label: 'Max stock',
     type: 'number',
     min: 0,
@@ -647,6 +660,7 @@ const {
       sellingPrice: row.sellingPrice,
       taxRate: row.taxRate,
       trackingType: row.trackingType,
+      stockable: row.stockable,
       reorderPoint: row.reorderPoint,
       maxStock: row.maxStock,
       warrantyMonths: row.warrantyMonths ?? undefined,
@@ -667,7 +681,8 @@ const {
       costPrice: values.costPrice,
       sellingPrice: values.sellingPrice,
       taxRate: values.taxRate ?? 0,
-      trackingType: values.trackingType ?? 'NONE',
+      trackingType: values.stockable === false ? 'NONE' : (values.trackingType ?? 'NONE'),
+      stockable: values.stockable ?? true,
       reorderPoint: values.reorderPoint ?? 0,
       maxStock: values.maxStock ?? 0,
       warrantyMonths: values.warrantyMonths || undefined,

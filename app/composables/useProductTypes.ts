@@ -3,13 +3,20 @@
 
 import type { ApiEnvelope, PageEnvelope } from '#shared/types'
 
+// A closed set, mirroring the backend ProductTypeCode enum — users pick one
+// rather than inventing codes, so the rest of the system can reason about it.
+export type ProductTypeCode = 'GOODS' | 'RAW_MATERIAL' | 'CONSUMABLE' | 'NON_STOCK' | 'SERVICE' | 'ASSET'
+
 export interface ProductType {
   id: number
+  // Null on types created before codes existed, until they're edited.
+  code: ProductTypeCode | null
   name: string
   active: boolean
 }
 
 export interface ProductTypeFilter {
+  code?: ProductTypeCode
   name?: string
   active?: boolean
   sortBy?: string
@@ -19,6 +26,7 @@ export interface ProductTypeFilter {
 }
 
 export interface ProductTypePayload {
+  code: ProductTypeCode
   name: string
   active: boolean
 }

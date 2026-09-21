@@ -39,6 +39,9 @@ export interface Product {
   taxRate: number
   status: ProductStatus
   trackingType: ProductTrackingType
+  // False for services and other non-inventory items: they are sold and invoiced
+  // but never stocked, so every stock path skips them.
+  stockable: boolean
   imageUrl: string | null
   // Zero means no threshold configured — never flagged by the Low Stock report.
   reorderPoint: number
@@ -78,6 +81,7 @@ export interface ProductPayload {
   sellingPrice: number
   taxRate: number
   trackingType?: ProductTrackingType
+  stockable?: boolean
   imageUrl?: string
   reorderPoint?: number
   maxStock?: number
