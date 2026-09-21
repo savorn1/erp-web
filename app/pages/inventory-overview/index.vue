@@ -14,9 +14,30 @@
     </UCard>
 
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-      <StatTile label="Total on hand" :value="formatNumber(totals.current)" icon="i-lucide-boxes" color="primary" :loading="loading" />
-      <StatTile label="Total available" :value="formatNumber(totals.available)" icon="i-lucide-check-circle" color="success" :loading="loading" />
-      <StatTile label="Total incoming" :value="formatNumber(totals.incoming)" icon="i-lucide-truck" color="info" :loading="loading" />
+      <StatTile
+        label="Total on hand"
+        :value="quantityTotal(totals.current)"
+        :sublabel="mixedUnitsNote"
+        icon="i-lucide-boxes"
+        color="primary"
+        :loading="loading"
+      />
+      <StatTile
+        label="Total available"
+        :value="quantityTotal(totals.available)"
+        :sublabel="mixedUnitsNote"
+        icon="i-lucide-check-circle"
+        color="success"
+        :loading="loading"
+      />
+      <StatTile
+        label="Total incoming"
+        :value="quantityTotal(totals.incoming)"
+        :sublabel="mixedUnitsNote"
+        icon="i-lucide-truck"
+        color="info"
+        :loading="loading"
+      />
       <StatTile label="Total valuation" :value="formatCurrency(totals.valuation)" icon="i-lucide-circle-dollar-sign" color="neutral" :loading="loading" />
     </div>
 
@@ -82,12 +103,35 @@ const sort = ref<{ column: string; direction: 'asc' | 'desc' } | undefined>({ co
 
 const totals = reactive({ current: 0, available: 0, incoming: 0, valuation: 0 })
 
+// These three tiles add quantities across every row, which is only a real
+// number when the rows share a unit — otherwise it is bottles plus kilograms
+// plus pallets. Say which unit when there is one, and say so plainly when
+// there isn't, rather than presenting a meaningless figure as a headline.
+// (Total valuation is money, so it aggregates fine either way.)
+const uniformUnit = computed(() => {
+  const units = new Set(rows.value.map((r) => r.unitOfMeasureAbbreviation ?? ''))
+  return units.size === 1 ? [...units][0] || null : null
+})
+const mixedUnitsNote = computed(() => (rows.value.length === 0 || uniformUnit.value ? undefined : 'across mixed units — not a real total'))
+function quantityTotal(value: number) {
+  return uniformUnit.value ? `${formatNumber(value)} ${uniformUnit.value}` : formatNumber(value)
+}
+
+// Current and Available are the two numbers people read and act on, so they
+// carry the unit inline as well as in the Unit column. Reserved/incoming/
+// outgoing are the same dimension and read off that column, which keeps the
+// grid from repeating the same token five times per row.
+function unitSuffix(row: InventoryOverviewRow) {
+  return row.unitOfMeasureAbbreviation ? ` ${row.unitOfMeasureAbbreviation}` : ''
+}
+
 const columns: ColumnDef<InventoryOverviewRow>[] = [
   { key: 'productName', label: 'Product', value: (row) => `${row.productName ?? '—'} (${row.productSku ?? '—'})`, sortable: true },
   { key: 'warehouseName', label: 'Warehouse', value: (row) => row.warehouseName ?? '—', sortable: true },
-  { key: 'currentStock', label: 'Current', type: 'number', sortable: true },
+  { key: 'unitOfMeasureAbbreviation', label: 'Unit', value: (row) => row.unitOfMeasureAbbreviation ?? '—' },
+  { key: 'currentStock', label: 'Current', type: 'number', sortable: true, suffix: (row) => unitSuffix(row) },
   { key: 'reservedStock', label: 'Reserved', type: 'number' },
-  { key: 'availableStock', label: 'Available', type: 'number' },
+  { key: 'availableStock', label: 'Available', type: 'number', suffix: (row) => unitSuffix(row) },
   { key: 'incomingStock', label: 'Incoming', type: 'number' },
   { key: 'outgoingStock', label: 'Outgoing', type: 'number' },
   { key: 'unitCost', label: 'Unit cost', type: 'currency' },

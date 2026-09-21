@@ -12,6 +12,8 @@ export interface InventoryOverviewRow {
   productSku: string | null
   warehouseId: number
   warehouseName: string | null
+  // The product's inventory unit — every quantity below is in it.
+  unitOfMeasureAbbreviation: string | null
   currentStock: number
   reservedStock: number
   availableStock: number

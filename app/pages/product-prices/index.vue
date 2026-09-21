@@ -132,6 +132,7 @@ definePageMeta({ middleware: 'admin' })
 const { list, create, update, remove } = useProductPrices()
 const { list: listPriceGroups } = usePriceGroups()
 const { list: listProducts } = useProducts()
+const { list: listProductUoms } = useProductUoms()
 
 const rows = ref<ProductPrice[]>([])
 const loading = ref(false)
@@ -181,12 +182,25 @@ const columns: ColumnDef<ProductPrice>[] = [
   // Suffixed with the base unit: the price is per one of those, and an order
   // line in a larger unit multiplies by its conversion factor. A bare number
   // here reads as "the price", which is only true at factor 1.
+  // The unit this row prices. A per-unit row is used as-is on an order line,
+  // while a base row gets multiplied by the line's conversion factor — the
+  // same number means different money depending on which this is.
+  {
+    key: 'unitOfMeasureAbbreviation',
+    label: 'Unit',
+    value: (row) => `${row.unitOfMeasureAbbreviation ?? '—'}${row.perUnitPrice ? '' : ' (base)'}`
+  },
   { key: 'price', label: 'Price', type: 'currency', suffix: (row) => (row.unitOfMeasureAbbreviation ? ` / ${row.unitOfMeasureAbbreviation}` : '') },
   // The list price this overrides, and by how much. An override is only
   // meaningful relative to the price it replaces, and without this you can't
   // tell a 5% trade discount from a 50% one — or spot a row priced *above*
   // list, which is a typo rather than a policy.
-  { key: 'listPrice', label: 'List', type: 'currency', value: (row) => productById.value.get(row.productId)?.sellingPrice ?? null },
+  {
+    key: 'listPrice',
+    label: 'List',
+    type: 'currency',
+    value: (row) => (row.perUnitPrice ? null : (productById.value.get(row.productId)?.sellingPrice ?? null))
+  },
   {
     key: 'vsList',
     label: 'vs list',
@@ -196,7 +210,11 @@ const columns: ColumnDef<ProductPrice>[] = [
   { key: 'actions', label: '' }
 ]
 
+// Only comparable for base-unit rows: the product's sellingPrice is per base
+// unit, so a per-case price measured against it would read as a huge premium
+// when it is really a bulk discount.
 function deltaFor(row: ProductPrice) {
+  if (row.perUnitPrice) return { percent: null, label: '—', aboveList: false }
   return priceDelta(row.price, productById.value.get(row.productId)?.sellingPrice)
 }
 
@@ -231,6 +249,13 @@ const formFields = computed<FieldDef[]>(() => [
     placeholder: 'Search products…'
   },
   { name: 'priceGroupId', label: 'Price group', type: 'select', required: true, options: priceGroupOptions.value },
+  {
+    name: 'unitOfMeasureId',
+    label: 'Unit',
+    type: 'select',
+    options: unitOptionsForSelectedProduct.value,
+    hint: 'Base unit unless you are pricing a larger unit outright — a case price is used as typed, not multiplied.'
+  },
   {
     name: 'price',
     label: 'Price',
@@ -270,20 +295,62 @@ const {
   {
     entityName: 'Product price',
     createDefaults: () => ({}),
-    toForm: (row) => ({ productId: row.productId, priceGroupId: row.priceGroupId, price: row.price }),
-    toPayload: (values) => ({ productId: values.productId, priceGroupId: values.priceGroupId, price: values.price })
+    toForm: (row) => ({ productId: row.productId, priceGroupId: row.priceGroupId, unitOfMeasureId: row.unitOfMeasureId ?? undefined, price: row.price }),
+    toPayload: (values) => ({
+      productId: values.productId,
+      priceGroupId: values.priceGroupId,
+      unitOfMeasureId: values.unitOfMeasureId ?? undefined,
+      price: values.price
+    })
   }
 )
+
+// Which product the open form is pointing at — drives both the unit list and
+// the price hint below.
+const selectedProductId = computed(() => {
+  const raw = showEdit.value ? editForm.value?.productId : createForm.value?.productId
+  return raw == null ? undefined : Number(raw)
+})
+
+// Sales-allowed UOMs, fetched per product the first time it is selected.
+// allowSales rather than allowInventory: this is a selling price.
+const productUomOptions = ref<Record<number, { label: string; value: number }[]>>({})
+async function ensureProductUomOptions(productId: number) {
+  if (productUomOptions.value[productId]) return
+  try {
+    const uoms = await listProductUoms(productId)
+    productUomOptions.value[productId] = uoms
+      .filter((u) => u.active && u.allowSales && !u.baseUnit)
+      .map((u) => ({ label: `${u.unitOfMeasureAbbreviation ?? ''} (×${u.conversionFactor})`, value: u.unitOfMeasureId }))
+  } catch {
+    productUomOptions.value[productId] = []
+  }
+}
+watch(selectedProductId, (id) => {
+  if (id != null) ensureProductUomOptions(id)
+})
+
+// `undefined` is the base unit — the backend normalises it to a null column
+// so there is only ever one row representing the base price.
+const unitOptionsForSelectedProduct = computed(() => {
+  const product = selectedProductId.value == null ? undefined : productById.value.get(selectedProductId.value)
+  const base = { label: `${product?.unitOfMeasureAbbreviation ?? 'Base unit'} — base`, value: undefined }
+  return [base, ...(selectedProductId.value == null ? [] : (productUomOptions.value[selectedProductId.value] ?? []))]
+})
 
 // Declared after useCrudModals because it reads the open form. Both this and
 // formFields are lazy computeds, so the forward reference in formFields only
 // resolves at render time, by which point these exist.
 const selectedProductPriceHint = computed(() => {
-  const productId = showEdit.value ? editForm.value?.productId : createForm.value?.productId
-  const product = productId == null ? undefined : productById.value.get(Number(productId))
+  const product = selectedProductId.value == null ? undefined : productById.value.get(selectedProductId.value)
   if (!product) return 'Overrides the product’s own selling price for this price group.'
-  const unit = product.unitOfMeasureAbbreviation ?? 'base unit'
-  return `List price ${product.sellingPrice.toFixed(2)} / ${unit}. Enter the tier price per ${unit}.`
+  const baseUnit = product.unitOfMeasureAbbreviation ?? 'base unit'
+  const chosenUnitId = showEdit.value ? editForm.value?.unitOfMeasureId : createForm.value?.unitOfMeasureId
+  if (chosenUnitId != null) {
+    const label = productUomOptions.value[product.id]?.find((o) => o.value === Number(chosenUnitId))?.label
+    return `Per one ${label ?? 'unit'} — entered as-is, not multiplied by the conversion factor.`
+  }
+  return `List price ${product.sellingPrice.toFixed(2)} / ${baseUnit}. Enter the tier price per ${baseUnit}.`
 })
 
 onMounted(async () => {
