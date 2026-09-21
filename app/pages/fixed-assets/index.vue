@@ -36,14 +36,7 @@
         <template #actions-data="{ row }">
           <div class="flex items-center gap-2">
             <UButton size="xs" color="primary" variant="soft" icon="i-lucide-pencil" @click="openEdit(row)">Edit</UButton>
-            <UButton
-              v-if="row.status !== 'DISPOSED'"
-              size="xs"
-              color="warning"
-              variant="soft"
-              icon="i-lucide-package-x"
-              @click="openDispose(row)"
-            >
+            <UButton v-if="row.status !== 'DISPOSED'" size="xs" color="warning" variant="soft" icon="i-lucide-package-x" @click="openDispose(row)">
               Dispose
             </UButton>
             <UButton size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="confirmDelete = row">Delete</UButton>
@@ -76,22 +69,46 @@
 
     <UModal v-model:open="showCreate" title="New fixed asset">
       <template #body>
-        <DynamicForm v-model="createForm" :fields="formFields" :loading="creating" :error="createError" submit-label="Create" cancelable
-          @submit="onCreate" @cancel="showCreate = false" />
+        <DynamicForm
+          v-model="createForm"
+          :fields="formFields"
+          :loading="creating"
+          :error="createError"
+          submit-label="Create"
+          cancelable
+          @submit="onCreate"
+          @cancel="showCreate = false"
+        />
       </template>
     </UModal>
 
     <UModal v-model:open="showEdit" :title="`Edit asset '${editingAsset?.name ?? ''}'`">
       <template #body>
-        <DynamicForm v-model="editForm" :fields="formFields" :loading="editing" :error="editError" submit-label="Save changes" cancelable
-          @submit="onEdit" @cancel="showEdit = false" />
+        <DynamicForm
+          v-model="editForm"
+          :fields="formFields"
+          :loading="editing"
+          :error="editError"
+          submit-label="Save changes"
+          cancelable
+          @submit="onEdit"
+          @cancel="showEdit = false"
+        />
       </template>
     </UModal>
 
     <UModal v-model:open="showDispose" :title="`Dispose asset '${disposingAsset?.name ?? ''}'`">
       <template #body>
-        <DynamicForm v-model="disposeForm" :fields="disposeFields" :loading="disposing" :error="disposeError" submit-label="Dispose" cancelable
-          @submit="onDispose" @cancel="showDispose = false" />
+        <DynamicForm
+          v-model="disposeForm"
+          :fields="disposeFields"
+          :loading="disposing"
+          :error="disposeError"
+          submit-label="Dispose"
+          cancelable
+          @submit="onDispose"
+          @cancel="showDispose = false"
+        />
       </template>
     </UModal>
 

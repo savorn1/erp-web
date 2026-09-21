@@ -211,10 +211,8 @@
               <div class="flex items-center justify-between">
                 <span>{{ line.productName }} ({{ line.productSku }})</span>
                 <span class="text-gray-500 dark:text-gray-400">
-                  requested {{ line.quantityRequested }}{{ line.unitOfMeasureAbbreviation ? ` ${line.unitOfMeasureAbbreviation}` : '' }}<span
-                    v-if="line.quantityShipped !== null"
-                  >
-                    · shipped {{ line.quantityShipped }}</span
+                  requested {{ line.quantityRequested }}{{ line.unitOfMeasureAbbreviation ? ` ${line.unitOfMeasureAbbreviation}` : ''
+                  }}<span v-if="line.quantityShipped !== null"> · shipped {{ line.quantityShipped }}</span
                   ><span v-if="line.quantityReceived !== null"> · received {{ line.quantityReceived }}</span>
                 </span>
               </div>

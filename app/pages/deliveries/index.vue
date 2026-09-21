@@ -213,7 +213,12 @@
       <template #body>
         <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingDelivery">
-          <WorkflowStatusStepper :status="viewingDelivery.status" :steps="deliveryWorkflowSteps" :next-hint="deliveryWorkflowHint(viewingDelivery.status)" class="mb-4" />
+          <WorkflowStatusStepper
+            :status="viewingDelivery.status"
+            :steps="deliveryWorkflowSteps"
+            :next-hint="deliveryWorkflowHint(viewingDelivery.status)"
+            class="mb-4"
+          />
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
             <div>
               <dt class="text-gray-400">Sales order</dt>

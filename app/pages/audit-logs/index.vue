@@ -1,9 +1,7 @@
 <template>
   <div>
     <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Audit log</h1>
-    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-      Successful changes to ERP records, approvals, user/role changes, and logins are recorded here.
-    </p>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Successful changes to ERP records, approvals, user/role changes, and logins are recorded here.</p>
 
     <UCard class="mb-4">
       <div class="flex flex-wrap items-end gap-3">
@@ -136,9 +134,7 @@ async function load() {
   }
 }
 
-const hasActiveFilter = computed(
-  () => !!filter.companyId || !!filter.module || !!filter.action || !!search.value || !!filter.dateFrom || !!filter.dateTo
-)
+const hasActiveFilter = computed(() => !!filter.companyId || !!filter.module || !!filter.action || !!search.value || !!filter.dateFrom || !!filter.dateTo)
 function clearFilters() {
   filter.companyId = undefined
   filter.module = undefined

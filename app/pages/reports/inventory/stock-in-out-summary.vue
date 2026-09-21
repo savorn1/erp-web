@@ -84,7 +84,10 @@ const totalIn = computed(() => rows.value.reduce((sum, r) => sum + r.inQuantity,
 const totalOut = computed(() => rows.value.reduce((sum, r) => sum + r.outQuantity, 0))
 
 function formatted(row: SummaryRow, baseQuantity: number) {
-  return formatQuantity(products.value.find((p) => p.id === row.productId), baseQuantity)
+  return formatQuantity(
+    products.value.find((p) => p.id === row.productId),
+    baseQuantity
+  )
 }
 
 const columns = computed<ColumnDef<SummaryRow>[]>(() => [
@@ -95,7 +98,12 @@ const columns = computed<ColumnDef<SummaryRow>[]>(() => [
   {
     key: 'net',
     label: 'Net',
-    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.net, { signed: true }),
+    value: (row) =>
+      formatQuantity(
+        products.value.find((p) => p.id === row.productId),
+        row.net,
+        { signed: true }
+      ),
     class: (row) => (row.net > 0 ? 'text-success' : row.net < 0 ? 'text-error' : '')
   },
   { key: 'movementCount', label: 'Movements' }

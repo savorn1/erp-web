@@ -55,7 +55,10 @@ const rows = ref<StockTurnoverRow[]>([])
 const products = ref<{ id: number; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]>([])
 
 function formatted(row: StockTurnoverRow, baseQuantity: number) {
-  return formatQuantity(products.value.find((p) => p.id === row.productId), baseQuantity)
+  return formatQuantity(
+    products.value.find((p) => p.id === row.productId),
+    baseQuantity
+  )
 }
 
 const columns = computed<ColumnDef<StockTurnoverRow>[]>(() => [

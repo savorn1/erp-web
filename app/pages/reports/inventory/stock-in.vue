@@ -74,7 +74,11 @@ const columns = computed<ColumnDef<StockInOutRow>[]>(() => [
   {
     key: 'quantity',
     label: 'Quantity in',
-    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.quantity)
+    value: (row) =>
+      formatQuantity(
+        products.value.find((p) => p.id === row.productId),
+        row.quantity
+      )
   },
   { key: 'movementCount', label: 'Movements' }
 ])

@@ -63,7 +63,15 @@
         <template #actions-data="{ row }">
           <div class="flex items-center gap-2">
             <UButton size="xs" color="primary" variant="soft" icon="i-lucide-eye" :to="`/tickets/${row.id}`">View</UButton>
-            <UButton v-if="row.status === 'OPEN'" size="xs" color="info" variant="soft" icon="i-lucide-play" :loading="actingId === row.id" @click="onStart(row)">
+            <UButton
+              v-if="row.status === 'OPEN'"
+              size="xs"
+              color="info"
+              variant="soft"
+              icon="i-lucide-play"
+              :loading="actingId === row.id"
+              @click="onStart(row)"
+            >
               Start
             </UButton>
             <UButton
@@ -99,9 +107,7 @@
             >
               Reopen
             </UButton>
-            <UButton v-if="row.status === 'OPEN'" size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="confirmDelete = row">
-              Delete
-            </UButton>
+            <UButton v-if="row.status === 'OPEN'" size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="confirmDelete = row"> Delete </UButton>
           </div>
         </template>
 
@@ -195,11 +201,7 @@ const priorityFilterOptions = [
   { label: 'Urgent', value: 'URGENT' }
 ]
 function priorityColor(priority: TicketPriority) {
-  return { LOW: 'neutral', MEDIUM: 'info', HIGH: 'warning', URGENT: 'error' }[priority] as
-    | 'neutral'
-    | 'info'
-    | 'warning'
-    | 'error'
+  return { LOW: 'neutral', MEDIUM: 'info', HIGH: 'warning', URGENT: 'error' }[priority] as 'neutral' | 'info' | 'warning' | 'error'
 }
 
 const filter = reactive<{
@@ -321,12 +323,7 @@ watch(sort, load)
 watch(() => [filter.companyId, filter.customerId, filter.status, filter.priority], load)
 
 const hasActiveFilter = computed(
-  () =>
-    search.value !== '' ||
-    filter.companyId !== undefined ||
-    filter.customerId !== undefined ||
-    filter.status !== undefined ||
-    filter.priority !== undefined
+  () => search.value !== '' || filter.companyId !== undefined || filter.customerId !== undefined || filter.status !== undefined || filter.priority !== undefined
 )
 function clearFilters() {
   search.value = ''

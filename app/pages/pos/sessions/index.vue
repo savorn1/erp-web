@@ -16,9 +16,7 @@
     <UCard>
       <DataTable :rows="rows" :columns="columns" :loading="loading" refreshable numbered @refresh="load">
         <template #actions-data="{ row }">
-          <UButton v-if="row.status === 'OPEN'" size="xs" color="warning" variant="soft" icon="i-lucide-door-closed" @click="openClose(row)">
-            Close
-          </UButton>
+          <UButton v-if="row.status === 'OPEN'" size="xs" color="warning" variant="soft" icon="i-lucide-door-closed" @click="openClose(row)"> Close </UButton>
         </template>
         <template #empty-state>
           <EmptyState icon="i-lucide-door-open" title="No sessions yet" description="Open a register from the Checkout screen to start one." />
@@ -30,8 +28,14 @@
       <template #body>
         <div class="space-y-4">
           <dl class="text-sm space-y-1">
-            <div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Opening float</dt><dd>{{ formatCurrency(closing?.openingFloat ?? 0) }}</dd></div>
-            <div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Sales so far</dt><dd>{{ formatCurrency(closing?.salesTotalSoFar ?? 0) }}</dd></div>
+            <div class="flex justify-between">
+              <dt class="text-gray-500 dark:text-gray-400">Opening float</dt>
+              <dd>{{ formatCurrency(closing?.openingFloat ?? 0) }}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-gray-500 dark:text-gray-400">Sales so far</dt>
+              <dd>{{ formatCurrency(closing?.salesTotalSoFar ?? 0) }}</dd>
+            </div>
           </dl>
           <UFormField label="Counted cash" required>
             <UInput v-model.number="countedCash" type="number" min="0" step="0.01" class="w-full" />

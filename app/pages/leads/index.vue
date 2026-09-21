@@ -254,19 +254,16 @@
           <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Line items</p>
           <UButton size="xs" variant="soft" icon="i-lucide-plus" @click="addQuoteLine">Add line</UButton>
         </div>
-        <div v-if="quoteForm.lines.length === 0" class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg">
+        <div
+          v-if="quoteForm.lines.length === 0"
+          class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
+        >
           No line items yet
         </div>
         <div v-else class="space-y-2">
           <div v-for="(line, i) in quoteForm.lines" :key="i" class="grid grid-cols-12 gap-2 items-center">
             <div class="col-span-5">
-              <USelectMenu
-                v-model="line.productId"
-                :items="productOptionsFor(quoteTarget?.companyId)"
-                value-key="value"
-                placeholder="Product"
-                class="w-full"
-              />
+              <USelectMenu v-model="line.productId" :items="productOptionsFor(quoteTarget?.companyId)" value-key="value" placeholder="Product" class="w-full" />
             </div>
             <UInput v-model.number="line.quantity" type="number" min="0" step="0.01" placeholder="Qty" class="col-span-2" />
             <UInput v-model.number="line.unitPrice" type="number" min="0" step="0.01" placeholder="Unit price" class="col-span-3" />
@@ -332,12 +329,7 @@ const loadingLookups = ref(false)
 async function loadLookups() {
   loadingLookups.value = true
   try {
-    const [c, u, cu, p] = await Promise.all([
-      listCompanies({ size: 200 }),
-      listUsers({ size: 200 }),
-      listCustomers({ size: 200 }),
-      listProducts({ size: 200 })
-    ])
+    const [c, u, cu, p] = await Promise.all([listCompanies({ size: 200 }), listUsers({ size: 200 }), listCustomers({ size: 200 }), listProducts({ size: 200 })])
     companies.value = c.data
     users.value = u.data
     customers.value = cu.data

@@ -42,29 +42,15 @@
             >
               Close
             </UButton>
-            <UButton
-              v-else
-              size="xs"
-              color="success"
-              variant="soft"
-              icon="i-lucide-lock-open"
-              :loading="actingId === row.id"
-              @click="onReopen(row)"
-            >
+            <UButton v-else size="xs" color="success" variant="soft" icon="i-lucide-lock-open" :loading="actingId === row.id" @click="onReopen(row)">
               Reopen
             </UButton>
-            <UButton v-if="row.status === 'OPEN'" size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="confirmDelete = row">
-              Delete
-            </UButton>
+            <UButton v-if="row.status === 'OPEN'" size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="confirmDelete = row"> Delete </UButton>
           </div>
         </template>
 
         <template #empty-state>
-          <EmptyState
-            v-if="hasActiveFilter"
-            icon="i-lucide-search-x"
-            title="No fiscal years match your filters"
-          >
+          <EmptyState v-if="hasActiveFilter" icon="i-lucide-search-x" title="No fiscal years match your filters">
             <template #action>
               <UButton color="neutral" variant="soft" icon="i-lucide-x" @click="clearFilters">Clear filters</UButton>
             </template>
@@ -84,15 +70,31 @@
 
     <UModal v-model:open="showCreate" title="New fiscal year">
       <template #body>
-        <DynamicForm v-model="createForm" :fields="createFields" :loading="creating" :error="createError" submit-label="Create" cancelable
-          @submit="onCreate" @cancel="showCreate = false" />
+        <DynamicForm
+          v-model="createForm"
+          :fields="createFields"
+          :loading="creating"
+          :error="createError"
+          submit-label="Create"
+          cancelable
+          @submit="onCreate"
+          @cancel="showCreate = false"
+        />
       </template>
     </UModal>
 
     <UModal v-model:open="showEdit" :title="`Edit fiscal year '${editingYear?.name ?? ''}'`">
       <template #body>
-        <DynamicForm v-model="editForm" :fields="editFields" :loading="editing" :error="editError" submit-label="Save changes" cancelable
-          @submit="onEdit" @cancel="showEdit = false" />
+        <DynamicForm
+          v-model="editForm"
+          :fields="editFields"
+          :loading="editing"
+          :error="editError"
+          submit-label="Save changes"
+          cancelable
+          @submit="onEdit"
+          @cancel="showEdit = false"
+        />
       </template>
     </UModal>
 

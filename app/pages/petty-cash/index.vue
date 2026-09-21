@@ -16,8 +16,20 @@
 
     <div v-if="filter.companyId" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
       <StatTile label="Balance" :value="formatCurrency(summaryData?.balance ?? 0)" icon="i-lucide-wallet" color="primary" :loading="summaryLoading" />
-      <StatTile label="Total topped up" :value="formatCurrency(summaryData?.toppedUp ?? 0)" icon="i-lucide-arrow-down-to-line" color="success" :loading="summaryLoading" />
-      <StatTile label="Total expensed" :value="formatCurrency(summaryData?.expensed ?? 0)" icon="i-lucide-arrow-up-from-line" color="error" :loading="summaryLoading" />
+      <StatTile
+        label="Total topped up"
+        :value="formatCurrency(summaryData?.toppedUp ?? 0)"
+        icon="i-lucide-arrow-down-to-line"
+        color="success"
+        :loading="summaryLoading"
+      />
+      <StatTile
+        label="Total expensed"
+        :value="formatCurrency(summaryData?.expensed ?? 0)"
+        icon="i-lucide-arrow-up-from-line"
+        color="error"
+        :loading="summaryLoading"
+      />
     </div>
 
     <UCard class="mb-4">
@@ -33,16 +45,24 @@
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
 
     <UCard>
-      <DataTable v-model:sort="sort" :rows="pagedRows" :columns="columns" :loading="loading" refreshable numbered exportable export-filename="petty-cash" @refresh="load">
+      <DataTable
+        v-model:sort="sort"
+        :rows="pagedRows"
+        :columns="columns"
+        :loading="loading"
+        refreshable
+        numbered
+        exportable
+        export-filename="petty-cash"
+        @refresh="load"
+      >
         <template #type-data="{ row }">
           <UBadge :color="row.type === 'TOPUP' ? 'success' : 'error'" variant="subtle">
             {{ row.type === 'TOPUP' ? 'Top-up' : 'Expense' }}
           </UBadge>
         </template>
         <template #amount-data="{ row }">
-          <span :class="row.type === 'TOPUP' ? 'text-success' : 'text-error'">
-            {{ row.type === 'TOPUP' ? '+' : '-' }}{{ formatCurrency(row.amount) }}
-          </span>
+          <span :class="row.type === 'TOPUP' ? 'text-success' : 'text-error'"> {{ row.type === 'TOPUP' ? '+' : '-' }}{{ formatCurrency(row.amount) }} </span>
         </template>
 
         <template #empty-state>
@@ -202,10 +222,13 @@ onMounted(async () => {
   await Promise.all([load(), loadSummary()])
 })
 watch(sort, load)
-watch(() => [filter.companyId, filter.type, filter.entryDateFrom, filter.entryDateTo], () => {
-  load()
-  loadSummary()
-})
+watch(
+  () => [filter.companyId, filter.type, filter.entryDateFrom, filter.entryDateTo],
+  () => {
+    load()
+    loadSummary()
+  }
+)
 
 const hasActiveFilter = computed(() => filter.type !== undefined || filter.entryDateFrom !== undefined || filter.entryDateTo !== undefined)
 function clearFilters() {

@@ -79,13 +79,22 @@ const columns = computed<ColumnDef<StockLedgerRow>[]>(() => [
   {
     key: 'quantityDelta',
     label: 'Change',
-    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.quantityDelta, { signed: true }),
+    value: (row) =>
+      formatQuantity(
+        products.value.find((p) => p.id === row.productId),
+        row.quantityDelta,
+        { signed: true }
+      ),
     class: (row) => (row.quantityDelta < 0 ? 'text-error' : 'text-success')
   },
   {
     key: 'balance',
     label: 'Balance',
-    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.balance)
+    value: (row) =>
+      formatQuantity(
+        products.value.find((p) => p.id === row.productId),
+        row.balance
+      )
   }
 ])
 

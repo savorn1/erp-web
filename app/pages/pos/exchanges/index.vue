@@ -34,10 +34,22 @@
       <template #body>
         <div v-if="viewing" class="space-y-3 text-sm">
           <dl class="grid grid-cols-2 gap-2">
-            <div><dt class="text-gray-500 dark:text-gray-400">Original sale</dt><dd>{{ viewing.originalSaleNumber ?? '—' }}</dd></div>
-            <div><dt class="text-gray-500 dark:text-gray-400">Register</dt><dd>{{ viewing.registerName ?? '—' }}</dd></div>
-            <div><dt class="text-gray-500 dark:text-gray-400">Date</dt><dd>{{ formatDateTime(viewing.exchangeDate) }}</dd></div>
-            <div><dt class="text-gray-500 dark:text-gray-400">Settlement</dt><dd>{{ viewing.settlementMethod ?? '—' }}</dd></div>
+            <div>
+              <dt class="text-gray-500 dark:text-gray-400">Original sale</dt>
+              <dd>{{ viewing.originalSaleNumber ?? '—' }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-500 dark:text-gray-400">Register</dt>
+              <dd>{{ viewing.registerName ?? '—' }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-500 dark:text-gray-400">Date</dt>
+              <dd>{{ formatDateTime(viewing.exchangeDate) }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-500 dark:text-gray-400">Settlement</dt>
+              <dd>{{ viewing.settlementMethod ?? '—' }}</dd>
+            </div>
           </dl>
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Returned</p>
           <ul class="divide-y divide-gray-200 dark:divide-gray-800">

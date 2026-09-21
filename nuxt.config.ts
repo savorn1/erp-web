@@ -11,6 +11,22 @@ export default defineNuxtConfig({
 
   modules: ['@nuxt/ui'],
 
+  // `cancelled` is a seventh color alias on top of Nuxt UI's six defaults —
+  // StatusBadge uses it for CANCELLED/REJECTED so those don't share `neutral`
+  // with genuinely inert states, and the leads board uses it for its Lost
+  // column. Registering the palette in app.config.ts (`colors.cancelled:
+  // 'copper'`) is only half of it: this list is what Nuxt UI generates both
+  // the CSS variables *and* the `color` prop types from, so without it
+  // `:color="'cancelled'"` renders correctly but fails typecheck. Naming any
+  // colors here replaces the default list rather than extending it, so all
+  // six defaults have to be repeated. `neutral` is configured separately and
+  // deliberately absent.
+  ui: {
+    theme: {
+      colors: ['primary', 'secondary', 'success', 'info', 'warning', 'error', 'cancelled']
+    }
+  },
+
   devServer: {
     port: Number(process.env.NUXT_PORT) || 3000
   },

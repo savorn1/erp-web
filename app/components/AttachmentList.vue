@@ -20,9 +20,7 @@
             <a :href="file.url" target="_blank" rel="noopener" class="text-gray-900 dark:text-white font-medium truncate hover:underline">
               {{ file.fileName }}
             </a>
-            <p class="text-xs text-gray-400">
-              {{ formatFileSize(file.size) }} · {{ file.uploadedBy ?? 'Unknown' }} · {{ formatDate(file.uploadedAt) }}
-            </p>
+            <p class="text-xs text-gray-400">{{ formatFileSize(file.size) }} · {{ file.uploadedBy ?? 'Unknown' }} · {{ formatDate(file.uploadedAt) }}</p>
           </div>
         </div>
         <div class="flex items-center gap-1 shrink-0">

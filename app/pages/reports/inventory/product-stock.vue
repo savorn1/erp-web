@@ -61,7 +61,11 @@ const columns = computed<ColumnDef<ProductStockRow>[]>(() => [
   {
     key: 'totalQuantity',
     label: 'Total quantity',
-    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.totalQuantity)
+    value: (row) =>
+      formatQuantity(
+        products.value.find((p) => p.id === row.productId),
+        row.totalQuantity
+      )
   },
   { key: 'totalValue', label: 'Total value', type: 'currency' }
 ])

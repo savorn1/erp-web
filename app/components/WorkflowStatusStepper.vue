@@ -17,14 +17,24 @@
           <div class="flex flex-col items-center gap-1.5">
             <span
               class="flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold"
-              :class="index < activeIndex ? 'bg-primary-500 text-white' : index === activeIndex ? 'bg-primary-100 text-primary-700 ring-2 ring-primary-500 dark:bg-primary-400/15 dark:text-primary-300' : 'bg-gray-100 text-gray-400 dark:bg-gray-800'"
+              :class="
+                index < activeIndex
+                  ? 'bg-primary-500 text-white'
+                  : index === activeIndex
+                    ? 'bg-primary-100 text-primary-700 ring-2 ring-primary-500 dark:bg-primary-400/15 dark:text-primary-300'
+                    : 'bg-gray-100 text-gray-400 dark:bg-gray-800'
+              "
             >
               <UIcon v-if="index < activeIndex" name="i-lucide-check" class="w-3.5 h-3.5" />
               <span v-else>{{ index + 1 }}</span>
             </span>
             <span :class="index <= activeIndex ? 'text-gray-900 dark:text-white' : 'text-gray-400'" class="text-xs whitespace-nowrap">{{ step.label }}</span>
           </div>
-          <span v-if="index < steps.length - 1" class="mx-2 mb-5 h-px min-w-5 flex-1 bg-gray-200 dark:bg-gray-800" :class="index < activeIndex ? 'bg-primary-400 dark:bg-primary-500' : ''" />
+          <span
+            v-if="index < steps.length - 1"
+            class="mx-2 mb-5 h-px min-w-5 flex-1 bg-gray-200 dark:bg-gray-800"
+            :class="index < activeIndex ? 'bg-primary-400 dark:bg-primary-500' : ''"
+          />
         </li>
       </ol>
     </div>

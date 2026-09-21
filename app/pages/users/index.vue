@@ -323,7 +323,7 @@ const createFields = computed<FieldDef[]>(() => [
     label: 'Custom role',
     type: 'select',
     options: customRoleOptions.value,
-    hint: 'Only used when Role is User — grants that role\'s per-module permissions.'
+    hint: "Only used when Role is User — grants that role's per-module permissions."
   },
   { name: 'enabled', type: 'switch', onLabel: 'Enabled', offLabel: 'Disabled', default: true },
   { name: 'companyId', label: 'Company', type: 'select', options: activeCompanyOptions.value, hint: 'Optional — can be assigned later.' },
@@ -338,7 +338,7 @@ const editFields = computed<FieldDef[]>(() => [
     label: 'Custom role',
     type: 'select',
     options: customRoleOptions.value,
-    hint: 'Only used when Role is User — grants that role\'s per-module permissions.'
+    hint: "Only used when Role is User — grants that role's per-module permissions."
   },
   { name: 'enabled', type: 'switch', onLabel: 'Enabled', offLabel: 'Disabled' },
   { name: 'email', type: 'email' },

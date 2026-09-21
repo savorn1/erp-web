@@ -7,9 +7,9 @@
         <USelect v-model="companyId" :items="activeCompanyOptions" placeholder="Select a company" class="w-64" />
       </UFormField>
       <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
-        Applies to POS checkout/exchange and Sales Order confirmation, delivery, and cancellation — the two customer-facing selling flows. Stock
-        transfers, stock adjustments, and manufacturing order consumption are internal movements and always keep their own hard "insufficient stock"
-        block regardless of these settings.
+        Applies to POS checkout/exchange and Sales Order confirmation, delivery, and cancellation — the two customer-facing selling flows. Stock transfers,
+        stock adjustments, and manufacturing order consumption are internal movements and always keep their own hard "insufficient stock" block regardless of
+        these settings.
       </p>
     </UCard>
 
@@ -39,8 +39,8 @@
             <div>
               <p class="text-sm font-medium text-gray-900 dark:text-white">Overselling requires approval</p>
               <p class="text-xs text-gray-500 dark:text-gray-400">
-                Only takes effect when overselling is allowed above — a USER-role account is blocked from exceeding available stock, an ADMIN account
-                can proceed.
+                Only takes effect when overselling is allowed above — a USER-role account is blocked from exceeding available stock, an ADMIN account can
+                proceed.
               </p>
             </div>
             <USwitch v-model="form.oversellingApprovalRequired" />
@@ -49,8 +49,8 @@
             <div>
               <p class="text-sm font-medium text-gray-900 dark:text-white">Backorder</p>
               <p class="text-xs text-gray-500 dark:text-gray-400">
-                When an oversold sale/order is permitted, let it complete for the full quantity and record the shortfall as backordered, instead of
-                only ever letting through what's on hand.
+                When an oversold sale/order is permitted, let it complete for the full quantity and record the shortfall as backordered, instead of only ever
+                letting through what's on hand.
               </p>
             </div>
             <USwitch v-model="form.backorderEnabled" />
@@ -84,8 +84,8 @@
             <div>
               <p class="text-sm font-medium text-gray-900 dark:text-white">Stock warning</p>
               <p class="text-xs text-gray-500 dark:text-gray-400">
-                Display-only — shows the dashboard's "Low stock items" tile and POS's low-stock badge coloring. The per-product reorder point still
-                decides which products would qualify either way.
+                Display-only — shows the dashboard's "Low stock items" tile and POS's low-stock badge coloring. The per-product reorder point still decides
+                which products would qualify either way.
               </p>
             </div>
             <USwitch v-model="form.stockWarningEnabled" />

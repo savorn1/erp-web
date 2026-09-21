@@ -65,7 +65,11 @@ const columns = computed<ColumnDef<BatchLotStockRow>[]>(() => [
   {
     key: 'currentQuantity',
     label: 'Current qty',
-    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.currentQuantity)
+    value: (row) =>
+      formatQuantity(
+        products.value.find((p) => p.id === row.productId),
+        row.currentQuantity
+      )
   },
   { key: 'expirationDate', label: 'Expiration', type: 'date' },
   {

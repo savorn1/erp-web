@@ -10,10 +10,22 @@
     <template v-else-if="year">
       <UCard class="mb-4">
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-          <div><div class="text-gray-400">Company</div><div class="font-medium">{{ year.companyName ?? '—' }}</div></div>
-          <div><div class="text-gray-400">Period</div><div class="font-medium">{{ year.startDate }} – {{ year.endDate }}</div></div>
-          <div><div class="text-gray-400">Periods</div><div class="font-medium">{{ year.periodCount }}</div></div>
-          <div><div class="text-gray-400">Open periods</div><div class="font-medium">{{ year.openPeriodCount }}</div></div>
+          <div>
+            <div class="text-gray-400">Company</div>
+            <div class="font-medium">{{ year.companyName ?? '—' }}</div>
+          </div>
+          <div>
+            <div class="text-gray-400">Period</div>
+            <div class="font-medium">{{ year.startDate }} – {{ year.endDate }}</div>
+          </div>
+          <div>
+            <div class="text-gray-400">Periods</div>
+            <div class="font-medium">{{ year.periodCount }}</div>
+          </div>
+          <div>
+            <div class="text-gray-400">Open periods</div>
+            <div class="font-medium">{{ year.openPeriodCount }}</div>
+          </div>
         </div>
       </UCard>
 
@@ -32,15 +44,7 @@
             >
               Close
             </UButton>
-            <UButton
-              v-else
-              size="xs"
-              color="success"
-              variant="soft"
-              icon="i-lucide-lock-open"
-              :loading="actingId === row.id"
-              @click="onReopenPeriod(row)"
-            >
+            <UButton v-else size="xs" color="success" variant="soft" icon="i-lucide-lock-open" :loading="actingId === row.id" @click="onReopenPeriod(row)">
               Reopen
             </UButton>
           </template>

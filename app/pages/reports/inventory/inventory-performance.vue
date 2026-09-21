@@ -61,7 +61,11 @@ const columns = computed<ColumnDef<StockProfitabilityRow>[]>(() => [
   {
     key: 'quantitySold',
     label: 'Qty sold',
-    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.quantitySold)
+    value: (row) =>
+      formatQuantity(
+        products.value.find((p) => p.id === row.productId),
+        row.quantitySold
+      )
   },
   { key: 'cogs', label: 'COGS', type: 'currency' },
   { key: 'currentStockValue', label: 'Current stock value', type: 'currency' },

@@ -63,7 +63,10 @@ const totalAvailable = computed(() => rows.value.reduce((sum, r) => sum + r.avai
 const totalValuation = computed(() => rows.value.reduce((sum, r) => sum + r.valuationValue, 0))
 
 function formatted(row: InventoryOverviewRow, baseQuantity: number) {
-  return formatQuantity(products.value.find((p) => p.id === row.productId), baseQuantity)
+  return formatQuantity(
+    products.value.find((p) => p.id === row.productId),
+    baseQuantity
+  )
 }
 
 const columns = computed<ColumnDef<InventoryOverviewRow>[]>(() => [

@@ -30,14 +30,7 @@
     <UCard v-else-if="report">
       <DataTable :rows="report.rows" :columns="columns" :exportable="false">
         <template #actions-data="{ row }">
-          <UButton
-            v-if="row.unpaidCommissionAmount > 0"
-            size="xs"
-            color="primary"
-            variant="soft"
-            icon="i-lucide-banknote"
-            @click="openMarkPaid(row)"
-          >
+          <UButton v-if="row.unpaidCommissionAmount > 0" size="xs" color="primary" variant="soft" icon="i-lucide-banknote" @click="openMarkPaid(row)">
             Mark paid
           </UButton>
         </template>
@@ -51,8 +44,8 @@
       <template #body>
         <div class="space-y-4">
           <p class="text-sm text-gray-500 dark:text-gray-400">
-            Marks every unpaid commission entry for <strong>{{ markPaidTarget?.salesRepName ?? 'this rep' }}</strong> earned on or before the date below as
-            paid out.
+            Marks every unpaid commission entry for <strong>{{ markPaidTarget?.salesRepName ?? 'this rep' }}</strong> earned on or before the date below as paid
+            out.
           </p>
           <UFormField label="Through date">
             <UInput v-model="markPaidThroughDate" type="date" class="w-full" />
@@ -85,10 +78,7 @@ const report = ref<CommissionReport | null>(null)
 const salesRepUserId = ref<number | undefined>(undefined)
 
 const users = ref<{ id: number; username: string }[]>([])
-const userFilterOptions = computed(() => [
-  { label: 'All reps', value: undefined },
-  ...users.value.map((u) => ({ label: u.username, value: u.id }))
-])
+const userFilterOptions = computed(() => [{ label: 'All reps', value: undefined }, ...users.value.map((u) => ({ label: u.username, value: u.id }))])
 
 const columns: ColumnDef<CommissionReportRow>[] = [
   { key: 'salesRepName', label: 'Sales rep', value: (row) => row.salesRepName ?? '—', footer: () => 'Total' },

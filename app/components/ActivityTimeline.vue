@@ -12,11 +12,7 @@
       <div class="flex-1 min-w-0 pt-0.5">
         <div class="flex items-start justify-between gap-2">
           <span class="text-sm font-medium text-gray-900 dark:text-white">{{ a.description }}</span>
-          <span
-            v-if="a.amount != null"
-            :class="Number(a.amount) >= 0 ? 'text-error' : 'text-success'"
-            class="text-sm font-semibold shrink-0"
-          >
+          <span v-if="a.amount != null" :class="Number(a.amount) >= 0 ? 'text-error' : 'text-success'" class="text-sm font-semibold shrink-0">
             {{ Number(a.amount) >= 0 ? '+' : '' }}{{ formatCurrency(a.amount) }}
           </span>
           <span v-else class="text-xs text-gray-400 shrink-0">{{ formatEnum(a.type) }}</span>

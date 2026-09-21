@@ -56,7 +56,11 @@ const columns = computed<ColumnDef<StockByPartyRow>[]>(() => [
   {
     key: 'quantity',
     label: 'Reserved qty',
-    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.quantity)
+    value: (row) =>
+      formatQuantity(
+        products.value.find((p) => p.id === row.productId),
+        row.quantity
+      )
   }
 ])
 

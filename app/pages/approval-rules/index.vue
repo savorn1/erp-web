@@ -16,8 +16,8 @@
 
     <UCard class="mb-4">
       <p class="text-xs text-gray-400">
-        Require more than one distinct person to approve a Sales Order or Purchase Order, either always or only above a chosen amount. With no rule
-        configured for a document type, approval stays single-click exactly as before.
+        Require more than one distinct person to approve a Sales Order or Purchase Order, either always or only above a chosen amount. With no rule configured
+        for a document type, approval stays single-click exactly as before.
       </p>
     </UCard>
 

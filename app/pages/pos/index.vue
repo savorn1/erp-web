@@ -6,7 +6,13 @@
     <UCard v-if="!session">
       <div class="space-y-4 max-w-md">
         <UFormField label="Register" required>
-          <USelect v-model="selectedRegisterId" :items="registerOptions" placeholder="Select a register" class="w-full" @update:model-value="onRegisterChanged" />
+          <USelect
+            v-model="selectedRegisterId"
+            :items="registerOptions"
+            placeholder="Select a register"
+            class="w-full"
+            @update:model-value="onRegisterChanged"
+          />
         </UFormField>
 
         <template v-if="selectedRegister">
@@ -33,17 +39,11 @@
     <template v-else>
       <div class="flex items-center justify-between mb-4">
         <p class="text-sm text-gray-500 dark:text-gray-400">
-          Register <span class="font-medium text-gray-900 dark:text-white">{{ selectedRegister?.name }}</span>
-          — session opened {{ formatDateTime(session.openedAt) }}
+          Register <span class="font-medium text-gray-900 dark:text-white">{{ selectedRegister?.name }}</span> — session opened
+          {{ formatDateTime(session.openedAt) }}
         </p>
         <div class="flex items-center gap-2">
-          <UButton
-            size="sm"
-            color="neutral"
-            variant="soft"
-            :icon="kioskMode ? 'i-lucide-minimize' : 'i-lucide-maximize'"
-            @click="toggleKiosk"
-          >
+          <UButton size="sm" color="neutral" variant="soft" :icon="kioskMode ? 'i-lucide-minimize' : 'i-lucide-maximize'" @click="toggleKiosk">
             {{ kioskMode ? 'Exit full screen' : 'Full screen' }}
           </UButton>
           <UButton size="sm" color="neutral" variant="soft" icon="i-lucide-clock" @click="openHeldSales">
@@ -56,15 +56,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
         <!-- ── Browse ─────────────────────────────────────────────────────── -->
         <div class="lg:col-span-2 space-y-4">
-          <UInput
-            v-model="search"
-            placeholder="Search menu…"
-            icon="i-lucide-search"
-            size="lg"
-            class="w-full"
-            autofocus
-            @keyup.enter="onSearchEnter"
-          />
+          <UInput v-model="search" placeholder="Search menu…" icon="i-lucide-search" size="lg" class="w-full" autofocus @keyup.enter="onSearchEnter" />
 
           <div class="flex gap-2 overflow-x-auto pb-1">
             <button
@@ -127,13 +119,7 @@
                 </p>
                 <div class="flex items-center justify-between mt-2">
                   <span class="font-semibold text-primary-600 dark:text-primary-400">{{ formatCurrency(product.sellingPrice) }}</span>
-                  <UButton
-                    size="xs"
-                    icon="i-lucide-plus"
-                    color="primary"
-                    :disabled="stockTierFor(product.id) === 'out'"
-                    @click.stop="addToCart(product)"
-                  />
+                  <UButton size="xs" icon="i-lucide-plus" color="primary" :disabled="stockTierFor(product.id) === 'out'" @click.stop="addToCart(product)" />
                 </div>
               </div>
             </button>
@@ -158,7 +144,10 @@
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium truncate">{{ line.name }}</p>
-                <p class="text-xs truncate flex items-center gap-1" :class="stockTierFor(line.productId) === 'low' ? 'text-warning' : 'text-gray-500 dark:text-gray-400'">
+                <p
+                  class="text-xs truncate flex items-center gap-1"
+                  :class="stockTierFor(line.productId) === 'low' ? 'text-warning' : 'text-gray-500 dark:text-gray-400'"
+                >
                   <UIcon v-if="stockTierFor(line.productId) === 'low'" name="i-lucide-triangle-alert" class="w-3 h-3 shrink-0" />
                   {{ stockTierFor(line.productId) === 'low' ? `Only ${availableFor(line.productId)} in stock` : (line.categoryName ?? '—') }}
                 </p>
@@ -186,12 +175,25 @@
           </UFormField>
 
           <dl class="text-sm space-y-1 mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
-            <div class="flex justify-between text-gray-500 dark:text-gray-400"><dt>Items</dt><dd>{{ itemCount }} ({{ cart.length }} item{{ cart.length === 1 ? '' : 's' }})</dd></div>
-            <div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Subtotal</dt><dd>{{ formatCurrency(totals.subtotal) }}</dd></div>
-            <div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Discount</dt><dd class="text-error">-{{ formatCurrency(totals.discountAmount) }}</dd></div>
-            <div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Tax</dt><dd>{{ formatCurrency(totals.taxAmount) }}</dd></div>
+            <div class="flex justify-between text-gray-500 dark:text-gray-400">
+              <dt>Items</dt>
+              <dd>{{ itemCount }} ({{ cart.length }} item{{ cart.length === 1 ? '' : 's' }})</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-gray-500 dark:text-gray-400">Subtotal</dt>
+              <dd>{{ formatCurrency(totals.subtotal) }}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-gray-500 dark:text-gray-400">Discount</dt>
+              <dd class="text-error">-{{ formatCurrency(totals.discountAmount) }}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-gray-500 dark:text-gray-400">Tax</dt>
+              <dd>{{ formatCurrency(totals.taxAmount) }}</dd>
+            </div>
             <div class="flex justify-between text-base font-semibold pt-2 border-t border-gray-200 dark:border-gray-800">
-              <dt>Total</dt><dd>{{ formatCurrency(totals.totalAmount) }}</dd>
+              <dt>Total</dt>
+              <dd>{{ formatCurrency(totals.totalAmount) }}</dd>
             </div>
           </dl>
 
@@ -231,7 +233,10 @@
           <UButton size="xs" variant="link" icon="i-lucide-plus" class="mt-1 px-0" @click="addTender">Split payment</UButton>
 
           <dl class="text-sm space-y-1 mt-2 pt-2 border-t border-gray-200 dark:border-gray-800">
-            <div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Tendered</dt><dd>{{ formatCurrency(tenderedTotal) }}</dd></div>
+            <div class="flex justify-between">
+              <dt class="text-gray-500 dark:text-gray-400">Tendered</dt>
+              <dd>{{ formatCurrency(tenderedTotal) }}</dd>
+            </div>
             <div class="flex justify-between font-medium">
               <dt>{{ remaining > 0 ? 'Remaining' : 'Change due' }}</dt>
               <dd :class="remaining > 0 ? 'text-error' : 'text-success'">{{ formatCurrency(Math.abs(remaining)) }}</dd>
@@ -240,22 +245,8 @@
 
           <UAlert v-if="checkoutError" color="error" variant="subtle" class="mt-3" :title="checkoutError" />
           <div class="flex gap-2 mt-4">
-            <UButton
-              color="neutral"
-              variant="soft"
-              icon="i-lucide-trash-2"
-              :disabled="cart.length === 0"
-              @click="confirmClearCart = true"
-            />
-            <UButton
-              color="neutral"
-              variant="soft"
-              icon="i-lucide-clock"
-              :disabled="cart.length === 0"
-              @click="openHoldModal"
-            >
-              Hold
-            </UButton>
+            <UButton color="neutral" variant="soft" icon="i-lucide-trash-2" :disabled="cart.length === 0" @click="confirmClearCart = true" />
+            <UButton color="neutral" variant="soft" icon="i-lucide-clock" :disabled="cart.length === 0" @click="openHoldModal"> Hold </UButton>
             <UButton block size="lg" class="flex-1" :loading="checkingOut" :disabled="cart.length === 0 || remaining > 0" @click="onCheckout">
               Process transaction
             </UButton>
@@ -287,8 +278,14 @@
           </ul>
           <div class="border-t border-dashed border-gray-200 dark:border-gray-800" />
           <dl class="space-y-1">
-            <div class="flex justify-between"><dt>Subtotal</dt><dd>{{ formatCurrency(completedSale.subtotal) }}</dd></div>
-            <div class="flex justify-between"><dt>Discount</dt><dd>-{{ formatCurrency(completedSale.discountAmount) }}</dd></div>
+            <div class="flex justify-between">
+              <dt>Subtotal</dt>
+              <dd>{{ formatCurrency(completedSale.subtotal) }}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt>Discount</dt>
+              <dd>-{{ formatCurrency(completedSale.discountAmount) }}</dd>
+            </div>
             <div v-for="tb in receiptTaxBreakdown" :key="tb.rate" class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
               <dt>Tax @ {{ tb.rate }}%</dt>
               <dd>{{ formatCurrency(tb.amount) }}</dd>
@@ -297,7 +294,10 @@
               <dt>Total</dt>
               <dd>{{ formatCurrency(completedSale.totalAmount) }}</dd>
             </div>
-            <div v-if="completedSale.changeDue" class="flex justify-between"><dt>Change</dt><dd>{{ formatCurrency(completedSale.changeDue) }}</dd></div>
+            <div v-if="completedSale.changeDue" class="flex justify-between">
+              <dt>Change</dt>
+              <dd>{{ formatCurrency(completedSale.changeDue) }}</dd>
+            </div>
           </dl>
           <p class="text-center text-xs text-gray-500 dark:text-gray-400 pt-2">Thank you!</p>
         </div>

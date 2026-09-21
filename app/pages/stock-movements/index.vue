@@ -35,7 +35,13 @@
       >
         <template #quantityDelta-data="{ row }">
           <span :class="row.quantityDelta >= 0 ? 'text-success' : 'text-error'" class="font-medium">
-            {{ formatQuantity(products.find((p) => p.id === row.productId), row.quantityDelta, { signed: true }) }}
+            {{
+              formatQuantity(
+                products.find((p) => p.id === row.productId),
+                row.quantityDelta,
+                { signed: true }
+              )
+            }}
           </span>
         </template>
         <template #empty-state>

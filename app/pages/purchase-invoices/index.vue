@@ -140,7 +140,12 @@
       <template #body>
         <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingInvoice">
-          <WorkflowStatusStepper :status="viewingInvoice.status" :steps="invoiceWorkflowSteps" :next-hint="invoiceWorkflowHint(viewingInvoice.status)" class="mb-4" />
+          <WorkflowStatusStepper
+            :status="viewingInvoice.status"
+            :steps="invoiceWorkflowSteps"
+            :next-hint="invoiceWorkflowHint(viewingInvoice.status)"
+            class="mb-4"
+          />
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
             <div>
               <dt class="text-gray-400">Supplier</dt>

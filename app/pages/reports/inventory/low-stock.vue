@@ -44,9 +44,7 @@
       />
       <DataTable :rows="lowStock.rows" :columns="columns" :exportable="false">
         <template #actions-data="{ row }">
-          <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-shopping-cart" @click="openGenerateModal(row.productId)">
-            Create PR
-          </UButton>
+          <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-shopping-cart" @click="openGenerateModal(row.productId)"> Create PR </UButton>
         </template>
         <template #empty-state>
           <EmptyState icon="i-lucide-check-circle" title="Nothing is low on stock" />
@@ -107,7 +105,10 @@ const departments = ref<{ id: number; name: string }[]>([])
 const departmentOptions = computed(() => departments.value.map((d) => ({ label: d.name, value: d.id })))
 
 function formatted(row: InventoryOverviewRow, baseQuantity: number) {
-  return formatQuantity(products.value.find((p) => p.id === row.productId), baseQuantity)
+  return formatQuantity(
+    products.value.find((p) => p.id === row.productId),
+    baseQuantity
+  )
 }
 
 const columns = computed<ColumnDef<InventoryOverviewRow>[]>(() => [

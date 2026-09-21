@@ -61,15 +61,31 @@
 
     <UModal v-model:open="showCreate" title="New cost center">
       <template #body>
-        <DynamicForm v-model="createForm" :fields="formFields" :loading="creating" :error="createError" submit-label="Create" cancelable
-          @submit="onCreate" @cancel="showCreate = false" />
+        <DynamicForm
+          v-model="createForm"
+          :fields="formFields"
+          :loading="creating"
+          :error="createError"
+          submit-label="Create"
+          cancelable
+          @submit="onCreate"
+          @cancel="showCreate = false"
+        />
       </template>
     </UModal>
 
     <UModal v-model:open="showEdit" :title="`Edit cost center '${editingCostCenter?.name ?? ''}'`">
       <template #body>
-        <DynamicForm v-model="editForm" :fields="formFields" :loading="editing" :error="editError" submit-label="Save changes" cancelable
-          @submit="onEdit" @cancel="showEdit = false" />
+        <DynamicForm
+          v-model="editForm"
+          :fields="formFields"
+          :loading="editing"
+          :error="editError"
+          submit-label="Save changes"
+          cancelable
+          @submit="onEdit"
+          @cancel="showEdit = false"
+        />
       </template>
     </UModal>
 

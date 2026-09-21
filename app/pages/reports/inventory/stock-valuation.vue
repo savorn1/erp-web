@@ -94,7 +94,11 @@ const productColumns = computed<ColumnDef<ProductValuationRow>[]>(() => [
   {
     key: 'totalQuantity',
     label: 'Quantity',
-    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.totalQuantity)
+    value: (row) =>
+      formatQuantity(
+        products.value.find((p) => p.id === row.productId),
+        row.totalQuantity
+      )
   },
   { key: 'totalValue', label: 'Value', type: 'currency' }
 ])

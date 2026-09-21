@@ -59,7 +59,11 @@ const columns = computed<ColumnDef<StockOpeningClosingRow>[]>(() => [
   {
     key: 'closingQuantity',
     label: 'Closing quantity',
-    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.closingQuantity)
+    value: (row) =>
+      formatQuantity(
+        products.value.find((p) => p.id === row.productId),
+        row.closingQuantity
+      )
   }
 ])
 

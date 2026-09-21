@@ -52,7 +52,13 @@
       <template #body>
         <div class="space-y-4">
           <UFormField label="Company" required>
-            <USelect v-model="form.companyId" :items="activeCompanyOptions" :disabled="editingId !== null" class="w-full" @update:model-value="onCompanyChanged" />
+            <USelect
+              v-model="form.companyId"
+              :items="activeCompanyOptions"
+              :disabled="editingId !== null"
+              class="w-full"
+              @update:model-value="onCompanyChanged"
+            />
           </UFormField>
           <UFormField label="Fiscal year" required>
             <USelect

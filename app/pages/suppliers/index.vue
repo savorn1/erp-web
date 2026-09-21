@@ -4,13 +4,7 @@
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Suppliers</h1>
       <div class="flex items-center gap-2">
         <UButton color="neutral" variant="soft" icon="i-lucide-bar-chart-3" to="/reports/purchase/supplier-performance"> View scorecards </UButton>
-        <UButton
-          color="neutral"
-          variant="soft"
-          icon="i-lucide-upload"
-          :disabled="activeCompanyOptions.length === 0"
-          @click="showImport = true"
-        >
+        <UButton color="neutral" variant="soft" icon="i-lucide-upload" :disabled="activeCompanyOptions.length === 0" @click="showImport = true">
           Import CSV
         </UButton>
         <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New supplier </UButton>
@@ -59,13 +53,7 @@
             <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-wallet" @click="openBalanceWith(row)">Balance</UButton>
             <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-history" @click="openHistoryFor(row)">History</UButton>
             <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-paperclip" @click="openAttachmentsWith(row)">Files</UButton>
-            <UButton
-              size="xs"
-              color="neutral"
-              variant="soft"
-              icon="i-lucide-bar-chart-3"
-              :to="`/reports/purchase/supplier-performance?supplierId=${row.id}`"
-            />
+            <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-bar-chart-3" :to="`/reports/purchase/supplier-performance?supplierId=${row.id}`" />
             <UDropdownMenu :items="statusMenuItems(row)">
               <UButton size="xs" color="neutral" variant="soft" trailing-icon="i-lucide-chevron-down">Status</UButton>
             </UDropdownMenu>

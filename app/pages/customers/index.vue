@@ -3,13 +3,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Customers</h1>
       <div class="flex items-center gap-2">
-        <UButton
-          color="neutral"
-          variant="soft"
-          icon="i-lucide-upload"
-          :disabled="activeCompanyOptions.length === 0"
-          @click="showImport = true"
-        >
+        <UButton color="neutral" variant="soft" icon="i-lucide-upload" :disabled="activeCompanyOptions.length === 0" @click="showImport = true">
           Import CSV
         </UButton>
         <UButton icon="i-lucide-plus" :disabled="activeCompanyOptions.length === 0" @click="openCreate"> New customer </UButton>
@@ -173,7 +167,11 @@
             <div v-if="loadingRelated" class="text-sm text-gray-400">Loading…</div>
             <EmptyState v-else-if="relatedLeads.length === 0" icon="i-lucide-target" title="No deals yet" />
             <ul v-else class="space-y-1.5 max-h-56 overflow-y-auto">
-              <li v-for="l in relatedLeads" :key="l.id" class="flex items-center justify-between gap-2 text-sm rounded-md px-2 py-1.5 bg-gray-50 dark:bg-gray-900/40">
+              <li
+                v-for="l in relatedLeads"
+                :key="l.id"
+                class="flex items-center justify-between gap-2 text-sm rounded-md px-2 py-1.5 bg-gray-50 dark:bg-gray-900/40"
+              >
                 <span class="text-gray-900 dark:text-white truncate">{{ l.dealName ?? l.contactName }}</span>
                 <div class="flex items-center gap-2 shrink-0">
                   <span class="text-gray-500 dark:text-gray-400">{{ formatCurrency(l.amount) }}</span>
@@ -190,7 +188,11 @@
             <div v-if="loadingRelated" class="text-sm text-gray-400">Loading…</div>
             <EmptyState v-else-if="relatedQuotations.length === 0" icon="i-lucide-file-text" title="No quotations yet" />
             <ul v-else class="space-y-1.5 max-h-56 overflow-y-auto">
-              <li v-for="q in relatedQuotations" :key="q.id" class="flex items-center justify-between gap-2 text-sm rounded-md px-2 py-1.5 bg-gray-50 dark:bg-gray-900/40">
+              <li
+                v-for="q in relatedQuotations"
+                :key="q.id"
+                class="flex items-center justify-between gap-2 text-sm rounded-md px-2 py-1.5 bg-gray-50 dark:bg-gray-900/40"
+              >
                 <span class="text-gray-900 dark:text-white truncate">{{ q.quotationNumber }}</span>
                 <div class="flex items-center gap-2 shrink-0">
                   <span class="text-gray-500 dark:text-gray-400">{{ formatCurrency(q.totalAmount) }}</span>
@@ -536,10 +538,7 @@ async function openRelatedFor(row: Customer) {
   openRelatedWith(row)
   loadingRelated.value = true
   try {
-    const [o, q] = await Promise.all([
-      listLeads({ customerId: row.id, size: 50 }),
-      listQuotations({ customerId: row.id, size: 50 })
-    ])
+    const [o, q] = await Promise.all([listLeads({ customerId: row.id, size: 50 }), listQuotations({ customerId: row.id, size: 50 })])
     relatedLeads.value = o.data
     relatedQuotations.value = q.data
   } finally {

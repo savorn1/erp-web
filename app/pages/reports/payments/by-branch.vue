@@ -20,8 +20,8 @@
         </UFormField>
       </div>
       <p class="text-xs text-gray-400 mt-3">
-        Payments don't carry a branch themselves — each is attributed to the branch of the user who recorded it. "Unassigned" collects payments whose
-        recording user has no branch.
+        Payments don't carry a branch themselves — each is attributed to the branch of the user who recorded it. "Unassigned" collects payments whose recording
+        user has no branch.
       </p>
     </UCard>
 

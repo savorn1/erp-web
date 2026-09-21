@@ -21,9 +21,18 @@
           </template>
           <div class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ side.name }}</div>
           <div class="grid grid-cols-3 gap-3 text-sm">
-            <div><div class="text-gray-400">Output qty</div><div class="font-medium">{{ side.outputQuantity }}</div></div>
-            <div><div class="text-gray-400">Cost/batch</div><div class="font-medium">{{ formatCurrency(side.materialCostPerBatch) }}</div></div>
-            <div><div class="text-gray-400">Cost/unit</div><div class="font-medium">{{ formatCurrency(side.materialCostPerUnit) }}</div></div>
+            <div>
+              <div class="text-gray-400">Output qty</div>
+              <div class="font-medium">{{ side.outputQuantity }}</div>
+            </div>
+            <div>
+              <div class="text-gray-400">Cost/batch</div>
+              <div class="font-medium">{{ formatCurrency(side.materialCostPerBatch) }}</div>
+            </div>
+            <div>
+              <div class="text-gray-400">Cost/unit</div>
+              <div class="font-medium">{{ formatCurrency(side.materialCostPerUnit) }}</div>
+            </div>
           </div>
         </UCard>
       </div>

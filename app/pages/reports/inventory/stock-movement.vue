@@ -85,7 +85,12 @@ const columns = computed<ColumnDef<StockMovement>[]>(() => [
   {
     key: 'quantityDelta',
     label: 'Qty change',
-    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.quantityDelta, { signed: true }),
+    value: (row) =>
+      formatQuantity(
+        products.value.find((p) => p.id === row.productId),
+        row.quantityDelta,
+        { signed: true }
+      ),
     class: (row) => (row.quantityDelta >= 0 ? 'text-success' : 'text-error')
   },
   { key: 'reference', label: 'Reference', value: (row) => `${row.referenceType} #${row.referenceId}` }

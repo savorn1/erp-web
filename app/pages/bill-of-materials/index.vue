@@ -42,15 +42,7 @@
             >
               Deactivate
             </UButton>
-            <UButton
-              v-else
-              size="xs"
-              color="success"
-              variant="soft"
-              icon="i-lucide-play"
-              :loading="actingId === row.id"
-              @click="onActivate(row)"
-            >
+            <UButton v-else size="xs" color="success" variant="soft" icon="i-lucide-play" :loading="actingId === row.id" @click="onActivate(row)">
               Activate
             </UButton>
             <UButton

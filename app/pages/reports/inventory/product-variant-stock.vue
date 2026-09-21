@@ -70,7 +70,11 @@ const columns = computed<ColumnDef<VariantStockRow>[]>(() => [
   {
     key: 'productTotalQuantity',
     label: "Product's total on-hand",
-    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.productTotalQuantity)
+    value: (row) =>
+      formatQuantity(
+        products.value.find((p) => p.id === row.productId),
+        row.productTotalQuantity
+      )
   }
 ])
 

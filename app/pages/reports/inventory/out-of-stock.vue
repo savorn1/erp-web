@@ -51,7 +51,10 @@ const rows = ref<InventoryOverviewRow[]>([])
 const products = ref<{ id: number; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]>([])
 
 function formatted(row: InventoryOverviewRow, baseQuantity: number) {
-  return formatQuantity(products.value.find((p) => p.id === row.productId), baseQuantity)
+  return formatQuantity(
+    products.value.find((p) => p.id === row.productId),
+    baseQuantity
+  )
 }
 
 const columns = computed<ColumnDef<InventoryOverviewRow>[]>(() => [

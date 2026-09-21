@@ -5,14 +5,7 @@
         <UButton icon="i-lucide-arrow-left" color="neutral" variant="ghost" :to="'/pos/exchanges'" />
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">New exchange</h1>
       </div>
-      <UButton
-        v-if="session"
-        size="sm"
-        color="neutral"
-        variant="soft"
-        :icon="kioskMode ? 'i-lucide-minimize' : 'i-lucide-maximize'"
-        @click="toggleKiosk"
-      >
+      <UButton v-if="session" size="sm" color="neutral" variant="soft" :icon="kioskMode ? 'i-lucide-minimize' : 'i-lucide-maximize'" @click="toggleKiosk">
         {{ kioskMode ? 'Exit full screen' : 'Full screen' }}
       </UButton>
     </div>
@@ -78,14 +71,7 @@
           <template #header>
             <div class="flex items-center justify-between gap-3">
               <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Return items</h2>
-              <UInput
-                v-model="scanTerm"
-                placeholder="Scan barcode to return"
-                icon="i-lucide-scan-barcode"
-                size="sm"
-                class="w-56"
-                @keyup.enter="onScanReturn"
-              />
+              <UInput v-model="scanTerm" placeholder="Scan barcode to return" icon="i-lucide-scan-barcode" size="sm" class="w-56" @keyup.enter="onScanReturn" />
             </div>
           </template>
           <div v-if="returnableLines.length === 0" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">
@@ -103,9 +89,7 @@
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium truncate">{{ line.productName }}</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">
-                  Sold {{ line.quantity }} · Remaining to return: {{ remainingOf(line) }}
-                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Sold {{ line.quantity }} · Remaining to return: {{ remainingOf(line) }}</p>
               </div>
               <UInput
                 v-model.number="returnQuantities[line.id]"
@@ -196,8 +180,14 @@
             <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">Settlement</h2></template>
 
             <dl class="text-sm space-y-1">
-              <div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Return value</dt><dd>-{{ formatCurrency(returnTotal) }}</dd></div>
-              <div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">New items</dt><dd>{{ formatCurrency(newTotal) }}</dd></div>
+              <div class="flex justify-between">
+                <dt class="text-gray-500 dark:text-gray-400">Return value</dt>
+                <dd>-{{ formatCurrency(returnTotal) }}</dd>
+              </div>
+              <div class="flex justify-between">
+                <dt class="text-gray-500 dark:text-gray-400">New items</dt>
+                <dd>{{ formatCurrency(newTotal) }}</dd>
+              </div>
               <div class="flex justify-between text-base font-semibold pt-2 border-t border-gray-200 dark:border-gray-800">
                 <dt>{{ netLabel }}</dt>
                 <dd :class="netAmount > 0 ? 'text-error' : netAmount < 0 ? 'text-success' : ''">{{ formatCurrency(Math.abs(netAmount)) }}</dd>
@@ -229,7 +219,10 @@
                   <UInput v-model.number="cashTendered" type="number" min="0" step="0.01" class="w-full" />
                 </UFormField>
                 <dl class="text-sm space-y-1 mt-2">
-                  <div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Change due</dt><dd>{{ formatCurrency(changeDuePreview) }}</dd></div>
+                  <div class="flex justify-between">
+                    <dt class="text-gray-500 dark:text-gray-400">Change due</dt>
+                    <dd>{{ formatCurrency(changeDuePreview) }}</dd>
+                  </div>
                 </dl>
               </template>
             </template>
@@ -251,13 +244,22 @@
           </div>
           <div class="border-t border-dashed border-gray-200 dark:border-gray-800" />
           <dl class="space-y-1">
-            <div class="flex justify-between"><dt>Return value</dt><dd>-{{ formatCurrency(completedExchange.returnValue + completedExchange.returnTaxValue) }}</dd></div>
-            <div class="flex justify-between"><dt>New items</dt><dd>{{ formatCurrency(completedExchange.newValue + completedExchange.newTaxValue) }}</dd></div>
+            <div class="flex justify-between">
+              <dt>Return value</dt>
+              <dd>-{{ formatCurrency(completedExchange.returnValue + completedExchange.returnTaxValue) }}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt>New items</dt>
+              <dd>{{ formatCurrency(completedExchange.newValue + completedExchange.newTaxValue) }}</dd>
+            </div>
             <div class="flex justify-between font-semibold text-base pt-1 border-t border-dashed border-gray-200 dark:border-gray-800">
               <dt>{{ completedExchange.netAmount > 0 ? 'Customer paid' : completedExchange.netAmount < 0 ? 'Refunded' : 'Even exchange' }}</dt>
               <dd>{{ formatCurrency(Math.abs(completedExchange.netAmount)) }}</dd>
             </div>
-            <div v-if="completedExchange.changeDue" class="flex justify-between"><dt>Change</dt><dd>{{ formatCurrency(completedExchange.changeDue) }}</dd></div>
+            <div v-if="completedExchange.changeDue" class="flex justify-between">
+              <dt>Change</dt>
+              <dd>{{ formatCurrency(completedExchange.changeDue) }}</dd>
+            </div>
           </dl>
           <p class="text-center text-xs text-gray-500 dark:text-gray-400 pt-2">Thank you!</p>
         </div>

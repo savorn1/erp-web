@@ -62,15 +62,31 @@
 
     <UModal v-model:open="showCreate" title="New machine" :ui="{ content: 'sm:max-w-2xl' }">
       <template #body>
-        <DynamicForm v-model="createForm" :fields="machineFields" :loading="creating" :error="createError" submit-label="Create" cancelable
-          @submit="onCreate" @cancel="showCreate = false" />
+        <DynamicForm
+          v-model="createForm"
+          :fields="machineFields"
+          :loading="creating"
+          :error="createError"
+          submit-label="Create"
+          cancelable
+          @submit="onCreate"
+          @cancel="showCreate = false"
+        />
       </template>
     </UModal>
 
     <UModal v-model:open="showEdit" :title="`Edit machine '${editingMachine?.name ?? ''}'`" :ui="{ content: 'sm:max-w-2xl' }">
       <template #body>
-        <DynamicForm v-model="editForm" :fields="editMachineFields" :loading="editing" :error="editError" submit-label="Save changes" cancelable
-          @submit="onEdit" @cancel="showEdit = false" />
+        <DynamicForm
+          v-model="editForm"
+          :fields="editMachineFields"
+          :loading="editing"
+          :error="editError"
+          submit-label="Save changes"
+          cancelable
+          @submit="onEdit"
+          @cancel="showEdit = false"
+        />
       </template>
     </UModal>
 

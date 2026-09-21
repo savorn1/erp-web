@@ -62,15 +62,31 @@
 
     <UModal v-model:open="showCreate" title="New register">
       <template #body>
-        <DynamicForm v-model="createForm" :fields="formFields" :loading="creating" :error="createError" submit-label="Create" cancelable
-          @submit="onCreate" @cancel="showCreate = false" />
+        <DynamicForm
+          v-model="createForm"
+          :fields="formFields"
+          :loading="creating"
+          :error="createError"
+          submit-label="Create"
+          cancelable
+          @submit="onCreate"
+          @cancel="showCreate = false"
+        />
       </template>
     </UModal>
 
     <UModal v-model:open="showEdit" :title="`Edit register '${editingRegister?.name ?? ''}'`">
       <template #body>
-        <DynamicForm v-model="editForm" :fields="formFields" :loading="editing" :error="editError" submit-label="Save changes" cancelable
-          @submit="onEdit" @cancel="showEdit = false" />
+        <DynamicForm
+          v-model="editForm"
+          :fields="formFields"
+          :loading="editing"
+          :error="editError"
+          submit-label="Save changes"
+          cancelable
+          @submit="onEdit"
+          @cancel="showEdit = false"
+        />
       </template>
     </UModal>
 
@@ -159,7 +175,13 @@ async function load() {
 
 const formFields = computed<FieldDef[]>(() => [
   { name: 'companyId', label: 'Company', type: 'select', required: true, options: activeCompanyOptions.value },
-  { name: 'warehouseId', label: 'Warehouse', type: 'select', required: true, options: warehouseOptionsFor(createForm.value.companyId ?? editForm.value.companyId) },
+  {
+    name: 'warehouseId',
+    label: 'Warehouse',
+    type: 'select',
+    required: true,
+    options: warehouseOptionsFor(createForm.value.companyId ?? editForm.value.companyId)
+  },
   { name: 'code', required: true, hint: 'e.g. REG-01.' },
   { name: 'name', required: true, hint: 'e.g. Front counter.' },
   { name: 'active', type: 'switch', onLabel: 'Active', offLabel: 'Inactive', default: true }

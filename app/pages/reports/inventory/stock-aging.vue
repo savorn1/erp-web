@@ -68,7 +68,11 @@ const columns = computed<ColumnDef<StockAgingRow>[]>(() => [
   {
     key: 'currentStock',
     label: 'On hand',
-    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.currentStock)
+    value: (row) =>
+      formatQuantity(
+        products.value.find((p) => p.id === row.productId),
+        row.currentStock
+      )
   },
   { key: 'value', label: 'Value', type: 'currency' },
   { key: 'daysSinceInbound', label: 'Days since received', value: (row) => row.daysSinceInbound ?? '—' },

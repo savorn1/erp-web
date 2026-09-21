@@ -52,7 +52,10 @@ const products = ref<{ id: number; unitOfMeasureId: number; unitOfMeasureAbbrevi
 
 function formatted(row: StockCountVarianceRow, baseQuantity: number | null) {
   if (baseQuantity === null) return '—'
-  return formatQuantity(products.value.find((p) => p.id === row.productId), baseQuantity)
+  return formatQuantity(
+    products.value.find((p) => p.id === row.productId),
+    baseQuantity
+  )
 }
 
 const columns = computed<ColumnDef<StockCountVarianceRow>[]>(() => [

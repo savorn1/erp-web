@@ -56,7 +56,11 @@ const columns = computed<ColumnDef<InventoryOverviewRow>[]>(() => [
   {
     key: 'currentStock',
     label: 'On hand',
-    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.currentStock),
+    value: (row) =>
+      formatQuantity(
+        products.value.find((p) => p.id === row.productId),
+        row.currentStock
+      ),
     class: 'text-error'
   }
 ])

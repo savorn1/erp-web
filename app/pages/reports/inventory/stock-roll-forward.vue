@@ -77,7 +77,11 @@ const rows = ref<RollForwardRow[]>([])
 const products = ref<{ id: number; unitOfMeasureId: number; unitOfMeasureAbbreviation: string | null }[]>([])
 
 function formatted(row: RollForwardRow, baseQuantity: number, signed = false) {
-  return formatQuantity(products.value.find((p) => p.id === row.productId), baseQuantity, { signed })
+  return formatQuantity(
+    products.value.find((p) => p.id === row.productId),
+    baseQuantity,
+    { signed }
+  )
 }
 
 const columns = computed<ColumnDef<RollForwardRow>[]>(() => [
@@ -113,7 +117,18 @@ async function load() {
       const key = `${productId}:${warehouseId}`
       let bucket = byKey.get(key)
       if (!bucket) {
-        bucket = { productId, productName, productSku, warehouseId, warehouseName, beginningQuantity: 0, inQuantity: 0, outQuantity: 0, adjustments: 0, endingQuantity: 0 }
+        bucket = {
+          productId,
+          productName,
+          productSku,
+          warehouseId,
+          warehouseName,
+          beginningQuantity: 0,
+          inQuantity: 0,
+          outQuantity: 0,
+          adjustments: 0,
+          endingQuantity: 0
+        }
         byKey.set(key, bucket)
       }
       return bucket

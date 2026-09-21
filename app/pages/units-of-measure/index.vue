@@ -156,10 +156,15 @@ const statusFilterOptions = [
 ]
 
 const sort = ref<{ column: string; direction: 'asc' | 'desc' } | undefined>({ column: 'id', direction: 'desc' })
-const categoryFilteredRows = computed(() =>
-  filter.categoryId === undefined ? rows.value : rows.value.filter((row) => row.categoryId === filter.categoryId)
-)
-const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientTable(categoryFilteredRows, { pageSize: 10, searchFields: ['name', 'abbreviation'] })
+const categoryFilteredRows = computed(() => (filter.categoryId === undefined ? rows.value : rows.value.filter((row) => row.categoryId === filter.categoryId)))
+const {
+  page,
+  pageSize,
+  total,
+  rows: pagedRows,
+  truncated,
+  search
+} = useClientTable(categoryFilteredRows, { pageSize: 10, searchFields: ['name', 'abbreviation'] })
 
 const columns: ColumnDef<UnitOfMeasure>[] = [
   { key: 'name', sortable: true },

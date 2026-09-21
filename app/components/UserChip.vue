@@ -1,10 +1,7 @@
 <template>
   <span v-if="!name" class="text-sm text-gray-400">Unassigned</span>
   <span v-else class="inline-flex items-center gap-1.5">
-    <span
-      class="flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-semibold leading-none shrink-0"
-      :class="colorClasses"
-    >
+    <span class="flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-semibold leading-none shrink-0" :class="colorClasses">
       {{ initials }}
     </span>
     <span class="text-sm text-gray-700 dark:text-gray-300 truncate">{{ name }}</span>

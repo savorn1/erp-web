@@ -731,7 +731,12 @@ export function useReportCatalog() {
     { to: '/routings', icon: 'i-lucide-route', label: 'Routings', description: 'The shop-floor operation sequence behind each BOM.' },
     { to: '/work-centers', icon: 'i-lucide-factory', label: 'Work centers', description: 'Production areas that routing operations run in.' },
     { to: '/machines', icon: 'i-lucide-cog', label: 'Machines', description: 'Equipment assigned to work centers.' },
-    { to: '/production-plans', icon: 'i-lucide-calendar-range', label: 'Production plans', description: 'Groups of manufacturing orders planned over a period.' },
+    {
+      to: '/production-plans',
+      icon: 'i-lucide-calendar-range',
+      label: 'Production plans',
+      description: 'Groups of manufacturing orders planned over a period.'
+    },
     { to: '/manufacturing-orders', icon: 'i-lucide-clipboard-list', label: 'Manufacturing orders', description: 'Every manufacturing order and its status.' },
     { to: '/work-orders', icon: 'i-lucide-list-ordered', label: 'Work order report', description: 'Every shop-floor operation step, across all orders.' }
   ])
@@ -739,7 +744,12 @@ export function useReportCatalog() {
   // Cross-ledger payment reports (customer + supplier payments + bank).
   // Indigo like AR — they sit under Accounting in the sidebar.
   const paymentReportTiles: ReportTile[] = withColor('indigo', [
-    { to: '/reports/payments/summary', icon: 'i-lucide-bar-chart-3', label: 'Summary', description: 'Received, paid out, refunded, and net cash flow for a period.' },
+    {
+      to: '/reports/payments/summary',
+      icon: 'i-lucide-bar-chart-3',
+      label: 'Summary',
+      description: 'Received, paid out, refunded, and net cash flow for a period.'
+    },
     { to: '/reports/payments/detail', icon: 'i-lucide-list', label: 'Detail', description: 'Every customer and supplier payment, merged into one ledger.' },
     {
       to: '/reports/payments/detail?party=CUSTOMER&type=PAYMENT',
@@ -792,7 +802,12 @@ export function useReportCatalog() {
       label: 'Outstanding & overdue collection',
       description: 'Approved invoices with a balance still owed, by days overdue.'
     },
-    { to: '/reports/accounting/ar-aging', icon: 'i-lucide-arrow-down-to-line', label: 'Collection aging', description: 'Outstanding customer invoices by age bucket.' },
+    {
+      to: '/reports/accounting/ar-aging',
+      icon: 'i-lucide-arrow-down-to-line',
+      label: 'Collection aging',
+      description: 'Outstanding customer invoices by age bucket.'
+    },
     { to: '/payments', icon: 'i-lucide-hand-coins', label: 'Payment register', description: 'Every customer payment and refund.' },
     { to: '/supplier-payments', icon: 'i-lucide-banknote', label: 'Supplier payment register', description: 'Every supplier payment and refund.' },
     { to: '/bank-accounts', icon: 'i-lucide-landmark', label: 'Bank & cash', description: 'Accounts, transactions, and bank reconciliation.' }

@@ -1,4 +1,3 @@
-
 <template>
   <div>
     <ReportBackButton />
@@ -58,7 +57,11 @@ const columns = computed<ColumnDef<StockDetailRow>[]>(() => [
   {
     key: 'quantityOnHand',
     label: 'On hand',
-    value: (row) => formatQuantity(products.value.find((p) => p.id === row.productId), row.quantityOnHand)
+    value: (row) =>
+      formatQuantity(
+        products.value.find((p) => p.id === row.productId),
+        row.quantityOnHand
+      )
   }
 ])
 
