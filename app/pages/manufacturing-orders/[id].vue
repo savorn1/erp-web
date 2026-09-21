@@ -87,9 +87,11 @@
               </div>
               <div class="divide-y divide-gray-200 dark:divide-gray-800">
                 <div v-for="wo in detail.workOrders" :key="wo.id" class="grid grid-cols-12 gap-2 items-center px-3 py-2 text-sm">
-                  <span class="col-span-1 text-gray-400">{{ wo.sequenceNumber }}</span>
+                  <span class="col-span-1 text-gray-500 dark:text-gray-400">{{ wo.sequenceNumber }}</span>
                   <span class="col-span-4 font-medium truncate">{{ wo.name }}</span>
-                  <span class="col-span-3 text-gray-400 truncate"> {{ wo.workCenterName ?? '—' }}{{ wo.machineName ? ` / ${wo.machineName}` : '' }} </span>
+                  <span class="col-span-3 text-gray-500 dark:text-gray-400 truncate">
+                    {{ wo.workCenterName ?? '—' }}{{ wo.machineName ? ` / ${wo.machineName}` : '' }}
+                  </span>
                   <div class="col-span-2">
                     <StatusBadge :status="wo.status" />
                   </div>
@@ -130,7 +132,7 @@
               <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Material availability</h2>
             </div>
           </template>
-          <div v-if="loadingAvailability" class="text-sm text-gray-400 py-4 text-center">Checking…</div>
+          <div v-if="loadingAvailability" class="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">Checking…</div>
           <DataTable v-else :rows="availability" :columns="availabilityColumns" :exportable="false">
             <template #empty-state>
               <EmptyState icon="i-lucide-list" title="No material lines" />
@@ -217,23 +219,23 @@
           </template>
           <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 text-sm">
             <div>
-              <div class="text-gray-400">Material</div>
+              <div class="text-gray-500 dark:text-gray-400">Material</div>
               <div class="font-medium">{{ formatCurrency(detail.materialCost) }}</div>
             </div>
             <div>
-              <div class="text-gray-400">Labor</div>
+              <div class="text-gray-500 dark:text-gray-400">Labor</div>
               <div class="font-medium">{{ formatCurrency(detail.laborCost) }}</div>
             </div>
             <div>
-              <div class="text-gray-400">Overhead</div>
+              <div class="text-gray-500 dark:text-gray-400">Overhead</div>
               <div class="font-medium">{{ formatCurrency(detail.overheadCost) }}</div>
             </div>
             <div>
-              <div class="text-gray-400">Total</div>
+              <div class="text-gray-500 dark:text-gray-400">Total</div>
               <div class="font-medium">{{ formatCurrency(detail.totalCost) }}</div>
             </div>
             <div>
-              <div class="text-gray-400">Unit cost</div>
+              <div class="text-gray-500 dark:text-gray-400">Unit cost</div>
               <div class="font-medium">{{ formatCurrency(detail.unitCost) }}</div>
             </div>
           </div>
@@ -366,7 +368,7 @@ const availabilityColumns: ColumnDef<MaterialAvailabilityRow>[] = [
     key: 'shortfallQuantity',
     label: 'Shortfall',
     suffix: (row) => ` ${row.unitOfMeasureAbbreviation ?? ''}`,
-    class: (row) => (row.shortfallQuantity > 0 ? 'text-error' : 'text-gray-400')
+    class: (row) => (row.shortfallQuantity > 0 ? 'text-error-600 dark:text-error-400' : 'text-gray-500 dark:text-gray-400')
   }
 ]
 

@@ -19,7 +19,7 @@
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else>
       <DataTable :rows="counts" :columns="columns" exportable export-filename="inventory-inventory-count">
@@ -59,7 +59,7 @@ const columns: ColumnDef<CountSummary>[] = [
   { key: 'countDate', label: 'Date', type: 'date' },
   { key: 'status', label: 'Status', type: 'badge' },
   { key: 'lineCount', label: 'Lines counted' },
-  { key: 'varianceLineCount', label: 'Lines with variance', class: (row) => (row.varianceLineCount > 0 ? 'text-warning' : '') }
+  { key: 'varianceLineCount', label: 'Lines with variance', class: (row) => (row.varianceLineCount > 0 ? 'text-warning-700 dark:text-warning-400' : '') }
 ]
 
 async function load() {

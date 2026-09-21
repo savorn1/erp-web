@@ -164,7 +164,7 @@
         <div class="space-y-5">
           <div>
             <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Leads / deals</p>
-            <div v-if="loadingRelated" class="text-sm text-gray-400">Loading…</div>
+            <div v-if="loadingRelated" class="text-sm text-gray-500 dark:text-gray-400">Loading…</div>
             <EmptyState v-else-if="relatedLeads.length === 0" icon="i-lucide-target" title="No deals yet" />
             <ul v-else class="space-y-1.5 max-h-56 overflow-y-auto">
               <li
@@ -185,7 +185,7 @@
           </div>
           <div>
             <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Quotations</p>
-            <div v-if="loadingRelated" class="text-sm text-gray-400">Loading…</div>
+            <div v-if="loadingRelated" class="text-sm text-gray-500 dark:text-gray-400">Loading…</div>
             <EmptyState v-else-if="relatedQuotations.length === 0" icon="i-lucide-file-text" title="No quotations yet" />
             <ul v-else class="space-y-1.5 max-h-56 overflow-y-auto">
               <li

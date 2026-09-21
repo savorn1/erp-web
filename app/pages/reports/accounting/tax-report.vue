@@ -19,14 +19,14 @@
           <UInput v-model="dateTo" type="date" class="w-40" />
         </UFormField>
       </div>
-      <p class="text-xs text-gray-400 mt-3">
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
         Groups approved sales and purchase invoices by the tax percent typed on their lines — it can't attribute a rate to a named VAT/withholding
         <NuxtLink to="/tax-rates" class="underline">tax rate</NuxtLink> since order and invoice lines aren't linked to one.
       </p>
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <template v-else-if="taxReport">
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">

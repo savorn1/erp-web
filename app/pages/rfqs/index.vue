@@ -99,7 +99,7 @@
 
     <UModal v-model:open="showForm" :title="formTitle" :ui="{ content: 'sm:max-w-4xl' }">
       <template #body>
-        <div v-if="loadingDetail" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+        <div v-if="loadingDetail" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
         <template v-else>
           <WorkflowStatusStepper v-if="editingStatus" :status="editingStatus" :steps="workflowSteps" :next-hint="workflowHint" class="mb-4" />
           <UAlert
@@ -155,7 +155,7 @@
           <div class="mb-4">
             <div
               v-if="form.lines.length === 0"
-              class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
+              class="text-sm text-gray-500 dark:text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
             >
               No line items yet
             </div>

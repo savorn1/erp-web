@@ -19,7 +19,7 @@
       <div class="flex flex-wrap items-center gap-2">
         <UInput v-model.number="calc.quantity" type="number" step="0.0001" class="w-28" />
         <USelect v-model="calc.fromUnitOfMeasureId" :items="unitOptionsFor(undefined)" placeholder="From unit" class="w-48" />
-        <UIcon name="i-lucide-arrow-right" class="text-gray-400 shrink-0" />
+        <UIcon name="i-lucide-arrow-right" class="text-gray-500 dark:text-gray-400 shrink-0" />
         <USelect v-model="calc.toUnitOfMeasureId" :items="unitOptionsFor(undefined)" placeholder="To unit" class="w-48" />
         <UButton :loading="calculating" @click="onCalculate">Convert</UButton>
       </div>

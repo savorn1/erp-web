@@ -19,14 +19,14 @@
           <UInput v-model="dateTo" type="date" class="w-40" />
         </UFormField>
       </div>
-      <p class="text-xs text-gray-400 mt-3">
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
         Payments don't carry a branch themselves — each is attributed to the branch of the user who recorded it. "Unassigned" collects payments whose recording
         user has no branch.
       </p>
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else-if="report">
       <DataTable :rows="report.rows" :columns="columns" exportable export-filename="payments-by-branch">

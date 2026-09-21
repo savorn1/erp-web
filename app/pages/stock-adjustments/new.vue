@@ -5,7 +5,7 @@
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">New stock adjustment</h1>
     </div>
 
-    <div v-if="loadingLookups" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
+    <div v-if="loadingLookups" class="text-sm text-gray-500 dark:text-gray-400 py-12 text-center">Loading…</div>
     <template v-else>
       <div class="space-y-6">
         <UCard>
@@ -55,7 +55,7 @@
 
           <div
             v-if="form.lines.length === 0"
-            class="text-sm text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
+            class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
           >
             No line items yet
           </div>
@@ -76,7 +76,7 @@
                   <div class="grid grid-cols-12 gap-2 items-center">
                     <div class="col-span-3 min-w-0">
                       <p class="text-sm text-gray-900 dark:text-white truncate">{{ productLabel(line.productId) }}</p>
-                      <p v-if="trackingTypeFor(line.productId) !== 'NONE'" class="text-xs text-gray-400">
+                      <p v-if="trackingTypeFor(line.productId) !== 'NONE'" class="text-xs text-gray-500 dark:text-gray-400">
                         {{ trackingTypeFor(line.productId) === 'BATCH' ? 'Batch tracked' : 'Serial tracked' }}
                       </p>
                     </div>
@@ -103,7 +103,10 @@
                       :disabled="trackingTypeFor(line.productId) === 'SERIAL'"
                       class="col-span-2"
                     />
-                    <span class="col-span-2 text-xs" :class="exceedsAvailable(line) ? 'text-error' : 'text-gray-400'">
+                    <span
+                      class="col-span-2 text-xs"
+                      :class="exceedsAvailable(line) ? 'text-error-600 dark:text-error-400' : 'text-gray-500 dark:text-gray-400'"
+                    >
                       {{ availableFor(line) }}<span v-if="exceedsAvailable(line)"> — not enough</span>
                     </span>
                     <UButton size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-1 justify-self-end" @click="form.lines.splice(i, 1)" />
@@ -154,7 +157,7 @@
                       class="w-full"
                       @update:model-value="syncSerialQuantity(line)"
                     />
-                    <p class="text-xs text-gray-400">{{ serialCountFor(line) }} serial number(s) — quantity follows this count</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ serialCountFor(line) }} serial number(s) — quantity follows this count</p>
                   </template>
                 </div>
               </div>

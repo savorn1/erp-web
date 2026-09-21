@@ -23,7 +23,7 @@
           <UButton size="xs" color="primary" variant="link" icon="i-lucide-x" class="p-0" @click="supplierId = undefined" />
         </UBadge>
       </div>
-      <p class="text-xs text-gray-400 mt-3">
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
         Only orders with an expected date and at least one goods receipt count toward the on-time rate — "On time" means the latest receipt landed on or before
         the expected date. QC pass % covers quality-checked goods-receipt lines only. Price variance compares each supplier's price for a product against the
         quantity-weighted average price paid to all suppliers for that same product — only shown where another supplier was also paid for it in this period.
@@ -31,7 +31,7 @@
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else-if="performance">
       <DataTable :rows="performance.rows" :columns="columns" exportable export-filename="purchase-supplier-performance">
@@ -73,7 +73,8 @@ const columns: ColumnDef<SupplierPerformanceRow>[] = [
     key: 'averageDelayDays',
     label: 'Avg delay (days)',
     value: (row) => (row.averageDelayDays === null ? null : Math.round(row.averageDelayDays * 10) / 10),
-    class: (row) => (row.averageDelayDays !== null && row.averageDelayDays > 0 ? 'text-error' : 'text-success')
+    class: (row) =>
+      row.averageDelayDays !== null && row.averageDelayDays > 0 ? 'text-error-600 dark:text-error-400' : 'text-success-700 dark:text-success-400'
   },
   {
     key: 'qualityPassPercent',
@@ -86,7 +87,8 @@ const columns: ColumnDef<SupplierPerformanceRow>[] = [
     label: 'Price variance',
     value: (row) => (row.priceVariancePercent === null ? null : Math.round(row.priceVariancePercent * 10) / 10),
     suffix: (row) => (row.priceVariancePercent === null ? '' : '%'),
-    class: (row) => (row.priceVariancePercent !== null && row.priceVariancePercent > 0 ? 'text-error' : 'text-success')
+    class: (row) =>
+      row.priceVariancePercent !== null && row.priceVariancePercent > 0 ? 'text-error-600 dark:text-error-400' : 'text-success-700 dark:text-success-400'
   }
 ]
 

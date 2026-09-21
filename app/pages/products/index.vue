@@ -49,7 +49,7 @@
       >
         <template #image-data="{ row }">
           <img v-if="row.imageUrl" :src="row.imageUrl" :alt="row.name" class="w-9 h-9 rounded object-cover border border-gray-200 dark:border-gray-800" />
-          <span v-else class="flex items-center justify-center w-9 h-9 rounded bg-gray-100 dark:bg-gray-800 text-gray-400">
+          <span v-else class="flex items-center justify-center w-9 h-9 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
             <UIcon name="i-lucide-package" class="w-4 h-4" />
           </span>
         </template>
@@ -155,7 +155,7 @@
           <span class="text-sm text-gray-500 dark:text-gray-400">Preview price for</span>
           <USelect v-model="uomPreviewPriceGroupId" :items="uomPreviewPriceGroupOptions" placeholder="Default (no price group)" class="w-48" />
         </div>
-        <div v-if="loadingUoms" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+        <div v-if="loadingUoms" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
         <template v-else>
           <div class="space-y-2 mb-5">
             <div v-for="row in uomRows" :key="row.id" class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 space-y-2">
@@ -254,7 +254,7 @@
       :ui="{ content: 'sm:max-w-2xl' }"
     >
       <template #body>
-        <div v-if="loadingUomPrices" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+        <div v-if="loadingUomPrices" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
         <template v-else>
           <EmptyState
             v-if="uomPriceRows.length === 0"
@@ -307,7 +307,7 @@
         <div class="flex justify-end mb-3">
           <UButton size="sm" icon="i-lucide-plus" @click="openVariantCreate">New variant</UButton>
         </div>
-        <div v-if="loadingVariants" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+        <div v-if="loadingVariants" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
         <template v-else>
           <EmptyState
             v-if="variantRows.length === 0"
@@ -323,7 +323,7 @@
             >
               <div class="col-span-3 text-sm text-gray-900 dark:text-white truncate">
                 {{ row.name }}
-                <span v-if="!row.active" class="text-xs text-gray-400">(inactive)</span>
+                <span v-if="!row.active" class="text-xs text-gray-500 dark:text-gray-400">(inactive)</span>
               </div>
               <div class="col-span-2 text-xs text-gray-500 dark:text-gray-400 truncate">{{ row.sku }}</div>
               <div class="col-span-2 text-xs text-gray-500 dark:text-gray-400 truncate">

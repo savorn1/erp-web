@@ -13,7 +13,7 @@
     <template #content>
       <div class="w-80 max-h-96 overflow-y-auto p-2">
         <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide px-2 py-1.5">Alerts</p>
-        <div v-if="loading" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
+        <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">Loading…</div>
         <EmptyState v-else-if="!summary || summary.items.length === 0" icon="i-lucide-check" title="You're all caught up" />
         <ul v-else class="space-y-1">
           <li v-for="item in summary.items" :key="item.type">

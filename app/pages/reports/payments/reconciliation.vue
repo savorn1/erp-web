@@ -19,7 +19,7 @@
           <UInput v-model="dateTo" type="date" class="w-40" />
         </UFormField>
       </div>
-      <p class="text-xs text-gray-400 mt-3">
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
         Payments and bank transactions aren't linked row-by-row in this system, so this reconciles at the totals level: bank-method (transfer/gateway) receipts
         against deposits, bank-method supplier payments against withdrawals. A non-zero variance means something was recorded on one side only. Internal
         transfers are excluded from the totals.
@@ -27,7 +27,7 @@
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <template v-else-if="report">
       <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Receipts</h2>
@@ -84,8 +84,17 @@ const columns: ColumnDef<PaymentReconciliationRow>[] = [
   { key: 'withdrawals', label: 'Withdrawals', type: 'currency' },
   { key: 'reconciledCount', label: 'Reconciled' },
   { key: 'reconciledAmount', label: 'Reconciled amount', type: 'currency' },
-  { key: 'unreconciledCount', label: 'Unreconciled', class: (row) => (row.unreconciledCount > 0 ? 'text-error' : 'text-gray-400') },
-  { key: 'unreconciledAmount', label: 'Unreconciled amount', type: 'currency', class: (row) => (row.unreconciledAmount > 0 ? 'text-error' : '') }
+  {
+    key: 'unreconciledCount',
+    label: 'Unreconciled',
+    class: (row) => (row.unreconciledCount > 0 ? 'text-error-600 dark:text-error-400' : 'text-gray-500 dark:text-gray-400')
+  },
+  {
+    key: 'unreconciledAmount',
+    label: 'Unreconciled amount',
+    type: 'currency',
+    class: (row) => (row.unreconciledAmount > 0 ? 'text-error-600 dark:text-error-400' : '')
+  }
 ]
 
 async function load() {

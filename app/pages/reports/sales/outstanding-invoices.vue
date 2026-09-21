@@ -19,11 +19,13 @@
           <UInput v-model="dateTo" type="date" class="w-40" />
         </UFormField>
       </div>
-      <p class="text-xs text-gray-400 mt-3">Filters by invoice date — the invoice may still be outstanding regardless of when it was raised.</p>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
+        Filters by invoice date — the invoice may still be outstanding regardless of when it was raised.
+      </p>
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <template v-else-if="outstandingInvoices">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -58,7 +60,11 @@ const columns: ColumnDef<SalesOutstandingInvoiceRow>[] = [
   { key: 'invoiceNumber', label: 'Invoice', value: (row) => row.invoiceNumber ?? '—' },
   { key: 'invoiceDate', label: 'Invoice date', type: 'date' },
   { key: 'dueDate', label: 'Due date', type: 'date' },
-  { key: 'daysOverdue', label: 'Days overdue', class: (row) => (row.daysOverdue > 0 ? 'text-error' : 'text-gray-400') },
+  {
+    key: 'daysOverdue',
+    label: 'Days overdue',
+    class: (row) => (row.daysOverdue > 0 ? 'text-error-600 dark:text-error-400' : 'text-gray-500 dark:text-gray-400')
+  },
   { key: 'customerName', label: 'Customer', value: (row) => row.customerName ?? '—' },
   { key: 'outstandingAmount', label: 'Outstanding', type: 'currency' }
 ]

@@ -108,7 +108,7 @@ const columns: ColumnDef<PosExchange>[] = [
     key: 'netAmount',
     label: 'Net',
     value: (row) => `${row.netAmount > 0 ? '+' : row.netAmount < 0 ? '-' : ''}${formatCurrency(Math.abs(row.netAmount))}`,
-    class: (row) => (row.netAmount > 0 ? 'text-error' : row.netAmount < 0 ? 'text-success' : '')
+    class: (row) => (row.netAmount > 0 ? 'text-error-600 dark:text-error-400' : row.netAmount < 0 ? 'text-success-700 dark:text-success-400' : '')
   },
   { key: 'actions', label: '' }
 ]

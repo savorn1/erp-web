@@ -15,9 +15,25 @@ export interface StockCountLine {
   productSku: string | null
   binId: number | null
   binName: string | null
+  // The unit the count sheet is filled in, and how many base units one of
+  // them makes. Null unit on counts created before UOM support; factor is
+  // always populated (1 where there's nothing to convert).
+  unitOfMeasureId: number | null
+  unitOfMeasureAbbreviation: string | null
+  conversionFactor: number
+  // The product's own inventory unit — what systemQuantity/countedQuantity/
+  // varianceQuantity below are measured in.
+  baseUnitOfMeasureAbbreviation: string | null
+  // Always in the product's base inventory unit — varianceQuantity is what
+  // the reconciliation adjustment posts, so it has to be.
   systemQuantity: number
   countedQuantity: number | null
   varianceQuantity: number | null
+  // The same figures in unitOfMeasure, for display on the count sheet. Never
+  // sent back: submitCounts takes the counted quantity in the line's unit and
+  // the server converts, so only the base figures are ever stored.
+  systemQuantityInUnit: number
+  countedQuantityInUnit: number | null
 }
 
 export interface StockCount {
@@ -49,6 +65,9 @@ export interface StockCountFilter {
 export interface StockCountLinePayload {
   productId: number
   binId?: number
+  // Omit for the product's base unit. Anything else must be an
+  // inventory-allowed UOM on that product.
+  unitOfMeasureId?: number
 }
 
 export interface StockCountPayload {
@@ -61,6 +80,8 @@ export interface StockCountPayload {
 
 export interface StockCountLineCountPayload {
   lineId: number
+  // In the line's own unit — the server multiplies by the snapshotted
+  // conversion factor before comparing against system quantity.
   countedQuantity: number
 }
 

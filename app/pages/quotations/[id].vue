@@ -66,7 +66,7 @@
 
           <div
             v-if="form.lines.length === 0"
-            class="text-sm text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
+            class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
           >
             No line items yet
           </div>
@@ -136,7 +136,7 @@
 
           <div class="flex flex-col items-end gap-1 mt-4">
             <div class="text-sm font-medium text-gray-900 dark:text-white">Total: {{ formatCurrency(formTotal) }}</div>
-            <div v-if="formForeignTotal !== null" class="text-xs text-gray-400">
+            <div v-if="formForeignTotal !== null" class="text-xs text-gray-500 dark:text-gray-400">
               ≈ {{ formatCurrency(formForeignTotal, form.foreignCurrency) }} @ {{ form.exchangeRate }} {{ form.foreignCurrency }}
             </div>
           </div>

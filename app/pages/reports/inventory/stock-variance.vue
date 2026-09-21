@@ -22,7 +22,7 @@
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else>
       <DataTable :rows="rows" :columns="columns" exportable export-filename="inventory-stock-variance">
@@ -68,7 +68,8 @@ const columns = computed<ColumnDef<StockCountVarianceRow>[]>(() => [
     key: 'varianceQuantity',
     label: 'Variance',
     value: (row) => formatted(row, row.varianceQuantity),
-    class: (row) => ((row.varianceQuantity ?? 0) < 0 ? 'text-error' : (row.varianceQuantity ?? 0) > 0 ? 'text-success' : '')
+    class: (row) =>
+      (row.varianceQuantity ?? 0) < 0 ? 'text-error-600 dark:text-error-400' : (row.varianceQuantity ?? 0) > 0 ? 'text-success-700 dark:text-success-400' : ''
   },
   { key: 'countDate', label: 'Count date', type: 'date' }
 ])

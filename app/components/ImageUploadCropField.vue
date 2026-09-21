@@ -14,9 +14,9 @@
       @drop.prevent="onDrop"
     >
       <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="onFileChange" />
-      <UIcon name="i-lucide-image-plus" class="size-6 text-gray-400 mx-auto mb-1.5" />
+      <UIcon name="i-lucide-image-plus" class="size-6 text-gray-500 dark:text-gray-400 mx-auto mb-1.5" />
       <p class="text-sm text-gray-500 dark:text-gray-400"><span class="text-primary-500 font-medium">Click to browse</span> or drag an image here</p>
-      <p class="text-xs text-gray-400 mt-1">Up to {{ maxSizeMb }} MB — you'll be able to crop it next</p>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Up to {{ maxSizeMb }} MB — you'll be able to crop it next</p>
     </div>
 
     <template v-else>

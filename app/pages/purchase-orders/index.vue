@@ -44,7 +44,7 @@
         <template #status-data="{ row }">
           <div class="flex items-center gap-2">
             <StatusBadge :status="row.status" />
-            <span v-if="row.status === 'SUBMITTED' && row.approvalsRequired && row.approvalsRequired > 1" class="text-xs text-gray-400">
+            <span v-if="row.status === 'SUBMITTED' && row.approvalsRequired && row.approvalsRequired > 1" class="text-xs text-gray-500 dark:text-gray-400">
               {{ row.approvalsRecorded }}/{{ row.approvalsRequired }} approvals
             </span>
           </div>

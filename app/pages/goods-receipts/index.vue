@@ -93,7 +93,7 @@
         </div>
 
         <template v-if="createPoId">
-          <div v-if="loadingPoDetail" class="text-sm text-gray-400 py-6 text-center">Loading order lines…</div>
+          <div v-if="loadingPoDetail" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">Loading order lines…</div>
           <template v-else>
             <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lines to receive</p>
             <EmptyState
@@ -106,7 +106,9 @@
               <div v-for="line in createLines" :key="line.purchaseOrderLineId" class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 space-y-2">
                 <div class="flex items-center justify-between gap-2">
                   <span class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ line.productName }} ({{ line.productSku }})</span>
-                  <span class="text-xs text-gray-400 shrink-0">Remaining: {{ line.remaining }} {{ line.unitOfMeasureAbbreviation ?? '' }}</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400 shrink-0"
+                    >Remaining: {{ line.remaining }} {{ line.unitOfMeasureAbbreviation ?? '' }}</span
+                  >
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                   <UInput v-model.number="line.quantityReceived" type="number" min="0" :max="line.remaining" step="0.0001" placeholder="Quantity to receive" />
@@ -120,7 +122,10 @@
 
                 <div v-else-if="line.trackingType === 'SERIAL'">
                   <UTextarea v-model="line.serialNumbersText" placeholder="One serial number per line" :rows="3" class="w-full" />
-                  <p class="text-xs mt-1" :class="parsedSerials(line).length === line.quantityReceived ? 'text-gray-400' : 'text-error'">
+                  <p
+                    class="text-xs mt-1"
+                    :class="parsedSerials(line).length === line.quantityReceived ? 'text-gray-500 dark:text-gray-400' : 'text-error-600 dark:text-error-400'"
+                  >
                     {{ parsedSerials(line).length }} of {{ line.quantityReceived }} serial number(s) entered
                   </p>
                 </div>
@@ -140,7 +145,7 @@
 
     <UModal v-model:open="showView" :title="`Receipt — ${viewingReceipt?.receiptNumber ?? ''}`" :ui="{ content: 'sm:max-w-2xl' }">
       <template #body>
-        <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
+        <div v-if="loadingView" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingReceipt">
           <WorkflowStatusStepper
             :status="viewingReceipt.status"
@@ -150,23 +155,23 @@
           />
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
             <div>
-              <dt class="text-gray-400">Purchase order</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Purchase order</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingReceipt.poNumber }}</dd>
             </div>
             <div>
-              <dt class="text-gray-400">Warehouse</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Warehouse</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingReceipt.warehouseName }}</dd>
             </div>
             <div>
-              <dt class="text-gray-400">Receipt date</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Receipt date</dt>
               <dd class="text-gray-900 dark:text-white">{{ formatDate(viewingReceipt.receiptDate) }}</dd>
             </div>
             <div>
-              <dt class="text-gray-400">Posted by</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Posted by</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingReceipt.createdBy ?? '—' }}</dd>
             </div>
             <div v-if="viewingReceipt.notes" class="col-span-2">
-              <dt class="text-gray-400">Notes</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Notes</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingReceipt.notes }}</dd>
             </div>
           </dl>
@@ -181,10 +186,10 @@
                   ><span v-if="line.binName"> — {{ line.binName }}</span></span
                 >
               </div>
-              <p v-if="line.batchNumber" class="text-xs text-gray-400 mt-0.5">
+              <p v-if="line.batchNumber" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 Batch {{ line.batchNumber }}<span v-if="line.expirationDate"> · expires {{ formatDate(line.expirationDate) }}</span>
               </p>
-              <p v-if="line.serialNumbers && line.serialNumbers.length > 0" class="text-xs text-gray-400 mt-0.5">
+              <p v-if="line.serialNumbers && line.serialNumbers.length > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 Serials: {{ line.serialNumbers.join(', ') }}
               </p>
               <div class="flex items-center justify-between gap-2 mt-1.5">
@@ -211,7 +216,7 @@
                     Fail
                   </UButton>
                 </div>
-                <p v-else-if="line.qualityNotes" class="text-xs text-gray-400">{{ line.qualityNotes }}</p>
+                <p v-else-if="line.qualityNotes" class="text-xs text-gray-500 dark:text-gray-400">{{ line.qualityNotes }}</p>
               </div>
             </li>
           </ul>
@@ -219,7 +224,7 @@
           <template v-if="viewingReceipt.status === 'COMPLETED'">
             <div class="border-t border-gray-200 dark:border-gray-800 mt-4 pt-4">
               <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Landed costs</p>
-              <div v-if="loadingLandedCosts" class="text-sm text-gray-400 py-2">Loading…</div>
+              <div v-if="loadingLandedCosts" class="text-sm text-gray-500 dark:text-gray-400 py-2">Loading…</div>
               <ul v-else-if="landedCosts.length > 0" class="space-y-1.5 mb-3">
                 <li
                   v-for="lc in landedCosts"
@@ -230,7 +235,7 @@
                   <span class="text-gray-500 dark:text-gray-400 shrink-0">{{ formatCurrency(lc.amount) }} on {{ formatDate(lc.costDate) }}</span>
                 </li>
               </ul>
-              <p v-else class="text-sm text-gray-400 mb-3">No landed costs allocated yet.</p>
+              <p v-else class="text-sm text-gray-500 dark:text-gray-400 mb-3">No landed costs allocated yet.</p>
 
               <div class="flex flex-wrap items-end gap-2">
                 <UFormField label="Type">

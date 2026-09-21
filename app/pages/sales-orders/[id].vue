@@ -76,7 +76,7 @@
 
           <div
             v-if="form.lines.length === 0"
-            class="text-sm text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
+            class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
           >
             No line items yet
           </div>
@@ -145,7 +145,7 @@
                     @click="form.lines.splice(i, 1)"
                   />
                   <div v-else-if="viewingLineDelivered[i]" class="col-span-12 flex items-center justify-end gap-2">
-                    <span class="text-xs text-gray-400">{{ viewingLineDelivered[i] }} delivered</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ viewingLineDelivered[i] }} delivered</span>
                     <UButton
                       v-if="editingStatus === 'CONFIRMED' && (line.quantityOrdered || 0) > (line.quantityDelivered || 0)"
                       size="xs"
@@ -163,7 +163,7 @@
             </div>
           </div>
 
-          <p class="text-xs text-gray-400 mt-2">Leave price/tax blank to use the product's own defaults.</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Leave price/tax blank to use the product's own defaults.</p>
 
           <div class="flex justify-end mt-4">
             <div class="w-full sm:w-72 rounded-lg border border-gray-200 dark:border-gray-800 p-4 space-y-1.5">
@@ -181,7 +181,7 @@
               >
                 <span>Total</span><span>{{ formatCurrency(formTotal) }}</span>
               </div>
-              <div v-if="formForeignTotal !== null" class="flex justify-between text-xs text-gray-400">
+              <div v-if="formForeignTotal !== null" class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
                 <span>≈ {{ form.foreignCurrency }} @ {{ form.exchangeRate }}</span
                 ><span>{{ formatCurrency(formForeignTotal, form.foreignCurrency) }}</span>
               </div>

@@ -14,16 +14,16 @@
     >
       <input ref="fileInput" type="file" class="hidden" :accept="accept" @change="onFileChange" />
       <template v-if="!selectedFile">
-        <UIcon name="i-lucide-upload-cloud" class="size-6 text-gray-400 mx-auto mb-1.5" />
+        <UIcon name="i-lucide-upload-cloud" class="size-6 text-gray-500 dark:text-gray-400 mx-auto mb-1.5" />
         <p class="text-sm text-gray-500 dark:text-gray-400"><span class="text-primary-500 font-medium">Click to browse</span> or drag a file here</p>
-        <p class="text-xs text-gray-400 mt-1">{{ hint ?? `Up to ${maxSizeMb} MB` }}</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ hint ?? `Up to ${maxSizeMb} MB` }}</p>
       </template>
       <div v-else class="flex items-center justify-between gap-3 text-left" @click.stop>
         <div class="flex items-center gap-2 min-w-0">
-          <UIcon name="i-lucide-file" class="size-5 text-gray-400 shrink-0" />
+          <UIcon name="i-lucide-file" class="size-5 text-gray-500 dark:text-gray-400 shrink-0" />
           <div class="min-w-0">
             <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ selectedFile.name }}</p>
-            <p class="text-xs text-gray-400">{{ formatFileSize(selectedFile.size) }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ formatFileSize(selectedFile.size) }}</p>
           </div>
         </div>
         <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFile" />

@@ -132,7 +132,7 @@
       <template #body>
         <div v-if="ledgerAccount" class="flex items-center justify-between mb-4">
           <div>
-            <p class="text-sm text-gray-400">Current balance</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Current balance</p>
             <p class="text-xl font-semibold text-gray-900 dark:text-white">{{ formatCurrency(ledgerAccount.currentBalance) }}</p>
           </div>
           <div class="flex items-center gap-2">
@@ -143,21 +143,25 @@
           </div>
         </div>
 
-        <div v-if="loadingLedger" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+        <div v-if="loadingLedger" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
         <EmptyState v-else-if="ledgerTransactions.length === 0" icon="i-lucide-receipt" title="No transactions yet" />
         <ul v-else class="space-y-1.5 max-h-96 overflow-y-auto">
           <li v-for="t in ledgerTransactions" :key="t.id" class="text-sm rounded-md border border-gray-200 dark:border-gray-800 px-3 py-1.5">
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-2 min-w-0">
-                <UIcon :name="txnIcon(t.type)" class="w-4 h-4 shrink-0" :class="txnIsInflow(t.type) ? 'text-success' : 'text-error'" />
+                <UIcon
+                  :name="txnIcon(t.type)"
+                  class="w-4 h-4 shrink-0"
+                  :class="txnIsInflow(t.type) ? 'text-success-700 dark:text-success-400' : 'text-error-600 dark:text-error-400'"
+                />
                 <span class="text-gray-900 dark:text-white truncate">{{ t.description || formatEnum(t.type) }}</span>
                 <UBadge v-if="t.reconciled" color="success" variant="subtle" size="xs">Reconciled</UBadge>
               </div>
-              <span class="font-medium shrink-0" :class="txnIsInflow(t.type) ? 'text-success' : 'text-error'">
+              <span class="font-medium shrink-0" :class="txnIsInflow(t.type) ? 'text-success-700 dark:text-success-400' : 'text-error-600 dark:text-error-400'">
                 {{ txnIsInflow(t.type) ? '+' : '-' }}{{ formatCurrency(t.amount) }}
               </span>
             </div>
-            <p class="text-xs text-gray-400 mt-0.5">
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
               {{ t.transactionNumber }} · {{ formatDate(t.transactionDate) }}
               <span v-if="t.relatedBankAccountName"> · {{ t.type === 'TRANSFER_OUT' ? 'to' : 'from' }} {{ t.relatedBankAccountName }}</span>
             </p>
@@ -244,21 +248,24 @@
             <span class="flex items-center gap-2 min-w-0">
               <UCheckbox v-model="reconcileSelection[t.id]" />
               <span class="text-gray-900 dark:text-white truncate">{{ t.description || formatEnum(t.type) }}</span>
-              <span class="text-xs text-gray-400 shrink-0">{{ formatDate(t.transactionDate) }}</span>
+              <span class="text-xs text-gray-500 dark:text-gray-400 shrink-0">{{ formatDate(t.transactionDate) }}</span>
             </span>
-            <span class="font-medium shrink-0" :class="txnIsInflow(t.type) ? 'text-success' : 'text-error'">
+            <span class="font-medium shrink-0" :class="txnIsInflow(t.type) ? 'text-success-700 dark:text-success-400' : 'text-error-600 dark:text-error-400'">
               {{ txnIsInflow(t.type) ? '+' : '-' }}{{ formatCurrency(t.amount) }}
             </span>
           </label>
         </div>
         <div v-if="reconcileResult" class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 mb-4 text-sm">
           <div class="flex justify-between">
-            <span class="text-gray-400">Reconciled balance</span><span>{{ formatCurrency(reconcileResult.reconciledBalance) }}</span>
+            <span class="text-gray-500 dark:text-gray-400">Reconciled balance</span><span>{{ formatCurrency(reconcileResult.reconciledBalance) }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-gray-400">Statement balance</span><span>{{ formatCurrency(reconcileResult.statementBalance) }}</span>
+            <span class="text-gray-500 dark:text-gray-400">Statement balance</span><span>{{ formatCurrency(reconcileResult.statementBalance) }}</span>
           </div>
-          <div class="flex justify-between font-medium" :class="reconcileResult.difference === 0 ? 'text-success' : 'text-error'">
+          <div
+            class="flex justify-between font-medium"
+            :class="reconcileResult.difference === 0 ? 'text-success-700 dark:text-success-400' : 'text-error-600 dark:text-error-400'"
+          >
             <span>Difference</span><span>{{ formatCurrency(reconcileResult.difference) }}</span>
           </div>
         </div>

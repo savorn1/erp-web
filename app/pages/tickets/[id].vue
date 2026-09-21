@@ -50,7 +50,7 @@
           <template #header>
             <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Comments</h2>
           </template>
-          <div v-if="!ticket?.comments || ticket.comments.length === 0" class="text-sm text-gray-400 py-4 text-center">No comments yet</div>
+          <div v-if="!ticket?.comments || ticket.comments.length === 0" class="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">No comments yet</div>
           <ul v-else class="space-y-2 mb-4">
             <li
               v-for="comment in ticket.comments"
@@ -62,7 +62,7 @@
                 <span class="font-medium text-gray-900 dark:text-white">{{ comment.authorUsername ?? 'Unknown' }}</span>
                 <div class="flex items-center gap-2 shrink-0">
                   <UBadge v-if="comment.internal" color="warning" variant="subtle" size="xs">Internal note</UBadge>
-                  <span class="text-xs text-gray-400">{{ formatDateTime(comment.createdAt) }}</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">{{ formatDateTime(comment.createdAt) }}</span>
                 </div>
               </div>
               <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ comment.body }}</p>

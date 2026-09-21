@@ -135,8 +135,8 @@
                       v-if="showAvailableStock || stockTierFor(product.id) === 'out'"
                       class="text-xs truncate flex items-center gap-1"
                       :class="{
-                        'text-error': stockTierFor(product.id) === 'out',
-                        'text-warning': stockTierFor(product.id) === 'low',
+                        'text-error-600 dark:text-error-400': stockTierFor(product.id) === 'out',
+                        'text-warning-700 dark:text-warning-400': stockTierFor(product.id) === 'low',
                         'text-gray-500 dark:text-gray-400': stockTierFor(product.id) === 'ok'
                       }"
                     >
@@ -190,7 +190,9 @@
               </div>
               <div class="flex justify-between text-base font-semibold pt-2 border-t border-gray-200 dark:border-gray-800">
                 <dt>{{ netLabel }}</dt>
-                <dd :class="netAmount > 0 ? 'text-error' : netAmount < 0 ? 'text-success' : ''">{{ formatCurrency(Math.abs(netAmount)) }}</dd>
+                <dd :class="netAmount > 0 ? 'text-error-600 dark:text-error-400' : netAmount < 0 ? 'text-success-700 dark:text-success-400' : ''">
+                  {{ formatCurrency(Math.abs(netAmount)) }}
+                </dd>
               </div>
             </dl>
 

@@ -16,11 +16,11 @@
           <USelect v-model="warehouseId" :items="warehouseFilterOptions" placeholder="All warehouses" class="w-52" />
         </UFormField>
       </div>
-      <p class="text-xs text-gray-400 mt-3">A live snapshot of draft/released orders — not date-ranged.</p>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">A live snapshot of draft/released orders — not date-ranged.</p>
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <template v-else-if="report">
       <StatTile
@@ -63,7 +63,7 @@ const columns: ColumnDef<MaterialRequirementRow>[] = [
     key: 'shortfallQuantity',
     label: 'Shortfall',
     suffix: (row) => ` ${row.unitOfMeasureAbbreviation ?? ''}`,
-    class: (row) => (row.shortfallQuantity > 0 ? 'text-error' : 'text-gray-400')
+    class: (row) => (row.shortfallQuantity > 0 ? 'text-error-600 dark:text-error-400' : 'text-gray-500 dark:text-gray-400')
   }
 ]
 

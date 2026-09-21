@@ -22,11 +22,13 @@
           <UInput v-model="dateTo" type="date" class="w-40" />
         </UFormField>
       </div>
-      <p class="text-xs text-gray-400 mt-3">Machines without a cost per hour set show a dash rather than $0 — set one on the machine's edit form.</p>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
+        Machines without a cost per hour set show a dash rather than $0 — set one on the machine's edit form.
+      </p>
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <template v-else-if="report">
       <StatTile label="Total machine cost" :value="formatCurrency(report.totalCost)" icon="i-lucide-cog" color="warning" class="mb-4" />

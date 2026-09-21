@@ -142,17 +142,21 @@
             <UButton type="submit" :loading="addingNote" :disabled="!noteText.trim()" icon="i-lucide-plus">Add</UButton>
           </UForm>
 
-          <div v-if="loadingActivities" class="text-sm text-gray-400">Loading…</div>
+          <div v-if="loadingActivities" class="text-sm text-gray-500 dark:text-gray-400">Loading…</div>
           <EmptyState v-else-if="activities.length === 0" icon="i-lucide-history" title="No history yet" />
           <ul v-else class="space-y-2 max-h-96 overflow-y-auto">
             <li v-for="a in activities" :key="a.id" class="rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm">
               <div class="flex items-center justify-between gap-2">
                 <span class="font-medium text-gray-900 dark:text-white">{{ a.description }}</span>
-                <span v-if="a.amount != null" :class="Number(a.amount) >= 0 ? 'text-error' : 'text-success'" class="font-semibold shrink-0">
+                <span
+                  v-if="a.amount != null"
+                  :class="Number(a.amount) >= 0 ? 'text-error-600 dark:text-error-400' : 'text-success-700 dark:text-success-400'"
+                  class="font-semibold shrink-0"
+                >
                   {{ Number(a.amount) >= 0 ? '+' : '' }}{{ formatCurrency(a.amount) }}
                 </span>
               </div>
-              <p class="text-xs text-gray-400 mt-0.5">
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 {{ formatDateTime(a.createdAt) }}<span v-if="a.createdBy"> · {{ a.createdBy }}</span>
               </p>
             </li>

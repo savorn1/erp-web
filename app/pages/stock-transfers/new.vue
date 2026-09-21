@@ -5,7 +5,7 @@
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">New stock transfer</h1>
     </div>
 
-    <div v-if="loadingLookups" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
+    <div v-if="loadingLookups" class="text-sm text-gray-500 dark:text-gray-400 py-12 text-center">Loading…</div>
     <template v-else>
       <div class="space-y-6">
         <UCard>
@@ -59,11 +59,11 @@
             </UFormField>
             <UButton icon="i-lucide-plus" :disabled="!addLineProductId" @click="addLine">Add line</UButton>
           </div>
-          <p v-else class="text-xs text-gray-400 mb-4">Select a source warehouse first to add line items.</p>
+          <p v-else class="text-xs text-gray-500 dark:text-gray-400 mb-4">Select a source warehouse first to add line items.</p>
 
           <div
             v-if="form.lines.length === 0"
-            class="text-sm text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
+            class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
           >
             No line items yet
           </div>
@@ -73,7 +73,7 @@
                 <div class="col-span-4 text-sm text-gray-900 dark:text-white truncate">{{ productLabel(line.productId) }}</div>
                 <UInput v-model.number="line.quantityRequested" type="number" min="0.0001" step="0.0001" placeholder="Qty" class="col-span-2" />
                 <USelect v-model="line.unitOfMeasureId" :items="unitOptionsForProduct(line.productId)" placeholder="Unit" class="col-span-2" />
-                <span class="col-span-3 text-xs text-gray-400 text-right">Available: {{ availableFor(line) }}</span>
+                <span class="col-span-3 text-xs text-gray-500 dark:text-gray-400 text-right">Available: {{ availableFor(line) }}</span>
                 <UButton size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-1" @click="form.lines.splice(i, 1)" />
               </div>
               <div class="grid grid-cols-2 gap-2">
@@ -87,7 +87,7 @@
                 placeholder="Select batch / lot"
                 class="w-full"
               />
-              <p v-else-if="trackingTypeFor(line.productId) === 'SERIAL'" class="text-xs text-gray-400">
+              <p v-else-if="trackingTypeFor(line.productId) === 'SERIAL'" class="text-xs text-gray-500 dark:text-gray-400">
                 Serial-tracked — specific units are chosen when this transfer is shipped.
               </p>
             </div>

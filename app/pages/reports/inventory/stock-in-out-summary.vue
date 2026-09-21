@@ -28,7 +28,7 @@
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <template v-else>
       <UAlert
@@ -93,8 +93,8 @@ function formatted(row: SummaryRow, baseQuantity: number) {
 const columns = computed<ColumnDef<SummaryRow>[]>(() => [
   { key: 'productName', label: 'Product', value: (row) => `${row.productName ?? '—'} (${row.productSku ?? '—'})` },
   { key: 'warehouseName', label: 'Warehouse', value: (row) => row.warehouseName ?? '—' },
-  { key: 'inQuantity', label: 'In', value: (row) => formatted(row, row.inQuantity), class: 'text-success' },
-  { key: 'outQuantity', label: 'Out', value: (row) => formatted(row, row.outQuantity), class: 'text-error' },
+  { key: 'inQuantity', label: 'In', value: (row) => formatted(row, row.inQuantity), class: 'text-success-700 dark:text-success-400' },
+  { key: 'outQuantity', label: 'Out', value: (row) => formatted(row, row.outQuantity), class: 'text-error-600 dark:text-error-400' },
   {
     key: 'net',
     label: 'Net',
@@ -104,7 +104,7 @@ const columns = computed<ColumnDef<SummaryRow>[]>(() => [
         row.net,
         { signed: true }
       ),
-    class: (row) => (row.net > 0 ? 'text-success' : row.net < 0 ? 'text-error' : '')
+    class: (row) => (row.net > 0 ? 'text-success-700 dark:text-success-400' : row.net < 0 ? 'text-error-600 dark:text-error-400' : '')
   },
   { key: 'movementCount', label: 'Movements' }
 ])

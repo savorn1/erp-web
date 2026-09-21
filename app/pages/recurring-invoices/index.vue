@@ -62,21 +62,21 @@
           <UFormField label="Company" required>
             <USelect v-model="generateCompanyId" :items="activeCompanyOptions" class="w-full" />
           </UFormField>
-          <p class="text-xs text-gray-400">Generates a Sales Order and Invoice for every active template whose next run date has arrived.</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Generates a Sales Order and Invoice for every active template whose next run date has arrived.</p>
         </div>
 
         <div v-else class="space-y-3">
           <p class="text-sm">
-            <span class="font-semibold text-success">{{ generateResult.successCount }} generated</span>
-            <span v-if="generateResult.failureCount > 0" class="text-error"> · {{ generateResult.failureCount }} failed</span>
-            <span class="text-gray-400"> (of {{ generateResult.processedCount }} due)</span>
+            <span class="font-semibold text-success-700 dark:text-success-400">{{ generateResult.successCount }} generated</span>
+            <span v-if="generateResult.failureCount > 0" class="text-error-600 dark:text-error-400"> · {{ generateResult.failureCount }} failed</span>
+            <span class="text-gray-500 dark:text-gray-400"> (of {{ generateResult.processedCount }} due)</span>
           </p>
           <ul v-if="generateResult.results.length > 0" class="space-y-1 max-h-64 overflow-y-auto">
             <li
               v-for="r in generateResult.results"
               :key="r.templateId"
               class="text-sm rounded-md border border-gray-200 dark:border-gray-800 px-3 py-1.5"
-              :class="r.success ? 'text-success' : 'text-error'"
+              :class="r.success ? 'text-success-700 dark:text-success-400' : 'text-error-600 dark:text-error-400'"
             >
               {{ r.templateName }}: {{ r.success ? `Invoice ${r.invoiceNumber} created` : r.errorMessage }}
             </li>

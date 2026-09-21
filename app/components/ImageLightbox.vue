@@ -27,7 +27,7 @@
           class="flex items-center justify-between gap-3 px-4 py-2.5 bg-black/80 text-sm text-gray-200"
         >
           <span class="truncate">{{ current.caption ?? current.fileName }}</span>
-          <span v-if="images.length > 1" class="shrink-0 text-gray-400">{{ index + 1 }} / {{ images.length }}</span>
+          <span v-if="images.length > 1" class="shrink-0 text-gray-500 dark:text-gray-400">{{ index + 1 }} / {{ images.length }}</span>
         </div>
       </div>
     </template>

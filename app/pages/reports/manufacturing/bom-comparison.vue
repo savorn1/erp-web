@@ -8,7 +8,7 @@
     />
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <template v-else-if="comparison">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -22,15 +22,15 @@
           <div class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ side.name }}</div>
           <div class="grid grid-cols-3 gap-3 text-sm">
             <div>
-              <div class="text-gray-400">Output qty</div>
+              <div class="text-gray-500 dark:text-gray-400">Output qty</div>
               <div class="font-medium">{{ side.outputQuantity }}</div>
             </div>
             <div>
-              <div class="text-gray-400">Cost/batch</div>
+              <div class="text-gray-500 dark:text-gray-400">Cost/batch</div>
               <div class="font-medium">{{ formatCurrency(side.materialCostPerBatch) }}</div>
             </div>
             <div>
-              <div class="text-gray-400">Cost/unit</div>
+              <div class="text-gray-500 dark:text-gray-400">Cost/unit</div>
               <div class="font-medium">{{ formatCurrency(side.materialCostPerUnit) }}</div>
             </div>
           </div>

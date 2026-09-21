@@ -6,24 +6,24 @@
       <UBadge v-if="year" class="ml-auto">{{ year.status }}</UBadge>
     </div>
 
-    <div v-if="loading" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-12 text-center">Loading…</div>
     <template v-else-if="year">
       <UCard class="mb-4">
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
           <div>
-            <div class="text-gray-400">Company</div>
+            <div class="text-gray-500 dark:text-gray-400">Company</div>
             <div class="font-medium">{{ year.companyName ?? '—' }}</div>
           </div>
           <div>
-            <div class="text-gray-400">Period</div>
+            <div class="text-gray-500 dark:text-gray-400">Period</div>
             <div class="font-medium">{{ year.startDate }} – {{ year.endDate }}</div>
           </div>
           <div>
-            <div class="text-gray-400">Periods</div>
+            <div class="text-gray-500 dark:text-gray-400">Periods</div>
             <div class="font-medium">{{ year.periodCount }}</div>
           </div>
           <div>
-            <div class="text-gray-400">Open periods</div>
+            <div class="text-gray-500 dark:text-gray-400">Open periods</div>
             <div class="font-medium">{{ year.openPeriodCount }}</div>
           </div>
         </div>

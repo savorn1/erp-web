@@ -141,7 +141,7 @@
             <p class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ column.label }}</p>
             <UBadge :color="column.color" variant="subtle" size="xs">{{ column.rows.length }}</UBadge>
           </div>
-          <p class="text-xs text-gray-400 mt-0.5">{{ formatCurrency(column.total) }}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ formatCurrency(column.total) }}</p>
         </div>
         <div class="p-2 space-y-2 min-h-[80px] max-h-[70vh] overflow-y-auto">
           <div
@@ -156,7 +156,7 @@
               <span class="text-sm font-medium text-gray-900 dark:text-white">{{ row.dealName ?? row.contactName }}</span>
               <UBadge v-if="row.followUpDue" color="error" variant="subtle" size="xs">Due</UBadge>
             </div>
-            <p class="text-xs text-gray-400 mt-0.5">{{ row.customerName ?? row.organizationName ?? '—' }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ row.customerName ?? row.organizationName ?? '—' }}</p>
             <div class="flex items-center justify-between mt-2">
               <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ formatCurrency(row.amount ?? row.estimatedValue) }}</span>
               <UBadge v-if="row.probability != null" color="neutral" variant="subtle" size="xs">{{ row.probability }}%</UBadge>
@@ -165,7 +165,7 @@
               <UserChip :name="row.assignedToUsername" />
             </div>
           </div>
-          <p v-if="column.rows.length === 0" class="text-xs text-gray-400 text-center py-4">No leads</p>
+          <p v-if="column.rows.length === 0" class="text-xs text-gray-500 dark:text-gray-400 text-center py-4">No leads</p>
         </div>
       </div>
     </div>
@@ -222,7 +222,7 @@
               <UInput v-model="followUpNextDate" type="date" placeholder="Next follow-up date" class="flex-1" />
               <UButton type="submit" :loading="addingFollowUp" :disabled="!followUpText.trim()" icon="i-lucide-phone-call">Follow-up</UButton>
             </div>
-            <p v-if="historyTarget?.nextFollowUpDate" class="text-xs text-gray-400">
+            <p v-if="historyTarget?.nextFollowUpDate" class="text-xs text-gray-500 dark:text-gray-400">
               Next follow-up scheduled: {{ formatDate(historyTarget.nextFollowUpDate) }}
             </p>
           </UForm>
@@ -256,7 +256,7 @@
         </div>
         <div
           v-if="quoteForm.lines.length === 0"
-          class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
+          class="text-sm text-gray-500 dark:text-gray-400 py-4 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
         >
           No line items yet
         </div>

@@ -1,7 +1,7 @@
 <template>
   <template v-if="column.type === 'status'">
     <StatusBadge v-if="rawValue !== null && rawValue !== undefined" :status="String(rawValue)" />
-    <span v-else class="text-gray-400">—</span>
+    <span v-else class="text-gray-500 dark:text-gray-400">—</span>
   </template>
   <template v-else-if="column.type === 'link'">
     <NuxtLink :to="column.href!(row)" class="text-primary-500 font-medium" @click.stop>{{ text }}</NuxtLink>

@@ -14,12 +14,16 @@
 
       <div v-else class="space-y-3">
         <p class="text-sm">
-          <span class="font-semibold text-success">{{ result.successCount }} imported</span>
-          <span v-if="result.failureCount > 0" class="text-error"> · {{ result.failureCount }} failed</span>
-          <span class="text-gray-400"> (of {{ result.totalRows }} rows)</span>
+          <span class="font-semibold text-success-700 dark:text-success-400">{{ result.successCount }} imported</span>
+          <span v-if="result.failureCount > 0" class="text-error-600 dark:text-error-400"> · {{ result.failureCount }} failed</span>
+          <span class="text-gray-500 dark:text-gray-400"> (of {{ result.totalRows }} rows)</span>
         </p>
         <ul v-if="result.errors.length > 0" class="space-y-1 max-h-64 overflow-y-auto">
-          <li v-for="err in result.errors" :key="err.rowNumber" class="text-sm rounded-md border border-gray-200 dark:border-gray-800 px-3 py-1.5 text-error">
+          <li
+            v-for="err in result.errors"
+            :key="err.rowNumber"
+            class="text-sm rounded-md border border-gray-200 dark:border-gray-800 px-3 py-1.5 text-error-600 dark:text-error-400"
+          >
             Row {{ err.rowNumber }}: {{ err.message }}
           </li>
         </ul>

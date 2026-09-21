@@ -109,8 +109,8 @@
                   v-if="showAvailableStock || stockTierFor(product.id) === 'out'"
                   class="text-xs truncate flex items-center gap-1"
                   :class="{
-                    'text-error': stockTierFor(product.id) === 'out',
-                    'text-warning': stockTierFor(product.id) === 'low',
+                    'text-error-600 dark:text-error-400': stockTierFor(product.id) === 'out',
+                    'text-warning-700 dark:text-warning-400': stockTierFor(product.id) === 'low',
                     'text-gray-500 dark:text-gray-400': stockTierFor(product.id) === 'ok'
                   }"
                 >
@@ -146,7 +146,7 @@
                 <p class="text-sm font-medium truncate">{{ line.name }}</p>
                 <p
                   class="text-xs truncate flex items-center gap-1"
-                  :class="stockTierFor(line.productId) === 'low' ? 'text-warning' : 'text-gray-500 dark:text-gray-400'"
+                  :class="stockTierFor(line.productId) === 'low' ? 'text-warning-700 dark:text-warning-400' : 'text-gray-500 dark:text-gray-400'"
                 >
                   <UIcon v-if="stockTierFor(line.productId) === 'low'" name="i-lucide-triangle-alert" class="w-3 h-3 shrink-0" />
                   {{ stockTierFor(line.productId) === 'low' ? `Only ${availableFor(line.productId)} in stock` : (line.categoryName ?? '—') }}
@@ -185,7 +185,7 @@
             </div>
             <div class="flex justify-between">
               <dt class="text-gray-500 dark:text-gray-400">Discount</dt>
-              <dd class="text-error">-{{ formatCurrency(totals.discountAmount) }}</dd>
+              <dd class="text-error-600 dark:text-error-400">-{{ formatCurrency(totals.discountAmount) }}</dd>
             </div>
             <div class="flex justify-between">
               <dt class="text-gray-500 dark:text-gray-400">Tax</dt>
@@ -239,7 +239,9 @@
             </div>
             <div class="flex justify-between font-medium">
               <dt>{{ remaining > 0 ? 'Remaining' : 'Change due' }}</dt>
-              <dd :class="remaining > 0 ? 'text-error' : 'text-success'">{{ formatCurrency(Math.abs(remaining)) }}</dd>
+              <dd :class="remaining > 0 ? 'text-error-600 dark:text-error-400' : 'text-success-700 dark:text-success-400'">
+                {{ formatCurrency(Math.abs(remaining)) }}
+              </dd>
             </div>
           </dl>
 

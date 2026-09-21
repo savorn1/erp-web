@@ -27,7 +27,7 @@
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else>
       <DataTable :rows="rows" :columns="columns" exportable export-filename="inventory-expiry-stock">
@@ -76,7 +76,7 @@ const columns = computed<ColumnDef<BatchLotStockRow>[]>(() => [
     key: 'daysUntilExpiry',
     label: 'Days until expiry',
     value: (row) => (row.expirationDate ? daysUntil(row.expirationDate) : '—'),
-    class: (row) => (row.expirationDate && daysUntil(row.expirationDate) <= 30 ? 'text-error' : '')
+    class: (row) => (row.expirationDate && daysUntil(row.expirationDate) <= 30 ? 'text-error-600 dark:text-error-400' : '')
   }
 ])
 

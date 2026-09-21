@@ -148,7 +148,7 @@
         </div>
 
         <template v-if="createSoId">
-          <div v-if="loadingSoDetail" class="text-sm text-gray-400 py-6 text-center">Loading order lines…</div>
+          <div v-if="loadingSoDetail" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">Loading order lines…</div>
           <template v-else>
             <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lines to deliver</p>
             <EmptyState
@@ -161,7 +161,9 @@
               <div v-for="line in createLines" :key="line.salesOrderLineId" class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 space-y-2">
                 <div class="flex items-center justify-between gap-2">
                   <span class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ line.productName }} ({{ line.productSku }})</span>
-                  <span class="text-xs text-gray-400 shrink-0">Ordered remaining: {{ line.remaining }} · Available: {{ availableFor(line) }}</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400 shrink-0"
+                    >Ordered remaining: {{ line.remaining }} · Available: {{ availableFor(line) }}</span
+                  >
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                   <UInput
@@ -174,7 +176,7 @@
                   />
                   <USelect v-model="line.binId" :items="binOptionsForWarehouse" placeholder="No bin" @update:model-value="onLineBinChanged(line)" />
                 </div>
-                <p v-if="line.quantityDelivered > availableFor(line)" class="text-xs text-error">
+                <p v-if="line.quantityDelivered > availableFor(line)" class="text-xs text-error-600 dark:text-error-400">
                   Only {{ availableFor(line) }} available in stock at this location
                 </p>
 
@@ -191,7 +193,10 @@
                     placeholder="Select serial numbers"
                     class="w-full"
                   />
-                  <p class="text-xs mt-1" :class="line.selectedSerials.length === line.quantityDelivered ? 'text-gray-400' : 'text-error'">
+                  <p
+                    class="text-xs mt-1"
+                    :class="line.selectedSerials.length === line.quantityDelivered ? 'text-gray-500 dark:text-gray-400' : 'text-error-600 dark:text-error-400'"
+                  >
                     {{ line.selectedSerials.length }} of {{ line.quantityDelivered }} serial number(s) selected
                   </p>
                 </div>
@@ -211,7 +216,7 @@
 
     <UModal v-model:open="showView" :title="`Delivery — ${viewingDelivery?.deliveryNumber ?? ''}`" :ui="{ content: 'sm:max-w-2xl' }">
       <template #body>
-        <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
+        <div v-if="loadingView" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingDelivery">
           <WorkflowStatusStepper
             :status="viewingDelivery.status"
@@ -221,35 +226,35 @@
           />
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
             <div>
-              <dt class="text-gray-400">Sales order</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Sales order</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingDelivery.soNumber }}</dd>
             </div>
             <div>
-              <dt class="text-gray-400">Warehouse</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Warehouse</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingDelivery.warehouseName }}</dd>
             </div>
             <div>
-              <dt class="text-gray-400">Delivery date</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Delivery date</dt>
               <dd class="text-gray-900 dark:text-white">{{ formatDate(viewingDelivery.deliveryDate) }}</dd>
             </div>
             <div>
-              <dt class="text-gray-400">Status</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Status</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingDelivery.status }}</dd>
             </div>
             <div>
-              <dt class="text-gray-400">Created by</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Created by</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingDelivery.createdBy ?? '—' }}</dd>
             </div>
             <div v-if="viewingDelivery.shippedAt">
-              <dt class="text-gray-400">Shipped</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Shipped</dt>
               <dd class="text-gray-900 dark:text-white">{{ formatDateTime(viewingDelivery.shippedAt) }} by {{ viewingDelivery.shippedBy }}</dd>
             </div>
             <div v-if="viewingDelivery.deliveredAt">
-              <dt class="text-gray-400">Delivered</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Delivered</dt>
               <dd class="text-gray-900 dark:text-white">{{ formatDateTime(viewingDelivery.deliveredAt) }} by {{ viewingDelivery.deliveredBy }}</dd>
             </div>
             <div v-if="viewingDelivery.notes" class="col-span-2">
-              <dt class="text-gray-400">Notes</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Notes</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingDelivery.notes }}</dd>
             </div>
           </dl>
@@ -262,8 +267,8 @@
                   >{{ line.quantityDelivered }}<span v-if="line.binName"> — {{ line.binName }}</span></span
                 >
               </div>
-              <p v-if="line.batchNumber" class="text-xs text-gray-400 mt-0.5">Batch {{ line.batchNumber }}</p>
-              <p v-if="line.serialNumbers && line.serialNumbers.length > 0" class="text-xs text-gray-400 mt-0.5">
+              <p v-if="line.batchNumber" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Batch {{ line.batchNumber }}</p>
+              <p v-if="line.serialNumbers && line.serialNumbers.length > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 Serials: {{ line.serialNumbers.join(', ') }}
               </p>
             </li>

@@ -31,7 +31,7 @@
       >
         <template #name-data="{ row }">
           <span class="inline-flex items-center gap-1" :style="{ paddingLeft: `${depthOf(row) * 1.25}rem` }">
-            <UIcon v-if="depthOf(row) > 0" name="i-lucide-corner-down-right" class="w-3 h-3 text-gray-400 shrink-0" />
+            <UIcon v-if="depthOf(row) > 0" name="i-lucide-corner-down-right" class="w-3 h-3 text-gray-500 dark:text-gray-400 shrink-0" />
             {{ row.name }}
           </span>
         </template>
@@ -113,7 +113,7 @@
         <div class="space-y-4">
           <div>
             <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assigned</p>
-            <div v-if="loadingDepartmentUsers" class="text-sm text-gray-400">Loading…</div>
+            <div v-if="loadingDepartmentUsers" class="text-sm text-gray-500 dark:text-gray-400">Loading…</div>
             <EmptyState v-else-if="departmentUsers.length === 0" icon="i-lucide-user-x" title="No employees assigned" />
             <ul v-else class="space-y-1.5">
               <li

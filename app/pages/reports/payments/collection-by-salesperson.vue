@@ -19,14 +19,14 @@
           <UInput v-model="dateTo" type="date" class="w-40" />
         </UFormField>
       </div>
-      <p class="text-xs text-gray-400 mt-3">
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
         Follows each payment's invoice allocations back to the sales order's creator — the same attribution as the "Sales by salesperson" report. Payment
         amounts not yet applied to any invoice show under "Unallocated".
       </p>
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <template v-else-if="report">
       <StatTile label="Total collected" :value="formatCurrency(report.totalAllocated)" icon="i-lucide-hand-coins" color="success" class="mb-4" />

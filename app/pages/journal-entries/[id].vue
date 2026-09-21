@@ -11,19 +11,19 @@
         <WorkflowStatusStepper v-if="!isNew && editingStatus" :status="editingStatus" :steps="workflowSteps" :next-hint="workflowHint" />
         <dl v-if="detail" class="grid grid-cols-2 gap-3 text-sm">
           <div v-if="detail.reversalOfJournalNumber">
-            <dt class="text-gray-400">Reverses</dt>
+            <dt class="text-gray-500 dark:text-gray-400">Reverses</dt>
             <dd class="text-gray-900 dark:text-white">{{ detail.reversalOfJournalNumber }}</dd>
           </div>
           <div v-if="detail.reversedByJournalNumber">
-            <dt class="text-gray-400">Reversed by</dt>
+            <dt class="text-gray-500 dark:text-gray-400">Reversed by</dt>
             <dd class="text-gray-900 dark:text-white">{{ detail.reversedByJournalNumber }}</dd>
           </div>
           <div v-if="detail.postedBy">
-            <dt class="text-gray-400">Posted by</dt>
+            <dt class="text-gray-500 dark:text-gray-400">Posted by</dt>
             <dd class="text-gray-900 dark:text-white">{{ detail.postedBy }} · {{ formatDate(detail.postedAt!) }}</dd>
           </div>
           <div v-if="detail.sourceType">
-            <dt class="text-gray-400">Source</dt>
+            <dt class="text-gray-500 dark:text-gray-400">Source</dt>
             <dd class="text-gray-900 dark:text-white">Auto-posted from {{ detail.sourceType }} #{{ detail.sourceId }}</dd>
           </div>
         </dl>
@@ -64,7 +64,7 @@
 
           <div
             v-if="form.lines.length === 0"
-            class="text-sm text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
+            class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
           >
             No lines yet
           </div>
@@ -90,10 +90,15 @@
             <span class="text-gray-600 dark:text-gray-300">Total credit: {{ formatCurrency(formTotalCredit) }}</span>
           </div>
           <div class="flex justify-end mt-1">
-            <span v-if="formTotalDebit === formTotalCredit && formTotalDebit > 0" class="text-sm text-success flex items-center gap-1">
+            <span
+              v-if="formTotalDebit === formTotalCredit && formTotalDebit > 0"
+              class="text-sm text-success-700 dark:text-success-400 flex items-center gap-1"
+            >
               <UIcon name="i-lucide-check-circle" class="w-4 h-4" /> Balanced
             </span>
-            <span v-else class="text-sm text-error flex items-center gap-1"> <UIcon name="i-lucide-triangle-alert" class="w-4 h-4" /> Not balanced </span>
+            <span v-else class="text-sm text-error-600 dark:text-error-400 flex items-center gap-1">
+              <UIcon name="i-lucide-triangle-alert" class="w-4 h-4" /> Not balanced
+            </span>
           </div>
         </UCard>
 

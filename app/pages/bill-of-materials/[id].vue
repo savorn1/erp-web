@@ -73,7 +73,7 @@
 
           <div
             v-if="form.lines.length === 0"
-            class="text-sm text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
+            class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
           >
             No components yet
           </div>
@@ -91,7 +91,7 @@
                 <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center px-3 py-2">
                   <div class="col-span-5 text-sm text-gray-900 dark:text-white truncate">
                     {{ productLabel(line.componentProductId) }}
-                    <span class="text-gray-400">({{ unitAbbreviationFor(line.componentProductId) }})</span>
+                    <span class="text-gray-500 dark:text-gray-400">({{ unitAbbreviationFor(line.componentProductId) }})</span>
                   </div>
                   <UInput v-model.number="line.quantity" type="number" min="0.0001" step="0.0001" class="col-span-3" />
                   <UInput v-model.number="line.scrapPercent" type="number" min="0" max="100" step="0.01" placeholder="0" class="col-span-3" />
@@ -113,10 +113,10 @@
             <div v-for="v in versionHistory" :key="v.id" class="flex items-center justify-between py-2 text-sm">
               <div class="flex items-center gap-2">
                 <span class="font-medium">v{{ v.version }}</span>
-                <span class="text-gray-400">{{ v.bomNumber }}</span>
+                <span class="text-gray-500 dark:text-gray-400">{{ v.bomNumber }}</span>
                 <UBadge v-if="v.current" size="xs" color="primary">Viewing</UBadge>
               </div>
-              <div class="flex items-center gap-3 text-gray-400">
+              <div class="flex items-center gap-3 text-gray-500 dark:text-gray-400">
                 <span>{{ v.status }}</span>
                 <NuxtLink v-if="!v.current" :to="`/bill-of-materials/${v.id}`" class="underline">View</NuxtLink>
                 <NuxtLink v-if="!v.current" :to="`/reports/manufacturing/bom-comparison?bomId=${idParam}&compareToBomId=${v.id}`" class="underline">

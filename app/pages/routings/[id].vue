@@ -48,7 +48,7 @@
 
           <div
             v-if="form.operations.length === 0"
-            class="text-sm text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg mb-4"
+            class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg mb-4"
           >
             No operations yet
           </div>

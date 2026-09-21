@@ -138,7 +138,7 @@
     <!-- View modal -->
     <UModal v-model:open="showView" :title="`Invoice — ${viewingInvoice?.invoiceNumber ?? ''}`" :ui="{ content: 'sm:max-w-3xl' }">
       <template #body>
-        <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
+        <div v-if="loadingView" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingInvoice">
           <WorkflowStatusStepper
             :status="viewingInvoice.status"
@@ -148,29 +148,29 @@
           />
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
             <div>
-              <dt class="text-gray-400">Supplier</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Supplier</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingInvoice.supplierName }}</dd>
             </div>
             <div>
-              <dt class="text-gray-400">Status</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Status</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingInvoice.status }}</dd>
             </div>
             <div>
-              <dt class="text-gray-400">Source</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Source</dt>
               <dd class="text-gray-900 dark:text-white">
                 {{ viewingInvoice.poNumber ?? '—' }}<span v-if="viewingInvoice.receiptNumber"> · {{ viewingInvoice.receiptNumber }}</span>
               </dd>
             </div>
             <div>
-              <dt class="text-gray-400">Invoice date</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Invoice date</dt>
               <dd class="text-gray-900 dark:text-white">{{ formatDate(viewingInvoice.invoiceDate) }}</dd>
             </div>
             <div v-if="viewingInvoice.dueDate">
-              <dt class="text-gray-400">Due date</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Due date</dt>
               <dd class="text-gray-900 dark:text-white">{{ formatDate(viewingInvoice.dueDate) }}</dd>
             </div>
             <div v-if="viewingInvoice.notes" class="col-span-2">
-              <dt class="text-gray-400">Notes</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Notes</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingInvoice.notes }}</dd>
             </div>
           </dl>
@@ -184,7 +184,7 @@
                   >{{ line.quantity }} × {{ formatCurrency(line.unitCost) }} = {{ formatCurrency(line.lineTotal) }}</span
                 >
               </div>
-              <p v-if="line.discountPercent > 0 || line.taxRate > 0" class="text-xs text-gray-400 mt-0.5">
+              <p v-if="line.discountPercent > 0 || line.taxRate > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 <span v-if="line.discountPercent > 0">Discount {{ line.discountPercent }}%</span>
                 <span v-if="line.discountPercent > 0 && line.taxRate > 0"> · </span>
                 <span v-if="line.taxRate > 0">Tax {{ line.taxRate }}%</span>
@@ -200,10 +200,10 @@
             Tax: {{ formatCurrency(viewingInvoice.taxAmount) }}
           </div>
           <div class="flex justify-end text-sm font-medium text-gray-900 dark:text-white mb-1">Total: {{ formatCurrency(viewingInvoice.totalAmount) }}</div>
-          <div v-if="viewingInvoice.creditedAmount > 0" class="flex justify-end text-sm text-error mb-1">
+          <div v-if="viewingInvoice.creditedAmount > 0" class="flex justify-end text-sm text-error-600 dark:text-error-400 mb-1">
             Credited: -{{ formatCurrency(viewingInvoice.creditedAmount) }}
           </div>
-          <div v-if="viewingInvoice.paidAmount > 0" class="flex justify-end text-sm text-success mb-1">
+          <div v-if="viewingInvoice.paidAmount > 0" class="flex justify-end text-sm text-success-700 dark:text-success-400 mb-1">
             Paid: -{{ formatCurrency(viewingInvoice.paidAmount) }}
           </div>
           <div class="flex justify-end text-sm font-medium text-gray-900 dark:text-white mb-4">
@@ -215,15 +215,15 @@
               <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Credit notes</p>
               <UButton size="xs" variant="soft" icon="i-lucide-plus" @click="openCreditNote(viewingInvoice)">Issue credit note</UButton>
             </div>
-            <div v-if="loadingCreditNotes" class="text-sm text-gray-400">Loading…</div>
+            <div v-if="loadingCreditNotes" class="text-sm text-gray-500 dark:text-gray-400">Loading…</div>
             <EmptyState v-else-if="creditNotes.length === 0" icon="i-lucide-file-minus" title="No credit notes yet" />
             <ul v-else class="space-y-1.5 mb-4">
               <li v-for="cn in creditNotes" :key="cn.id" class="text-sm rounded-md border border-gray-200 dark:border-gray-800 px-3 py-1.5">
                 <div class="flex items-center justify-between">
                   <span>{{ cn.creditNoteNumber }}</span>
-                  <span class="text-error">-{{ formatCurrency(cn.amount) }}</span>
+                  <span class="text-error-600 dark:text-error-400">-{{ formatCurrency(cn.amount) }}</span>
                 </div>
-                <p class="text-xs text-gray-400 mt-0.5">
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   {{ formatDate(cn.creditNoteDate) }}<span v-if="cn.reason"> — {{ cn.reason }}</span>
                 </p>
               </li>

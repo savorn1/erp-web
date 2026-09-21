@@ -15,7 +15,7 @@
         </button>
 
         <template v-for="(item, i) in pageItems" :key="i">
-          <span v-if="item === 'ellipsis'" class="px-1.5 text-sm text-gray-400 select-none">…</span>
+          <span v-if="item === 'ellipsis'" class="px-1.5 text-sm text-gray-500 dark:text-gray-400 select-none">…</span>
           <button
             v-else
             type="button"

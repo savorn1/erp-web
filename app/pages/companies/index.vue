@@ -36,7 +36,7 @@
             :alt="`${row.name} logo`"
             class="w-8 h-8 rounded object-cover border border-gray-200 dark:border-gray-800"
           />
-          <span v-else class="flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-800 text-gray-400">
+          <span v-else class="flex items-center justify-center w-8 h-8 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
             <UIcon name="i-lucide-building-2" class="w-4 h-4" />
           </span>
         </template>

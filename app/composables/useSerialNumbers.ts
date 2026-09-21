@@ -1,12 +1,26 @@
 // Wraps the backend's admin-only SerialNumberController
-// (/api/admin/serial-numbers/**, requires ROLE_ADMIN). Read-only — serial
-// numbers are only ever created by goods receipt posting for SERIAL-tracked
-// products (see useGoodsReceipts). IN_TRANSIT/ISSUED are set by deliveries
-// and stock transfers (see useDeliveries/useStockTransfers).
+// (/api/admin/serial-numbers/**, requires ROLE_ADMIN). Read-only here — a unit
+// is only ever created, and its status only ever changed, by the documents that
+// move it:
+//
+//   goods receipt posted      -> PENDING_QC, then IN_STOCK or QC_REJECTED
+//                                once the quality check is recorded
+//   stock adjustment approved -> IN_STOCK (STOCK_INCREASE creates units and
+//                                skips QC) or ADJUSTED_OUT (removes them)
+//   delivery shipped          -> ISSUED
+//   stock transfer            -> IN_TRANSIT while in flight, IN_STOCK on receipt
+//   RMA resolved              -> back to IN_STOCK for REFUND/REPLACEMENT;
+//                                REPAIR leaves it ISSUED
+//
+// See useGoodsReceipts / useStockAdjustments / useDeliveries / useStockTransfers
+// / useRmas for each.
 
 import type { PageEnvelope } from '#shared/types'
 
-export type SerialNumberStatus = 'IN_STOCK' | 'IN_TRANSIT' | 'ISSUED'
+// Mirrors the backend SerialNumberStatus enum — all six values. ISSUED,
+// ADJUSTED_OUT and QC_REJECTED are terminal; only IN_TRANSIT and PENDING_QC
+// are transitional.
+export type SerialNumberStatus = 'PENDING_QC' | 'IN_STOCK' | 'IN_TRANSIT' | 'ISSUED' | 'ADJUSTED_OUT' | 'QC_REJECTED'
 
 export interface SerialNumber {
   id: number

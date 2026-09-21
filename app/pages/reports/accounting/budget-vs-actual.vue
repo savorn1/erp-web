@@ -25,14 +25,16 @@
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <template v-else-if="report">
       <UCard v-if="revenueRows.length > 0" class="mb-4">
         <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">Revenue</h2></template>
         <DataTable :rows="revenueRows" :columns="columns" exportable export-filename="accounting-budget-vs-actual-revenue">
           <template #varianceAmount-data="{ row }">
-            <span :class="row.varianceAmount >= 0 ? 'text-success' : 'text-error'">{{ formatCurrency(row.varianceAmount) }}</span>
+            <span :class="row.varianceAmount >= 0 ? 'text-success-700 dark:text-success-400' : 'text-error-600 dark:text-error-400'">{{
+              formatCurrency(row.varianceAmount)
+            }}</span>
           </template>
         </DataTable>
       </UCard>
@@ -40,7 +42,9 @@
         <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">Expenses</h2></template>
         <DataTable :rows="expenseRows" :columns="columns" exportable export-filename="accounting-budget-vs-actual-expenses">
           <template #varianceAmount-data="{ row }">
-            <span :class="row.varianceAmount <= 0 ? 'text-success' : 'text-error'">{{ formatCurrency(row.varianceAmount) }}</span>
+            <span :class="row.varianceAmount <= 0 ? 'text-success-700 dark:text-success-400' : 'text-error-600 dark:text-error-400'">{{
+              formatCurrency(row.varianceAmount)
+            }}</span>
           </template>
         </DataTable>
       </UCard>

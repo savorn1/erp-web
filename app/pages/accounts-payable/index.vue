@@ -21,12 +21,12 @@
       <template #header>
         <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Aging report</h2>
       </template>
-      <div v-if="loadingAging" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
+      <div v-if="loadingAging" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">Loading…</div>
       <EmptyState v-else-if="aging && aging.rows.length === 0" icon="i-lucide-check-circle" title="Nothing outstanding" />
       <div v-else-if="aging" class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
-            <tr class="text-left text-xs text-gray-400 border-b border-gray-200 dark:border-gray-800">
+            <tr class="text-left text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-800">
               <th class="py-2 pr-3">Supplier</th>
               <th class="py-2 px-3 text-right">Current</th>
               <th class="py-2 px-3 text-right">1-30 days</th>
@@ -41,13 +41,16 @@
               <td class="py-1.5 pr-3 text-gray-900 dark:text-white">{{ row.supplierName ?? '—' }}</td>
               <td class="py-1.5 px-3 text-right text-gray-600 dark:text-gray-300">{{ formatCurrency(row.current) }}</td>
               <td class="py-1.5 px-3 text-right text-gray-600 dark:text-gray-300">{{ formatCurrency(row.days1To30) }}</td>
-              <td class="py-1.5 px-3 text-right" :class="row.days31To60 > 0 ? 'text-warning' : 'text-gray-600 dark:text-gray-300'">
+              <td class="py-1.5 px-3 text-right" :class="row.days31To60 > 0 ? 'text-warning-700 dark:text-warning-400' : 'text-gray-600 dark:text-gray-300'">
                 {{ formatCurrency(row.days31To60) }}
               </td>
-              <td class="py-1.5 px-3 text-right" :class="row.days61To90 > 0 ? 'text-warning' : 'text-gray-600 dark:text-gray-300'">
+              <td class="py-1.5 px-3 text-right" :class="row.days61To90 > 0 ? 'text-warning-700 dark:text-warning-400' : 'text-gray-600 dark:text-gray-300'">
                 {{ formatCurrency(row.days61To90) }}
               </td>
-              <td class="py-1.5 px-3 text-right font-medium" :class="row.days90Plus > 0 ? 'text-error' : 'text-gray-600 dark:text-gray-300'">
+              <td
+                class="py-1.5 px-3 text-right font-medium"
+                :class="row.days90Plus > 0 ? 'text-error-600 dark:text-error-400' : 'text-gray-600 dark:text-gray-300'"
+              >
                 {{ formatCurrency(row.days90Plus) }}
               </td>
               <td class="py-1.5 pl-3 text-right font-medium text-gray-900 dark:text-white">{{ formatCurrency(row.total) }}</td>
@@ -72,7 +75,7 @@
       <template #header>
         <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Unpaid invoices by due date</h2>
       </template>
-      <div v-if="loadingInvoices" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
+      <div v-if="loadingInvoices" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">Loading…</div>
       <EmptyState v-else-if="unpaidInvoices.length === 0" icon="i-lucide-check-circle" title="Nothing owed" />
       <div v-else class="space-y-2">
         <div
@@ -86,7 +89,7 @@
               <UBadge v-if="inv.overdue" color="error" variant="subtle" size="xs">{{ inv.daysOverdue }} days overdue</UBadge>
               <UBadge v-else-if="inv.dueDate" color="neutral" variant="subtle" size="xs">Due {{ formatDate(inv.dueDate) }}</UBadge>
             </div>
-            <p class="text-xs text-gray-400 truncate">{{ inv.supplierName }} · outstanding {{ formatCurrency(inv.outstandingAmount) }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ inv.supplierName }} · outstanding {{ formatCurrency(inv.outstandingAmount) }}</p>
           </div>
           <NuxtLink :to="`/supplier-payments?fromPurchaseInvoice=${inv.id}`">
             <UButton size="xs" color="success" variant="soft" icon="i-lucide-banknote">Pay</UButton>

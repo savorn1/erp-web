@@ -171,10 +171,29 @@ const STATUS_META: Record<string, { color: StatusColor; icon: string }> = {
   QUOTED: { color: 'info', icon: 'i-lucide-file-check' },
   // GoodsReceipt status (useGoodsReceipts' GoodsReceiptStatus) — COMPLETED
   // already covered above.
+  // Shared by GoodsReceipt status and SerialNumber status (a unit reserved by
+  // a receipt line whose quality check hasn't been recorded) — same meaning in
+  // both, so one entry covers them.
   PENDING_QC: { color: 'warning', icon: 'i-lucide-clock' },
   // GoodsReceiptLine quality check outcome (useGoodsReceipts'
   // QualityCheckStatus) — PENDING/FAILED already covered above.
   PASSED: { color: 'success', icon: 'i-lucide-check-circle' },
+  // SerialNumber status (useSerialNumbers' SerialNumberStatus) — one row per
+  // individually-tracked unit. PENDING_QC is covered just above; without these
+  // five the serial-numbers page rendered nearly every row with the neutral
+  // help-circle default, i.e. as an unrecognised status.
+  IN_STOCK: { color: 'success', icon: 'i-lucide-package-check' },
+  // In flight on a stock transfer — not sellable until received, so 'info'
+  // rather than 'success'.
+  IN_TRANSIT: { color: 'info', icon: 'i-lucide-truck' },
+  // Terminal — shipped out on a delivery. Neutral rather than success: the
+  // unit leaving is the normal outcome, not an achievement to highlight.
+  ISSUED: { color: 'neutral', icon: 'i-lucide-package-open' },
+  // Terminal — written off by an approved adjustment (damaged/lost/expired).
+  ADJUSTED_OUT: { color: 'cancelled', icon: 'i-lucide-package-minus' },
+  // Terminal — failed quality check on arrival, never entered stock. 'error'
+  // rather than 'cancelled' since this is a rejection, not a withdrawal.
+  QC_REJECTED: { color: 'error', icon: 'i-lucide-package-x' },
   // ManufacturingOrder materials reserved, queued to start — 'info' rather
   // than 'success' since production hasn't actually begun yet.
   RELEASED: { color: 'info', icon: 'i-lucide-rocket' },

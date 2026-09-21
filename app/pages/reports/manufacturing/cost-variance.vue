@@ -22,11 +22,11 @@
           <UInput v-model="dateTo" type="date" class="w-40" />
         </UFormField>
       </div>
-      <p class="text-xs text-gray-400 mt-3">Grouped by when each order started production.</p>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">Grouped by when each order started production.</p>
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <template v-else-if="report">
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
@@ -72,7 +72,7 @@ const columns: ColumnDef<CostVarianceRow>[] = [
     key: 'varianceAmount',
     label: 'Variance',
     type: 'currency',
-    class: (row) => (row.varianceAmount > 0 ? 'text-error' : row.varianceAmount < 0 ? 'text-success' : '')
+    class: (row) => (row.varianceAmount > 0 ? 'text-error-600 dark:text-error-400' : row.varianceAmount < 0 ? 'text-success-700 dark:text-success-400' : '')
   },
   { key: 'variancePercent', label: 'Variance %', suffix: '%' }
 ]

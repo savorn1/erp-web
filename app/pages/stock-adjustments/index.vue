@@ -98,7 +98,7 @@
     <!-- View modal -->
     <UModal v-model:open="showView" :title="`Adjustment — ${viewingAdjustment?.adjustmentNumber ?? ''}`" :ui="{ content: 'sm:max-w-2xl' }">
       <template #body>
-        <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
+        <div v-if="loadingView" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingAdjustment">
           <WorkflowStatusStepper
             :status="viewingAdjustment.status"
@@ -108,25 +108,25 @@
           />
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
             <div>
-              <dt class="text-gray-400">Warehouse</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Warehouse</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingAdjustment.warehouseName }}</dd>
             </div>
             <div>
-              <dt class="text-gray-400">Status</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Status</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingAdjustment.status }}</dd>
             </div>
             <div>
-              <dt class="text-gray-400">Requested</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Requested</dt>
               <dd class="text-gray-900 dark:text-white">{{ formatDate(viewingAdjustment.adjustmentDate) }} by {{ viewingAdjustment.requestedBy ?? '—' }}</dd>
             </div>
             <div v-if="viewingAdjustment.approvedBy">
-              <dt class="text-gray-400">Resolved by</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Resolved by</dt>
               <dd class="text-gray-900 dark:text-white">
                 {{ viewingAdjustment.approvedBy }}<span v-if="viewingAdjustment.approvalDate"> on {{ formatDate(viewingAdjustment.approvalDate) }}</span>
               </dd>
             </div>
             <div v-if="viewingAdjustment.notes" class="col-span-2">
-              <dt class="text-gray-400">Notes</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Notes</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingAdjustment.notes }}</dd>
             </div>
           </dl>
@@ -136,17 +136,17 @@
               <div class="flex items-center justify-between">
                 <span>{{ line.productName }} ({{ line.productSku }})</span>
                 <span class="text-gray-500 dark:text-gray-400">
-                  <span :class="isIncreaseReason(line.reason) ? 'text-success' : 'text-error'"
+                  <span :class="isIncreaseReason(line.reason) ? 'text-success-700 dark:text-success-400' : 'text-error-600 dark:text-error-400'"
                     >{{ isIncreaseReason(line.reason) ? '+' : '-' }}{{ line.quantity }}</span
                   >
                   <span v-if="line.binName"> — {{ line.binName }}</span>
                 </span>
               </div>
-              <p class="text-xs text-gray-400 mt-0.5">{{ reasonLabel(line.reason) }}</p>
-              <p v-if="line.batchNumber" class="text-xs text-gray-400 mt-0.5">
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ reasonLabel(line.reason) }}</p>
+              <p v-if="line.batchNumber" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 Batch {{ line.batchNumber }}<span v-if="line.expirationDate"> · expires {{ formatDate(line.expirationDate) }}</span>
               </p>
-              <p v-if="line.serialNumbers && line.serialNumbers.length > 0" class="text-xs text-gray-400 mt-0.5">
+              <p v-if="line.serialNumbers && line.serialNumbers.length > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 Serials: {{ line.serialNumbers.join(', ') }}
               </p>
             </li>

@@ -22,7 +22,7 @@
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else-if="cashFlow">
       <DataTable :rows="cashFlow.accounts" :columns="columns" exportable export-filename="accounting-cash-flow">
@@ -50,13 +50,27 @@ const cashFlow = ref<CashFlow | null>(null)
 const columns = computed<ColumnDef<CashFlowAccountRow>[]>(() => [
   { key: 'bankAccountName', label: 'Account', footer: () => 'Total' },
   { key: 'openingBalance', label: 'Opening', type: 'currency', footer: () => cashFlow.value?.totalOpeningBalance },
-  { key: 'inflow', label: 'Inflow', type: 'currency', prefix: () => '+', class: 'text-success', footer: () => cashFlow.value?.totalInflow },
-  { key: 'outflow', label: 'Outflow', type: 'currency', prefix: () => '-', class: 'text-error', footer: () => cashFlow.value?.totalOutflow },
+  {
+    key: 'inflow',
+    label: 'Inflow',
+    type: 'currency',
+    prefix: () => '+',
+    class: 'text-success-700 dark:text-success-400',
+    footer: () => cashFlow.value?.totalInflow
+  },
+  {
+    key: 'outflow',
+    label: 'Outflow',
+    type: 'currency',
+    prefix: () => '-',
+    class: 'text-error-600 dark:text-error-400',
+    footer: () => cashFlow.value?.totalOutflow
+  },
   {
     key: 'netChange',
     label: 'Net change',
     type: 'currency',
-    class: (row) => (row.netChange >= 0 ? 'text-success' : 'text-error'),
+    class: (row) => (row.netChange >= 0 ? 'text-success-700 dark:text-success-400' : 'text-error-600 dark:text-error-400'),
     footer: () => cashFlow.value?.totalNetChange
   },
   { key: 'closingBalance', label: 'Closing', type: 'currency', footer: () => cashFlow.value?.totalClosingBalance }

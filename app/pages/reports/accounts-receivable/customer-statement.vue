@@ -25,14 +25,14 @@
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else>
       <EmptyState v-if="!customerId" icon="i-lucide-book-text" title="Select a customer" description="Choose a customer above to see their statement." />
       <template v-else-if="statement">
         <div class="flex items-center justify-between mb-3 text-sm">
           <span class="text-gray-900 dark:text-white font-medium">{{ statement.customerName }}</span>
-          <span class="text-gray-400">Opening: {{ formatCurrency(statement.openingBalance) }}</span>
+          <span class="text-gray-500 dark:text-gray-400">Opening: {{ formatCurrency(statement.openingBalance) }}</span>
         </div>
         <DataTable :rows="statement.lines" :columns="columns" exportable export-filename="accounts-receivable-customer-statement">
           <template #empty-state>

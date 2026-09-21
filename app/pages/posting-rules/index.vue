@@ -9,7 +9,7 @@
       <UFormField label="Company">
         <USelect v-model="companyId" :items="activeCompanyOptions" placeholder="Select a company" class="w-64" />
       </UFormField>
-      <p class="text-xs text-gray-400 mt-3">
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
         These are the "auto-posting accounts" — approving an invoice, recording a payment, or issuing a credit/debit note will create and post a balanced
         journal entry using the accounts mapped here. Leave any field blank to skip auto-posting for that document type; the underlying action (approving,
         recording, etc.) always succeeds either way. "Seed from standard chart" fills in every still-blank field with one default account per module, creating
@@ -19,7 +19,7 @@
 
     <UAlert v-if="!loadingLookups && activeCompanyOptions.length === 0" color="warning" variant="subtle" class="mb-4" title="No active companies yet" />
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <template v-else-if="companyId">
       <UCard class="mb-4">

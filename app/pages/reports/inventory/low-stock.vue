@@ -32,7 +32,7 @@
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else-if="lowStock">
       <UAlert
@@ -114,7 +114,7 @@ function formatted(row: InventoryOverviewRow, baseQuantity: number) {
 const columns = computed<ColumnDef<InventoryOverviewRow>[]>(() => [
   { key: 'productName', label: 'Product', value: (row) => `${row.productName ?? '—'} (${row.productSku ?? '—'})` },
   { key: 'warehouseName', label: 'Warehouse', value: (row) => row.warehouseName ?? '—' },
-  { key: 'availableStock', label: 'Available', value: (row) => formatted(row, row.availableStock), class: 'text-error' },
+  { key: 'availableStock', label: 'Available', value: (row) => formatted(row, row.availableStock), class: 'text-error-600 dark:text-error-400' },
   { key: 'reorderPoint', label: 'Reorder point', value: (row) => formatted(row, row.reorderPoint) },
   { key: 'actions', label: '' }
 ])

@@ -78,28 +78,28 @@
     <!-- View / enter counts / complete / reconcile modal -->
     <UModal v-model:open="showView" :title="`Count — ${viewingCount?.countNumber ?? ''}`" :ui="{ content: 'sm:max-w-2xl' }">
       <template #body>
-        <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
+        <div v-if="loadingView" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingCount">
           <WorkflowStatusStepper :status="viewingCount.status" :steps="countWorkflowSteps" :next-hint="countWorkflowHint(viewingCount.status)" class="mb-4" />
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
             <div>
-              <dt class="text-gray-400">Warehouse</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Warehouse</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingCount.warehouseName }}</dd>
             </div>
             <div>
-              <dt class="text-gray-400">Status</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Status</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingCount.status }}</dd>
             </div>
             <div>
-              <dt class="text-gray-400">Counted by</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Counted by</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingCount.countedBy ?? '—' }}</dd>
             </div>
             <div v-if="viewingCount.adjustmentNumber">
-              <dt class="text-gray-400">Reconciliation</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Reconciliation</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingCount.adjustmentNumber }}</dd>
             </div>
             <div v-if="viewingCount.notes" class="col-span-2">
-              <dt class="text-gray-400">Notes</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Notes</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingCount.notes }}</dd>
             </div>
           </dl>
@@ -109,26 +109,40 @@
             <div v-for="line in viewingLines" :key="line.id" class="rounded-lg border border-gray-200 dark:border-gray-800 p-3">
               <div class="flex items-center justify-between gap-2 mb-1">
                 <span class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ line.productName }} ({{ line.productSku }})</span>
-                <span class="text-xs text-gray-400 shrink-0"
-                  >System: {{ line.systemQuantity }}<span v-if="line.binName"> — {{ line.binName }}</span></span
+                <span class="text-xs text-gray-500 dark:text-gray-400 shrink-0"
+                  >System: {{ line.systemQuantityInUnit }} {{ line.unitOfMeasureAbbreviation ?? '' }}
+                  <span v-if="isConverted(line)" class="text-gray-300 dark:text-gray-600">
+                    = {{ line.systemQuantity }} {{ line.baseUnitOfMeasureAbbreviation ?? '' }}
+                  </span>
+                  <span v-if="line.binName"> — {{ line.binName }}</span></span
                 >
               </div>
               <UInput
                 v-if="viewingCount.status === 'DRAFT'"
-                v-model.number="line.countedQuantity"
+                v-model.number="line.countedQuantityInUnit"
                 type="number"
                 min="0"
                 step="0.0001"
-                placeholder="Counted quantity"
+                :placeholder="`Counted quantity in ${line.unitOfMeasureAbbreviation ?? 'base units'}`"
                 class="w-full"
-              />
+              >
+                <template v-if="line.unitOfMeasureAbbreviation" #trailing>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">{{ line.unitOfMeasureAbbreviation }}</span>
+                </template>
+              </UInput>
               <p v-else class="text-sm">
-                Counted: {{ line.countedQuantity ?? '—' }}
+                Counted: {{ line.countedQuantityInUnit ?? '—' }} {{ line.unitOfMeasureAbbreviation ?? '' }}
                 <span
                   v-if="line.varianceQuantity !== null && line.varianceQuantity !== undefined"
-                  :class="line.varianceQuantity === 0 ? 'text-gray-400' : line.varianceQuantity > 0 ? 'text-success' : 'text-error'"
+                  :class="
+                    line.varianceQuantity === 0
+                      ? 'text-gray-500 dark:text-gray-400'
+                      : line.varianceQuantity > 0
+                        ? 'text-success-700 dark:text-success-400'
+                        : 'text-error-600 dark:text-error-400'
+                  "
                 >
-                  ({{ line.varianceQuantity > 0 ? '+' : '' }}{{ line.varianceQuantity }})
+                  ({{ line.varianceQuantity > 0 ? '+' : '' }}{{ line.varianceQuantity }} {{ line.baseUnitOfMeasureAbbreviation ?? '' }})
                 </span>
               </p>
             </div>
@@ -167,7 +181,7 @@
 
 <script setup lang="ts">
 import type { ColumnDef } from '#shared/types'
-import type { StockCount, StockCountStatus } from '~/composables/useStockCounts'
+import type { StockCount, StockCountLine, StockCountStatus } from '~/composables/useStockCounts'
 
 definePageMeta({ middleware: 'admin' })
 
@@ -253,9 +267,19 @@ const savingCounts = ref(false)
 const completing = ref(false)
 const reconciling = ref(false)
 
+// Everything the counter touches is countedQuantityInUnit — the sheet is
+// filled in the line's unit and the server converts to base units on submit.
+// countedQuantity (base) is read-only here; binding the input to it would
+// send base units back as if they were the line's unit and re-convert them.
 const allLinesCounted = computed(
-  () => viewingLines.value.length > 0 && viewingLines.value.every((l) => l.countedQuantity !== null && l.countedQuantity !== undefined)
+  () => viewingLines.value.length > 0 && viewingLines.value.every((l) => l.countedQuantityInUnit !== null && l.countedQuantityInUnit !== undefined)
 )
+
+// A factor of 1 means the line is counted in the product's own unit, so
+// there's nothing to show a conversion for.
+function isConverted(line: StockCountLine) {
+  return line.conversionFactor !== null && line.conversionFactor !== undefined && Number(line.conversionFactor) !== 1
+}
 
 async function openView(row: StockCount) {
   showView.value = true
@@ -275,7 +299,7 @@ async function openView(row: StockCount) {
 async function onSaveCounts(): Promise<boolean> {
   if (!viewingCount.value) return false
   viewError.value = ''
-  const linesToSave = viewingLines.value.filter((l) => l.countedQuantity !== null && l.countedQuantity !== undefined)
+  const linesToSave = viewingLines.value.filter((l) => l.countedQuantityInUnit !== null && l.countedQuantityInUnit !== undefined)
   if (linesToSave.length === 0) {
     viewError.value = 'Enter at least one counted quantity'
     return false
@@ -284,7 +308,7 @@ async function onSaveCounts(): Promise<boolean> {
   try {
     const updated = await submitCounts(
       viewingCount.value.id,
-      linesToSave.map((l) => ({ lineId: l.id, countedQuantity: l.countedQuantity! }))
+      linesToSave.map((l) => ({ lineId: l.id, countedQuantity: l.countedQuantityInUnit! }))
     )
     viewingCount.value = updated
     viewingLines.value = (updated.lines ?? []).map((l) => ({ ...l }))

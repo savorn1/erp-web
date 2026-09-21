@@ -21,12 +21,12 @@
       <template #header>
         <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Aging report</h2>
       </template>
-      <div v-if="loadingAging" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
+      <div v-if="loadingAging" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">Loading…</div>
       <EmptyState v-else-if="aging && aging.rows.length === 0" icon="i-lucide-check-circle" title="Nothing outstanding" />
       <div v-else-if="aging" class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
-            <tr class="text-left text-xs text-gray-400 border-b border-gray-200 dark:border-gray-800">
+            <tr class="text-left text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-800">
               <th class="py-2 pr-3">Customer</th>
               <th class="py-2 px-3 text-right">Current</th>
               <th class="py-2 px-3 text-right">1-30 days</th>
@@ -41,13 +41,16 @@
               <td class="py-1.5 pr-3 text-gray-900 dark:text-white">{{ row.customerName ?? '—' }}</td>
               <td class="py-1.5 px-3 text-right text-gray-600 dark:text-gray-300">{{ formatCurrency(row.current) }}</td>
               <td class="py-1.5 px-3 text-right text-gray-600 dark:text-gray-300">{{ formatCurrency(row.days1To30) }}</td>
-              <td class="py-1.5 px-3 text-right" :class="row.days31To60 > 0 ? 'text-warning' : 'text-gray-600 dark:text-gray-300'">
+              <td class="py-1.5 px-3 text-right" :class="row.days31To60 > 0 ? 'text-warning-700 dark:text-warning-400' : 'text-gray-600 dark:text-gray-300'">
                 {{ formatCurrency(row.days31To60) }}
               </td>
-              <td class="py-1.5 px-3 text-right" :class="row.days61To90 > 0 ? 'text-warning' : 'text-gray-600 dark:text-gray-300'">
+              <td class="py-1.5 px-3 text-right" :class="row.days61To90 > 0 ? 'text-warning-700 dark:text-warning-400' : 'text-gray-600 dark:text-gray-300'">
                 {{ formatCurrency(row.days61To90) }}
               </td>
-              <td class="py-1.5 px-3 text-right font-medium" :class="row.days90Plus > 0 ? 'text-error' : 'text-gray-600 dark:text-gray-300'">
+              <td
+                class="py-1.5 px-3 text-right font-medium"
+                :class="row.days90Plus > 0 ? 'text-error-600 dark:text-error-400' : 'text-gray-600 dark:text-gray-300'"
+              >
                 {{ formatCurrency(row.days90Plus) }}
               </td>
               <td class="py-1.5 pl-3 text-right font-medium text-gray-900 dark:text-white">{{ formatCurrency(row.total) }}</td>
@@ -72,7 +75,7 @@
       <template #header>
         <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Overdue invoices</h2>
       </template>
-      <div v-if="loadingInvoices" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
+      <div v-if="loadingInvoices" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">Loading…</div>
       <EmptyState v-else-if="overdueInvoices.length === 0" icon="i-lucide-check-circle" title="No overdue invoices" />
       <div v-else class="space-y-2">
         <div
@@ -85,7 +88,7 @@
               <span class="text-sm font-medium text-gray-900 dark:text-white">{{ inv.invoiceNumber }}</span>
               <UBadge color="error" variant="subtle" size="xs">{{ inv.daysOverdue }} days overdue</UBadge>
             </div>
-            <p class="text-xs text-gray-400 truncate">
+            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
               {{ inv.customerName }} · due {{ formatDate(inv.dueDate!) }} · outstanding {{ formatCurrency(inv.outstandingAmount) }}
             </p>
           </div>
@@ -97,7 +100,7 @@
     <!-- Collections modal -->
     <UModal v-model:open="showCollections" :title="`Collections — ${collectionsTarget?.invoiceNumber ?? ''}`" :ui="{ content: 'sm:max-w-lg' }">
       <template #body>
-        <div v-if="loadingActivities" class="text-sm text-gray-400 py-4 text-center">Loading…</div>
+        <div v-if="loadingActivities" class="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">Loading…</div>
         <template v-else>
           <EmptyState v-if="activities.length === 0" icon="i-lucide-file-minus" title="No collection activity logged yet" />
           <ul v-else class="space-y-1.5 mb-4">
@@ -106,11 +109,11 @@
                 <span class="font-medium text-gray-900 dark:text-white">{{ formatEnum(a.method) }}</span>
                 <div class="flex items-center gap-2">
                   <UBadge :color="a.resolved ? 'success' : 'warning'" variant="subtle" size="xs">{{ a.resolved ? 'Resolved' : 'Open' }}</UBadge>
-                  <span class="text-xs text-gray-400">{{ formatDate(a.activityDate) }}</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">{{ formatDate(a.activityDate) }}</span>
                 </div>
               </div>
-              <p v-if="a.notes" class="text-xs text-gray-400 mt-0.5">{{ a.notes }}</p>
-              <p v-if="a.followUpDate" class="text-xs text-gray-400 mt-0.5">Follow up {{ formatDate(a.followUpDate) }}</p>
+              <p v-if="a.notes" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ a.notes }}</p>
+              <p v-if="a.followUpDate" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Follow up {{ formatDate(a.followUpDate) }}</p>
             </li>
           </ul>
         </template>

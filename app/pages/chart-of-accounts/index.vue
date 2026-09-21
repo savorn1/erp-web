@@ -38,7 +38,7 @@
     </UCard>
 
     <UCard v-else>
-      <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+      <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
       <template v-else>
         <EmptyState
           v-if="allAccounts.length === 0"
@@ -68,9 +68,9 @@
           <div v-else class="space-y-1">
             <div v-for="row in pagedRows" :key="row.id" class="flex items-center justify-between gap-2 py-1.5 border-b border-gray-100 dark:border-gray-800/60">
               <div class="flex items-center gap-2 min-w-0">
-                <span class="text-sm font-mono text-gray-400 shrink-0">{{ row.accountCode }}</span>
+                <span class="text-sm font-mono text-gray-500 dark:text-gray-400 shrink-0">{{ row.accountCode }}</span>
                 <span class="text-sm text-gray-900 dark:text-white truncate">{{ row.name }}</span>
-                <span v-if="row.parentAccountName" class="text-xs text-gray-400 truncate shrink-0">under {{ row.parentAccountName }}</span>
+                <span v-if="row.parentAccountName" class="text-xs text-gray-500 dark:text-gray-400 truncate shrink-0">under {{ row.parentAccountName }}</span>
                 <UBadge v-if="!row.active" color="neutral" variant="subtle" size="xs">Inactive</UBadge>
               </div>
               <div class="flex items-center gap-2 shrink-0">

@@ -45,15 +45,15 @@
           </template>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm mb-4">
             <div>
-              <div class="text-gray-400">Orders</div>
+              <div class="text-gray-500 dark:text-gray-400">Orders</div>
               <div class="font-medium">{{ detail.orderCount }}</div>
             </div>
             <div>
-              <div class="text-gray-400">Planned quantity</div>
+              <div class="text-gray-500 dark:text-gray-400">Planned quantity</div>
               <div class="font-medium">{{ detail.totalPlannedQuantity }}</div>
             </div>
             <div>
-              <div class="text-gray-400">Produced quantity</div>
+              <div class="text-gray-500 dark:text-gray-400">Produced quantity</div>
               <div class="font-medium">{{ detail.totalProducedQuantity }}</div>
             </div>
           </div>

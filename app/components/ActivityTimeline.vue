@@ -1,5 +1,5 @@
 <template>
-  <div v-if="loading" class="text-sm text-gray-400">Loading…</div>
+  <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400">Loading…</div>
   <EmptyState v-else-if="activities.length === 0" icon="i-lucide-history" :title="emptyTitle" />
   <ul v-else class="max-h-96 overflow-y-auto">
     <li v-for="(a, i) in activities" :key="a.id" class="relative flex gap-3 pb-4 last:pb-0">
@@ -12,12 +12,16 @@
       <div class="flex-1 min-w-0 pt-0.5">
         <div class="flex items-start justify-between gap-2">
           <span class="text-sm font-medium text-gray-900 dark:text-white">{{ a.description }}</span>
-          <span v-if="a.amount != null" :class="Number(a.amount) >= 0 ? 'text-error' : 'text-success'" class="text-sm font-semibold shrink-0">
+          <span
+            v-if="a.amount != null"
+            :class="Number(a.amount) >= 0 ? 'text-error-600 dark:text-error-400' : 'text-success-700 dark:text-success-400'"
+            class="text-sm font-semibold shrink-0"
+          >
             {{ Number(a.amount) >= 0 ? '+' : '' }}{{ formatCurrency(a.amount) }}
           </span>
-          <span v-else class="text-xs text-gray-400 shrink-0">{{ formatEnum(a.type) }}</span>
+          <span v-else class="text-xs text-gray-500 dark:text-gray-400 shrink-0">{{ formatEnum(a.type) }}</span>
         </div>
-        <p class="text-xs text-gray-400 mt-0.5" :title="formatDateTime(a.createdAt)">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5" :title="formatDateTime(a.createdAt)">
           {{ formatRelativeTime(a.createdAt) }}<span v-if="a.createdBy"> · {{ a.createdBy }}</span>
         </p>
       </div>

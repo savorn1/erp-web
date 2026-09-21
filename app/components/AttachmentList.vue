@@ -1,12 +1,12 @@
 <template>
   <div>
     <div class="flex items-center justify-between mb-3">
-      <p class="text-xs text-gray-400">{{ attachments.length }} {{ attachments.length === 1 ? 'file' : 'files' }}</p>
+      <p class="text-xs text-gray-500 dark:text-gray-400">{{ attachments.length }} {{ attachments.length === 1 ? 'file' : 'files' }}</p>
       <UButton size="xs" variant="soft" icon="i-lucide-upload" :loading="uploading" @click="triggerPick">Upload</UButton>
       <input ref="fileInput" type="file" class="hidden" @change="onFileSelected" />
     </div>
 
-    <div v-if="loading" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">Loading…</div>
     <EmptyState v-else-if="attachments.length === 0" icon="i-lucide-paperclip" title="No attachments yet" />
     <ul v-else class="space-y-1.5">
       <li
@@ -15,12 +15,14 @@
         class="flex items-center justify-between gap-3 text-sm rounded-md border border-gray-200 dark:border-gray-800 px-3 py-2"
       >
         <div class="flex items-center gap-2 min-w-0">
-          <UIcon name="i-lucide-file-text" class="w-4 h-4 text-gray-400 shrink-0" />
+          <UIcon name="i-lucide-file-text" class="w-4 h-4 text-gray-500 dark:text-gray-400 shrink-0" />
           <div class="min-w-0">
             <a :href="file.url" target="_blank" rel="noopener" class="text-gray-900 dark:text-white font-medium truncate hover:underline">
               {{ file.fileName }}
             </a>
-            <p class="text-xs text-gray-400">{{ formatFileSize(file.size) }} · {{ file.uploadedBy ?? 'Unknown' }} · {{ formatDate(file.uploadedAt) }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              {{ formatFileSize(file.size) }} · {{ file.uploadedBy ?? 'Unknown' }} · {{ formatDate(file.uploadedAt) }}
+            </p>
           </div>
         </div>
         <div class="flex items-center gap-1 shrink-0">

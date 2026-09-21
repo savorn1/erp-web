@@ -61,7 +61,7 @@
 
           <div
             v-if="form.lines.length === 0"
-            class="text-sm text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
+            class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
           >
             No line items yet
           </div>
@@ -121,7 +121,9 @@
                     {{ formatCurrency(lineTotal(line)) }}
                   </div>
                   <UButton v-if="formEditable" size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-1" @click="form.lines.splice(i, 1)" />
-                  <span v-else-if="viewingLineReceived[i]" class="col-span-1 text-xs text-gray-400 text-right">{{ viewingLineReceived[i] }} recv'd</span>
+                  <span v-else-if="viewingLineReceived[i]" class="col-span-1 text-xs text-gray-500 dark:text-gray-400 text-right"
+                    >{{ viewingLineReceived[i] }} recv'd</span
+                  >
                 </div>
               </div>
             </div>

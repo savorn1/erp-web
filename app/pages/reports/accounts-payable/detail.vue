@@ -19,7 +19,7 @@
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else-if="detail">
       <DataTable :rows="detail.rows" :columns="columns" exportable export-filename="accounts-payable-detail">
@@ -47,7 +47,11 @@ const detail = ref<ApDetail | null>(null)
 const columns: ColumnDef<ApDetailRow>[] = [
   { key: 'invoiceNumber', label: 'Invoice', value: (row) => row.invoiceNumber ?? '—' },
   { key: 'dueDate', label: 'Due date', type: 'date' },
-  { key: 'daysOverdue', label: 'Days overdue', class: (row) => (row.daysOverdue > 0 ? 'text-error' : 'text-gray-400') },
+  {
+    key: 'daysOverdue',
+    label: 'Days overdue',
+    class: (row) => (row.daysOverdue > 0 ? 'text-error-600 dark:text-error-400' : 'text-gray-500 dark:text-gray-400')
+  },
   { key: 'supplierName', label: 'Supplier', value: (row) => row.supplierName ?? '—' },
   { key: 'productName', label: 'Product', value: (row) => `${row.productName ?? '—'} (${row.productSku ?? '—'})` },
   { key: 'quantity', label: 'Quantity' },

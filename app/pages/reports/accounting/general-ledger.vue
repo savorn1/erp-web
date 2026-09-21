@@ -22,21 +22,21 @@
           <USelect v-model="accountId" :items="accountOptions" placeholder="Select an account" class="w-56" />
         </UFormField>
       </div>
-      <p class="text-xs text-gray-400 mt-3">
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
         Reflects only what's been manually posted in
         <NuxtLink to="/journal-entries" class="underline">Journal Entries</NuxtLink> — nothing else in the system posts to the general ledger automatically yet.
       </p>
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else>
       <EmptyState v-if="!accountId" icon="i-lucide-book-text" title="Select an account" description="Choose an account above to see its ledger." />
       <template v-else-if="generalLedger">
         <div class="flex items-center justify-between mb-3 text-sm">
           <span class="text-gray-900 dark:text-white font-medium">{{ generalLedger.accountCode }} — {{ generalLedger.accountName }}</span>
-          <span class="text-gray-400">Opening: {{ formatCurrency(generalLedger.openingBalance) }}</span>
+          <span class="text-gray-500 dark:text-gray-400">Opening: {{ formatCurrency(generalLedger.openingBalance) }}</span>
         </div>
         <DataTable :rows="generalLedger.lines" :columns="columns" exportable export-filename="accounting-general-ledger">
           <template #empty-state>

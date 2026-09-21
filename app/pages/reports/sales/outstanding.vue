@@ -13,11 +13,11 @@
           <USelect v-model="companyId" :items="activeCompanyOptions" placeholder="All companies" class="w-52" />
         </UFormField>
       </div>
-      <p class="text-xs text-gray-400 mt-3">A live snapshot of the current backlog — not scoped to a date range.</p>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">A live snapshot of the current backlog — not scoped to a date range.</p>
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <template v-else-if="outstanding">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">

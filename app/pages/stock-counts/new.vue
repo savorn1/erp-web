@@ -5,7 +5,7 @@
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">New stock count</h1>
     </div>
 
-    <div v-if="loadingLookups" class="text-sm text-gray-400 py-12 text-center">Loading…</div>
+    <div v-if="loadingLookups" class="text-sm text-gray-500 dark:text-gray-400 py-12 text-center">Loading…</div>
     <template v-else>
       <div class="space-y-6">
         <UCard>
@@ -39,23 +39,46 @@
             </div>
           </template>
 
-          <p class="text-xs text-gray-400 mb-3">Only untracked products can be counted — batch/serial-tracked stock isn't supported here.</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Only untracked products can be counted — batch/serial-tracked stock isn't supported here.</p>
 
-          <div class="flex items-center justify-end mb-3">
-            <UButton size="xs" variant="soft" icon="i-lucide-plus" :disabled="!form.warehouseId" @click="addLine">Add product</UButton>
+          <div class="flex flex-wrap items-end gap-2 mb-4">
+            <UFormField label="Product" class="flex-1 min-w-[240px]">
+              <USelectMenu
+                v-model="addLineProductId"
+                :items="addableProductOptions"
+                value-key="value"
+                :disabled="!form.warehouseId"
+                placeholder="Search products…"
+                class="w-full"
+              />
+            </UFormField>
+            <UButton icon="i-lucide-plus" :disabled="!addLineProductId" @click="addLine">Add product</UButton>
           </div>
 
           <div
             v-if="form.lines.length === 0"
-            class="text-sm text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
+            class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
           >
             No products added yet
           </div>
-          <div v-else class="space-y-2">
-            <div v-for="(line, i) in form.lines" :key="i" class="grid grid-cols-12 gap-2 items-center">
-              <USelect v-model="line.productId" :items="untrackedProductOptionsFor(form.companyId)" placeholder="Product" class="col-span-6" />
-              <USelect v-model="line.binId" :items="binOptionsForWarehouse" placeholder="No bin" class="col-span-5" />
-              <UButton size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-1" @click="form.lines.splice(i, 1)" />
+          <div v-else class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800">
+            <div class="min-w-[520px]">
+              <div
+                class="grid grid-cols-12 gap-2 px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800"
+              >
+                <span class="col-span-5">Product</span>
+                <span class="col-span-2">Count in</span>
+                <span class="col-span-4">Bin</span>
+                <span class="col-span-1"></span>
+              </div>
+              <div class="divide-y divide-gray-200 dark:divide-gray-800">
+                <div v-for="(line, i) in form.lines" :key="line.productId" class="grid grid-cols-12 gap-2 items-center px-3 py-2">
+                  <div class="col-span-5 text-sm text-gray-900 dark:text-white truncate">{{ productLabel(line.productId) }}</div>
+                  <USelect v-model="line.unitOfMeasureId" :items="unitOptionsForProduct(line.productId)" placeholder="Unit" class="col-span-2" />
+                  <USelect v-model="line.binId" :items="binOptionsForWarehouse" placeholder="No bin" class="col-span-4" />
+                  <UButton size="xs" color="error" variant="ghost" icon="i-lucide-x" class="col-span-1" @click="form.lines.splice(i, 1)" />
+                </div>
+              </div>
             </div>
           </div>
         </UCard>
@@ -95,13 +118,25 @@ const { create } = useStockCounts()
 const { list: listCompanies } = useCompanies()
 const { list: listWarehouses } = useWarehouses()
 const { list: listProducts } = useProducts()
+const { list: listProductUoms } = useProductUoms()
 const { list: listBins } = useWarehouseBins()
 const toast = useToast()
 
 const loadingLookups = ref(true)
 const companies = ref<{ id: number; name: string; active: boolean }[]>([])
 const warehouses = ref<{ id: number; name: string; companyId: number; active: boolean }[]>([])
-const products = ref<{ id: number; name: string; sku: string; companyId: number; status: string; trackingType: string }[]>([])
+const products = ref<
+  {
+    id: number
+    name: string
+    sku: string
+    companyId: number
+    status: string
+    trackingType: string
+    unitOfMeasureId: number
+    unitOfMeasureAbbreviation: string | null
+  }[]
+>([])
 const bins = ref<{ id: number; name: string; warehouseId: number | null; active: boolean }[]>([])
 
 const activeCompanyOptions = computed(() => companies.value.filter((c) => c.active).map((c) => ({ label: c.name, value: c.id })))
@@ -114,9 +149,50 @@ function untrackedProductOptionsFor(companyId: number | undefined) {
     .map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id }))
 }
 
+function productLabel(productId: number | undefined) {
+  const product = products.value.find((p) => p.id === productId)
+  return product ? `${product.name} (${product.sku})` : '—'
+}
+
+// Loaded per product on demand, same as the purchase-order form. Gated on
+// allowInventory rather than allowPurchase: a count is an internal stock
+// document, so it follows the stock-transfer rule, not the buying one.
+const productUomOptions = ref<Record<number, { label: string; value: number }[]>>({})
+async function ensureProductUomOptions(productId: number) {
+  if (productUomOptions.value[productId]) return
+  try {
+    const uoms = await listProductUoms(productId)
+    productUomOptions.value[productId] = uoms
+      .filter((u) => u.active && u.allowInventory && !u.baseUnit)
+      .map((u) => ({ label: u.unitOfMeasureAbbreviation ?? '', value: u.unitOfMeasureId }))
+  } catch {
+    productUomOptions.value[productId] = []
+  }
+}
+function unitOptionsForProduct(productId: number | undefined) {
+  if (!productId) return []
+  const product = products.value.find((p) => p.id === productId)
+  const base = product ? [{ label: product.unitOfMeasureAbbreviation ?? 'Base unit', value: product.unitOfMeasureId }] : []
+  return [...base, ...(productUomOptions.value[productId] ?? [])]
+}
+
+// Already-added products drop out of the picker: counting the same product
+// twice in one count would produce two variance rows for one physical shelf.
+// A computed rather than a per-row call — the old markup invoked the filter +
+// map inside the v-for, rebuilding the whole option list once per line.
+const addableProductOptions = computed(() => {
+  const taken = new Set(form.lines.map((l) => l.productId))
+  return untrackedProductOptionsFor(form.companyId).filter((option) => !taken.has(option.value))
+})
+
 interface LineForm {
-  productId: number | undefined
+  // Never undefined: a line is only ever created from a product already chosen
+  // in the picker above, so there are no blank rows to validate away.
+  productId: number
   binId: number | undefined
+  // The unit the counter will fill the sheet in. Defaults to the product's
+  // base unit when the line is added.
+  unitOfMeasureId: number | undefined
 }
 
 const saving = ref(false)
@@ -141,16 +217,26 @@ const binOptionsForWarehouse = computed(() => [
   ...bins.value.filter((b) => b.active && b.warehouseId === form.warehouseId).map((b) => ({ label: b.name, value: b.id }))
 ])
 
+// Both clear the lines, so the picker has to drop its pending selection too —
+// otherwise it keeps showing a product from the company you just navigated away
+// from, and Add would put it back on a count it doesn't belong to.
 function onFormCompanyChanged() {
   form.warehouseId = undefined
   form.lines = []
+  addLineProductId.value = undefined
 }
 function onWarehouseChanged() {
   form.lines = []
+  addLineProductId.value = undefined
 }
 
+const addLineProductId = ref<number | undefined>(undefined)
 function addLine() {
-  form.lines.push({ productId: undefined, binId: undefined })
+  if (!addLineProductId.value) return
+  const product = products.value.find((p) => p.id === addLineProductId.value)
+  form.lines.push({ productId: addLineProductId.value, binId: undefined, unitOfMeasureId: product?.unitOfMeasureId })
+  ensureProductUomOptions(addLineProductId.value)
+  addLineProductId.value = undefined
 }
 
 const formSnapshot = ref('')
@@ -182,7 +268,8 @@ async function onSaveForm() {
     formError.value = 'Please fill in company, warehouse, and count date'
     return
   }
-  if (form.lines.length === 0 || form.lines.some((l) => !l.productId)) {
+  // No blank-row check needed — the picker is the only way to add a line.
+  if (form.lines.length === 0) {
     formError.value = 'Add at least one product to count'
     return
   }
@@ -191,7 +278,7 @@ async function onSaveForm() {
     warehouseId: form.warehouseId,
     countDate: form.countDate,
     notes: form.notes || undefined,
-    lines: form.lines.map((l) => ({ productId: l.productId!, binId: l.binId }))
+    lines: form.lines.map((l) => ({ productId: l.productId, binId: l.binId, unitOfMeasureId: l.unitOfMeasureId }))
   }
   saving.value = true
   try {

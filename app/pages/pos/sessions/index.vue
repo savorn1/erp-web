@@ -93,7 +93,8 @@ const columns: ColumnDef<PosSession>[] = [
     key: 'cashVariance',
     label: 'Variance',
     value: (row) => (row.cashVariance === null ? '—' : formatCurrency(row.cashVariance)),
-    class: (row) => (row.cashVariance && row.cashVariance !== 0 ? (row.cashVariance > 0 ? 'text-success' : 'text-error') : '')
+    class: (row) =>
+      row.cashVariance && row.cashVariance !== 0 ? (row.cashVariance > 0 ? 'text-success-700 dark:text-success-400' : 'text-error-600 dark:text-error-400') : ''
   },
   { key: 'actions', label: '' }
 ]

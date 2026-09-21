@@ -15,7 +15,7 @@
           <UButton
             v-if="mode === 'route'"
             icon="i-lucide-star"
-            :class="isPinned(row.to) ? 'text-warning' : 'text-gray-400 dark:text-gray-500'"
+            :class="isPinned(row.to) ? 'text-warning-700 dark:text-warning-400' : 'text-gray-400 dark:text-gray-500'"
             variant="ghost"
             color="neutral"
             size="xs"

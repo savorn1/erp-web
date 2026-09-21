@@ -62,7 +62,9 @@
           </UBadge>
         </template>
         <template #amount-data="{ row }">
-          <span :class="row.type === 'TOPUP' ? 'text-success' : 'text-error'"> {{ row.type === 'TOPUP' ? '+' : '-' }}{{ formatCurrency(row.amount) }} </span>
+          <span :class="row.type === 'TOPUP' ? 'text-success-700 dark:text-success-400' : 'text-error-600 dark:text-error-400'">
+            {{ row.type === 'TOPUP' ? '+' : '-' }}{{ formatCurrency(row.amount) }}
+          </span>
         </template>
 
         <template #empty-state>

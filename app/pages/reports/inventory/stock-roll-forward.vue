@@ -36,7 +36,7 @@
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else>
       <DataTable :rows="rows" :columns="columns" exportable export-filename="inventory-stock-roll-forward">
@@ -88,13 +88,13 @@ const columns = computed<ColumnDef<RollForwardRow>[]>(() => [
   { key: 'productName', label: 'Product', value: (row) => `${row.productName ?? '—'} (${row.productSku ?? '—'})` },
   { key: 'warehouseName', label: 'Warehouse', value: (row) => row.warehouseName ?? '—' },
   { key: 'beginningQuantity', label: 'Beginning', value: (row) => formatted(row, row.beginningQuantity) },
-  { key: 'inQuantity', label: 'In', value: (row) => formatted(row, row.inQuantity), class: 'text-success' },
-  { key: 'outQuantity', label: 'Out', value: (row) => formatted(row, row.outQuantity), class: 'text-error' },
+  { key: 'inQuantity', label: 'In', value: (row) => formatted(row, row.inQuantity), class: 'text-success-700 dark:text-success-400' },
+  { key: 'outQuantity', label: 'Out', value: (row) => formatted(row, row.outQuantity), class: 'text-error-600 dark:text-error-400' },
   {
     key: 'adjustments',
     label: 'Adjustments',
     value: (row) => formatted(row, row.adjustments, true),
-    class: (row) => (row.adjustments > 0 ? 'text-success' : row.adjustments < 0 ? 'text-error' : '')
+    class: (row) => (row.adjustments > 0 ? 'text-success-700 dark:text-success-400' : row.adjustments < 0 ? 'text-error-600 dark:text-error-400' : '')
   },
   { key: 'endingQuantity', label: 'Ending', value: (row) => formatted(row, row.endingQuantity) }
 ])

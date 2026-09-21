@@ -128,7 +128,7 @@
           title="Not every invoice is listed"
           :description="`This customer has more than ${INVOICE_FETCH_LIMIT} approved invoices, so older unpaid ones may be missing. Search by invoice number to find a specific one.`"
         />
-        <div v-if="loadingInvoices" class="text-sm text-gray-400 py-4 text-center">Loading…</div>
+        <div v-if="loadingInvoices" class="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">Loading…</div>
         <EmptyState
           v-else-if="form.customerId && outstandingInvoices.length === 0"
           icon="i-lucide-check-circle"
@@ -158,9 +158,9 @@
                     <span class="text-sm text-gray-900 dark:text-white truncate">{{ line.invoiceNumber }}</span>
                     <UBadge v-if="line.overdue" color="error" variant="subtle" size="xs">{{ line.daysOverdue }} days overdue</UBadge>
                   </div>
-                  <p v-if="line.dueDate" class="text-xs text-gray-400">Due {{ formatDate(line.dueDate) }}</p>
+                  <p v-if="line.dueDate" class="text-xs text-gray-500 dark:text-gray-400">Due {{ formatDate(line.dueDate) }}</p>
                 </div>
-                <span class="col-span-3 text-xs text-gray-400 text-right">{{ formatCurrency(line.outstandingAmount) }}</span>
+                <span class="col-span-3 text-xs text-gray-500 dark:text-gray-400 text-right">{{ formatCurrency(line.outstandingAmount) }}</span>
                 <UInput
                   :model-value="amountFor(line.invoiceId)"
                   type="number"
@@ -175,13 +175,15 @@
                 />
                 <p
                   v-if="isSelected(line.invoiceId) && (amountFor(line.invoiceId) ?? 0) > line.outstandingAmount"
-                  class="col-span-12 text-xs text-error text-right"
+                  class="col-span-12 text-xs text-error-600 dark:text-error-400 text-right"
                 >
                   Exceeds outstanding balance of {{ formatCurrency(line.outstandingAmount) }}
                 </p>
               </div>
             </div>
-            <p v-if="outstandingInvoices.length === 0" class="text-sm text-gray-400 text-center py-4">No unpaid invoice matches “{{ invoiceSearch }}”</p>
+            <p v-if="outstandingInvoices.length === 0" class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+              No unpaid invoice matches “{{ invoiceSearch }}”
+            </p>
           </div>
         </div>
 
@@ -196,7 +198,11 @@
             <div class="flex justify-between font-medium text-gray-900 dark:text-white pt-1.5 border-t border-gray-200 dark:border-gray-800">
               <span>Total to record</span><span>{{ formatCurrency(formTotal) }}</span>
             </div>
-            <div v-if="fullListKnown" class="flex justify-between" :class="remainingAfterPayment > 0 ? 'text-gray-500 dark:text-gray-400' : 'text-success'">
+            <div
+              v-if="fullListKnown"
+              class="flex justify-between"
+              :class="remainingAfterPayment > 0 ? 'text-gray-500 dark:text-gray-400' : 'text-success-700 dark:text-success-400'"
+            >
               <span>{{ remainingAfterPayment > 0 ? 'Still owing after' : 'Settles in full' }}</span>
               <span v-if="remainingAfterPayment > 0">{{ formatCurrency(remainingAfterPayment) }}</span>
             </div>
@@ -254,39 +260,39 @@
       :ui="{ content: 'sm:max-w-lg' }"
     >
       <template #body>
-        <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
+        <div v-if="loadingView" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingPayment">
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
             <div>
-              <dt class="text-gray-400">Customer</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Customer</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingPayment.customerName }}</dd>
             </div>
             <div>
-              <dt class="text-gray-400">Date</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Date</dt>
               <dd class="text-gray-900 dark:text-white">{{ formatDate(viewingPayment.paymentDate) }}</dd>
             </div>
             <div>
-              <dt class="text-gray-400">Method</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Method</dt>
               <dd class="text-gray-900 dark:text-white">{{ formatEnum(viewingPayment.method) }}</dd>
             </div>
             <div>
-              <dt class="text-gray-400">Amount</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Amount</dt>
               <dd class="text-gray-900 dark:text-white font-medium">{{ formatCurrency(viewingPayment.amount) }}</dd>
             </div>
             <div v-if="viewingPayment.reference">
-              <dt class="text-gray-400">Reference</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Reference</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingPayment.reference }}</dd>
             </div>
             <div v-if="viewingPayment.relatedPaymentNumber">
-              <dt class="text-gray-400">Refund of</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Refund of</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingPayment.relatedPaymentNumber }}</dd>
             </div>
             <div v-if="viewingPayment.createdBy">
-              <dt class="text-gray-400">Recorded by</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Recorded by</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingPayment.createdBy }}</dd>
             </div>
             <div v-if="viewingPayment.notes" class="col-span-2">
-              <dt class="text-gray-400">Notes</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Notes</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingPayment.notes }}</dd>
             </div>
           </dl>
@@ -298,7 +304,9 @@
               class="text-sm rounded-md border border-gray-200 dark:border-gray-800 px-3 py-1.5 flex items-center justify-between"
             >
               <span>{{ a.invoiceNumber }}</span>
-              <span :class="a.amount >= 0 ? 'text-success' : 'text-error'">{{ a.amount >= 0 ? '' : '-' }}{{ formatCurrency(Math.abs(a.amount)) }}</span>
+              <span :class="a.amount >= 0 ? 'text-success-700 dark:text-success-400' : 'text-error-600 dark:text-error-400'"
+                >{{ a.amount >= 0 ? '' : '-' }}{{ formatCurrency(Math.abs(a.amount)) }}</span
+              >
             </li>
           </ul>
         </template>

@@ -19,13 +19,13 @@
           <UInput v-model.number="thresholdDays" type="number" min="1" class="w-32" />
         </UFormField>
       </div>
-      <p class="text-xs text-gray-400 mt-3">
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
         There's no write-off status in the system — this just flags invoices old enough to warrant a closer look, using the AR aging logic.
       </p>
     </UCard>
 
     <UAlert v-if="error" color="error" variant="subtle" class="mb-4" :title="error" icon="i-lucide-triangle-alert" />
-    <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
+    <div v-if="loading" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
 
     <template v-else-if="badDebt">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -61,7 +61,7 @@ const columns: ColumnDef<ArBadDebtRow>[] = [
   { key: 'invoiceNumber', label: 'Invoice', value: (row) => row.invoiceNumber ?? '—' },
   { key: 'invoiceDate', label: 'Invoice date', type: 'date' },
   { key: 'dueDate', label: 'Due date', type: 'date' },
-  { key: 'daysOverdue', label: 'Days overdue', class: 'text-error' },
+  { key: 'daysOverdue', label: 'Days overdue', class: 'text-error-600 dark:text-error-400' },
   { key: 'customerName', label: 'Customer', value: (row) => row.customerName ?? '—' },
   { key: 'outstandingAmount', label: 'Outstanding', type: 'currency' }
 ]

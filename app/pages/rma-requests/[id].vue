@@ -117,7 +117,7 @@
           </template>
           <div
             v-if="form.lines.length === 0"
-            class="text-sm text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
+            class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg"
           >
             No lines yet
           </div>
@@ -153,7 +153,7 @@
             </UFormField>
             <UButton :loading="resolving" @click="onResolve">Resolve</UButton>
           </div>
-          <p class="text-xs text-gray-400 mt-2">
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
             Refund issues a credit note against the original invoice and restocks the returned items. Replacement restocks the return and ships an identical
             replacement. Repair is a status-only record.
           </p>

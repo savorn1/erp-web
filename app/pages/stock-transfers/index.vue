@@ -122,7 +122,7 @@
     <!-- Ship modal -->
     <UModal v-model:open="showShip" title="Ship stock transfer" :ui="{ content: 'sm:max-w-2xl' }">
       <template #body>
-        <div v-if="loadingShipDetail" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
+        <div v-if="loadingShipDetail" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="shippingTransfer">
           <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
             {{ shippingTransfer.transferNumber }} — {{ shippingTransfer.sourceWarehouseName }} → {{ shippingTransfer.destinationWarehouseName }}
@@ -131,9 +131,11 @@
             <div v-for="line in shipLines" :key="line.id" class="rounded-lg border border-gray-200 dark:border-gray-800 p-3 space-y-2">
               <div class="flex items-center justify-between gap-2">
                 <span class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ line.productName }} ({{ line.productSku }})</span>
-                <span class="text-xs text-gray-400 shrink-0">Qty: {{ line.quantityRequested }} {{ line.unitOfMeasureAbbreviation ?? '' }}</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400 shrink-0"
+                  >Qty: {{ line.quantityRequested }} {{ line.unitOfMeasureAbbreviation ?? '' }}</span
+                >
               </div>
-              <p v-if="line.batchNumber" class="text-xs text-gray-400">Batch {{ line.batchNumber }}</p>
+              <p v-if="line.batchNumber" class="text-xs text-gray-500 dark:text-gray-400">Batch {{ line.batchNumber }}</p>
               <template v-if="line.trackingType === 'SERIAL'">
                 <USelectMenu
                   v-model="line.selectedSerials"
@@ -143,7 +145,10 @@
                   placeholder="Select serial numbers"
                   class="w-full"
                 />
-                <p class="text-xs mt-1" :class="line.selectedSerials.length === line.quantityRequested ? 'text-gray-400' : 'text-error'">
+                <p
+                  class="text-xs mt-1"
+                  :class="line.selectedSerials.length === line.quantityRequested ? 'text-gray-500 dark:text-gray-400' : 'text-error-600 dark:text-error-400'"
+                >
                   {{ line.selectedSerials.length }} of {{ line.quantityRequested }} serial number(s) selected
                 </p>
               </template>
@@ -163,7 +168,7 @@
     <!-- View modal -->
     <UModal v-model:open="showView" :title="`Transfer — ${viewingTransfer?.transferNumber ?? ''}`" :ui="{ content: 'sm:max-w-2xl' }">
       <template #body>
-        <div v-if="loadingView" class="text-sm text-gray-400 py-6 text-center">Loading…</div>
+        <div v-if="loadingView" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">Loading…</div>
         <template v-else-if="viewingTransfer">
           <WorkflowStatusStepper
             :status="viewingTransfer.status"
@@ -173,35 +178,35 @@
           />
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
             <div>
-              <dt class="text-gray-400">Source</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Source</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingTransfer.sourceWarehouseName }}</dd>
             </div>
             <div>
-              <dt class="text-gray-400">Destination</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Destination</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingTransfer.destinationWarehouseName }}</dd>
             </div>
             <div>
-              <dt class="text-gray-400">Status</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Status</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingTransfer.status }}</dd>
             </div>
             <div>
-              <dt class="text-gray-400">Requested</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Requested</dt>
               <dd class="text-gray-900 dark:text-white">{{ formatDate(viewingTransfer.requestDate) }} by {{ viewingTransfer.requestedBy ?? '—' }}</dd>
             </div>
             <div v-if="viewingTransfer.approvedBy">
-              <dt class="text-gray-400">Approved by</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Approved by</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingTransfer.approvedBy }}</dd>
             </div>
             <div v-if="viewingTransfer.shipDate">
-              <dt class="text-gray-400">Shipped</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Shipped</dt>
               <dd class="text-gray-900 dark:text-white">{{ formatDate(viewingTransfer.shipDate) }} by {{ viewingTransfer.shippedBy ?? '—' }}</dd>
             </div>
             <div v-if="viewingTransfer.receiveDate">
-              <dt class="text-gray-400">Received</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Received</dt>
               <dd class="text-gray-900 dark:text-white">{{ formatDate(viewingTransfer.receiveDate) }} by {{ viewingTransfer.receivedBy ?? '—' }}</dd>
             </div>
             <div v-if="viewingTransfer.notes" class="col-span-2">
-              <dt class="text-gray-400">Notes</dt>
+              <dt class="text-gray-500 dark:text-gray-400">Notes</dt>
               <dd class="text-gray-900 dark:text-white">{{ viewingTransfer.notes }}</dd>
             </div>
           </dl>
@@ -216,11 +221,11 @@
                   ><span v-if="line.quantityReceived !== null"> · received {{ line.quantityReceived }}</span>
                 </span>
               </div>
-              <p v-if="line.sourceBinName || line.destinationBinName" class="text-xs text-gray-400 mt-0.5">
+              <p v-if="line.sourceBinName || line.destinationBinName" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 {{ line.sourceBinName ?? 'unbinned' }} → {{ line.destinationBinName ?? 'unbinned' }}
               </p>
-              <p v-if="line.batchNumber" class="text-xs text-gray-400 mt-0.5">Batch {{ line.batchNumber }}</p>
-              <p v-if="line.serialNumbers && line.serialNumbers.length > 0" class="text-xs text-gray-400 mt-0.5">
+              <p v-if="line.batchNumber" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Batch {{ line.batchNumber }}</p>
+              <p v-if="line.serialNumbers && line.serialNumbers.length > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 Serials: {{ line.serialNumbers.join(', ') }}
               </p>
             </li>
