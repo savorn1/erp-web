@@ -32,7 +32,7 @@
         title="Only products with a max stock set"
         description="Set a max stock on a product (in Products) to have it show up here once on-hand stock exceeds it."
       />
-      <DataTable :rows="rows" :columns="columns" :exportable="false">
+      <DataTable :rows="rows" :columns="columns" exportable export-filename="inventory-overstock">
         <template #empty-state>
           <EmptyState icon="i-lucide-check-circle" title="Nothing is overstocked" />
         </template>

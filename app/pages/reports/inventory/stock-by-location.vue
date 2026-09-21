@@ -22,7 +22,7 @@
     <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else>
-      <DataTable :rows="rows" :columns="columns" :exportable="false">
+      <DataTable :rows="rows" :columns="columns" exportable export-filename="inventory-stock-by-location">
         <template #empty-state>
           <EmptyState icon="i-lucide-package-2" title="No stock yet" />
         </template>

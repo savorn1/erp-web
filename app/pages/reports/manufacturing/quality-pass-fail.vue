@@ -35,7 +35,7 @@
         <StatTile label="Pass rate" :value="`${report.overallPassRatePercent}%`" icon="i-lucide-percent" color="primary" />
       </div>
       <UCard>
-        <DataTable :rows="report.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="report.rows" :columns="columns" exportable export-filename="manufacturing-quality-pass-fail">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No inspections in this period" />
           </template>

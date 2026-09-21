@@ -39,7 +39,7 @@
         <StatTile label="Net paid to suppliers" :value="formatCurrency(detail.totalPaid)" icon="i-lucide-banknote" color="info" />
       </div>
       <UCard>
-        <DataTable :rows="detail.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="detail.rows" :columns="columns" exportable export-filename="payments-detail">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No payments match" />
           </template>

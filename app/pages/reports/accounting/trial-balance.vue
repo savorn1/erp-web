@@ -37,7 +37,7 @@
         />
       </div>
       <UCard>
-        <DataTable :rows="trialBalance.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="trialBalance.rows" :columns="columns" exportable export-filename="accounting-trial-balance">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="Nothing posted yet" />
           </template>

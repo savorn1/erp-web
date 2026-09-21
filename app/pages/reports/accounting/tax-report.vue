@@ -41,7 +41,7 @@
       </div>
       <UCard class="mb-4">
         <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">Output tax — sales invoices</h2></template>
-        <DataTable :rows="taxReport.outputTax" :columns="columns" :exportable="false">
+        <DataTable :rows="taxReport.outputTax" :columns="columns" exportable export-filename="accounting-tax-report-output-tax">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No output tax in this period" />
           </template>
@@ -49,7 +49,7 @@
       </UCard>
       <UCard>
         <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">Input tax — purchase invoices</h2></template>
-        <DataTable :rows="taxReport.inputTax" :columns="columns" :exportable="false">
+        <DataTable :rows="taxReport.inputTax" :columns="columns" exportable export-filename="accounting-tax-report-input-tax">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No input tax in this period" />
           </template>

@@ -33,7 +33,7 @@
         <StatTile label="Total at risk" :value="formatCurrency(badDebt.totalAmount)" icon="i-lucide-circle-dollar-sign" color="error" />
       </div>
       <UCard>
-        <DataTable :rows="badDebt.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="badDebt.rows" :columns="columns" exportable export-filename="accounts-receivable-bad-debt">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="Nothing this old" />
           </template>

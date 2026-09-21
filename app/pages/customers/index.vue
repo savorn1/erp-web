@@ -362,13 +362,17 @@ const customerFields = computed<FieldDef[]>(() => [
   { name: 'shippingCountry', label: 'Shipping country' }
 ])
 
-function copyBillingToShipping(form: { value: Record<string, any> }) {
-  form.value.shippingAddressLine1 = form.value.billingAddressLine1
-  form.value.shippingAddressLine2 = form.value.billingAddressLine2
-  form.value.shippingCity = form.value.billingCity
-  form.value.shippingState = form.value.billingState
-  form.value.shippingPostalCode = form.value.billingPostalCode
-  form.value.shippingCountry = form.value.billingCountry
+// Takes the unwrapped form object, not the ref: the callers are template
+// expressions (`copyBillingToShipping(createForm)`), and Vue unwraps top-level
+// refs there, so a `{ value }` parameter would always arrive undefined. The
+// object is still the ref's reactive proxy, so mutating it updates the form.
+function copyBillingToShipping(form: Record<string, any>) {
+  form.shippingAddressLine1 = form.billingAddressLine1
+  form.shippingAddressLine2 = form.billingAddressLine2
+  form.shippingCity = form.billingCity
+  form.shippingState = form.billingState
+  form.shippingPostalCode = form.billingPostalCode
+  form.shippingCountry = form.billingCountry
 }
 
 const {

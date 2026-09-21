@@ -40,7 +40,7 @@
         />
       </div>
       <UCard>
-        <DataTable :rows="report.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="report.rows" :columns="columns" exportable export-filename="manufacturing-cost-variance">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No orders in this period" />
           </template>

@@ -30,7 +30,7 @@
     <template v-else-if="report">
       <StatTile label="Total margin" :value="formatCurrency(report.totalMargin)" icon="i-lucide-piggy-bank" color="success" class="mb-4" />
       <UCard>
-        <DataTable :rows="report.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="report.rows" :columns="columns" exportable export-filename="manufacturing-profitability">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No completed production in this period" />
           </template>

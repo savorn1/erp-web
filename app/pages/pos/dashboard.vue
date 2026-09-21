@@ -162,7 +162,12 @@ const hourLabels = Array.from({ length: 24 }, (_, h) => `${h % 12 === 0 ? 12 : h
 const hourlyRevenue = computed(() => {
   const buckets = Array.from({ length: 24 }, () => 0)
   for (const sale of sales.value) {
-    buckets[new Date(sale.saleDate).getHours()] += sale.totalAmount
+    // An unparseable saleDate makes getHours() return NaN. Indexing with that
+    // doesn't throw — it writes a "NaN" string key onto the array, so the sale
+    // vanishes from the chart with no error anywhere. Skip it instead.
+    const hour = new Date(sale.saleDate).getHours()
+    if (Number.isNaN(hour)) continue
+    buckets[hour] = (buckets[hour] ?? 0) + sale.totalAmount
   }
   return buckets
 })

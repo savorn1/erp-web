@@ -27,7 +27,7 @@
     <template v-else-if="report">
       <StatTile label="Total transferred" :value="formatCurrency(report.totalTransferred)" icon="i-lucide-arrow-left-right" color="info" class="mb-4" />
       <UCard>
-        <DataTable :rows="report.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="report.rows" :columns="columns" exportable export-filename="payments-transfers">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No transfers in this period" />
           </template>

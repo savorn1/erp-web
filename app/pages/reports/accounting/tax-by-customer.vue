@@ -27,7 +27,7 @@
     <template v-else-if="report">
       <StatTile label="Total tax collected" :value="formatCurrency(report.totalTaxAmount)" icon="i-lucide-receipt" color="success" class="mb-4" />
       <UCard>
-        <DataTable :rows="report.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="report.rows" :columns="columns" exportable export-filename="accounting-tax-by-customer">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No tax collected in this period" />
           </template>

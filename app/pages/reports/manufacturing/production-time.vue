@@ -30,7 +30,7 @@
     <template v-else-if="report">
       <StatTile label="Average cycle time" :value="`${report.averageDurationHours} h`" icon="i-lucide-timer" color="info" class="mb-4" />
       <UCard>
-        <DataTable :rows="report.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="report.rows" :columns="columns" exportable export-filename="manufacturing-production-time">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No completed production in this period" />
           </template>

@@ -27,7 +27,7 @@
     <template v-else-if="report">
       <StatTile label="Net collected" :value="formatCurrency(report.totalNet)" icon="i-lucide-hand-coins" color="success" class="mb-4" />
       <UCard>
-        <DataTable :rows="report.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="report.rows" :columns="columns" exportable export-filename="payments-collection-by-customer">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No customer payments in this period" />
           </template>

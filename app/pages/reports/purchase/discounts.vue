@@ -32,7 +32,7 @@
         <StatTile label="Total discount received" :value="formatCurrency(discounts.totalDiscountAmount)" icon="i-lucide-percent" color="success" />
       </div>
       <UCard>
-        <DataTable :rows="discounts.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="discounts.rows" :columns="columns" exportable export-filename="purchase-discounts">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No discounted lines in this period" />
           </template>

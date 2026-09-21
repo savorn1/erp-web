@@ -42,7 +42,7 @@
         <StatTile label="Total out" :value="String(result.totalQuantity)" icon="i-lucide-log-out" color="error" />
       </div>
       <UCard>
-        <DataTable :rows="result.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="result.rows" :columns="columns" exportable export-filename="inventory-stock-out">
           <template #empty-state>
             <EmptyState icon="i-lucide-package-minus" title="No outbound movements in this range" />
           </template>

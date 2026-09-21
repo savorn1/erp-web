@@ -27,7 +27,7 @@
         <StatTile label="Total credited" :value="formatCurrency(totalAmount)" icon="i-lucide-circle-dollar-sign" color="neutral" />
       </div>
       <UCard>
-        <DataTable :rows="rows" :columns="columns" :exportable="false">
+        <DataTable :rows="rows" :columns="columns" exportable export-filename="accounts-payable-debit-notes">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No debit notes" />
           </template>

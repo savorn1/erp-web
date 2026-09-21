@@ -31,7 +31,7 @@
     <template v-else-if="report">
       <StatTile label="Total produced" :value="String(report.totalProducedQuantity)" icon="i-lucide-package-check" color="success" class="mb-4" />
       <UCard>
-        <DataTable :rows="report.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="report.rows" :columns="columns" exportable export-filename="manufacturing-production-output">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No completed production in this period" />
           </template>

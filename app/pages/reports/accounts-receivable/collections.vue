@@ -29,7 +29,7 @@
         <StatTile label="Total collected" :value="formatCurrency(collections.totalCollected)" icon="i-lucide-hand-coins" color="success" />
       </div>
       <UCard>
-        <DataTable :rows="collections.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="collections.rows" :columns="columns" exportable export-filename="accounts-receivable-collections">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No payments in this period" />
           </template>

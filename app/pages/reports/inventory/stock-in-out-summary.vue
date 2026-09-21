@@ -44,7 +44,7 @@
         <StatTile label="Net change" :value="(totalIn - totalOut >= 0 ? '+' : '') + String(totalIn - totalOut)" icon="i-lucide-arrow-left-right" color="info" />
       </div>
       <UCard>
-        <DataTable :rows="rows" :columns="columns" :exportable="false">
+        <DataTable :rows="rows" :columns="columns" exportable export-filename="inventory-stock-in-out-summary">
           <template #empty-state>
             <EmptyState icon="i-lucide-arrow-left-right" title="No movements in this range" />
           </template>

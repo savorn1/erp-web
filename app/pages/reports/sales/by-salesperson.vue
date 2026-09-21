@@ -35,7 +35,7 @@
         title="Grouped by order creator"
         description="This groups by whoever entered each sales order, which may not be the actual salesperson. For assigned-rep commission tracking, see the Commissions report."
       />
-      <DataTable :rows="salesBySalesperson.rows" :columns="columns" :exportable="false">
+      <DataTable :rows="salesBySalesperson.rows" :columns="columns" exportable export-filename="sales-by-salesperson">
         <template #empty-state>
           <EmptyState icon="i-lucide-check-circle" title="No sales in this period" />
         </template>

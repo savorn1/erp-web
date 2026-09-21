@@ -42,7 +42,7 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <UCard>
           <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">Revenue</h2></template>
-          <DataTable :rows="profitAndLoss.revenue" :columns="revenueColumns" :exportable="false">
+          <DataTable :rows="profitAndLoss.revenue" :columns="revenueColumns" exportable export-filename="accounting-profit-and-loss-revenue">
             <template #empty-state>
               <EmptyState icon="i-lucide-check-circle" title="No revenue posted in this period" />
             </template>
@@ -50,7 +50,7 @@
         </UCard>
         <UCard>
           <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">Expenses</h2></template>
-          <DataTable :rows="profitAndLoss.expenses" :columns="expenseColumns" :exportable="false">
+          <DataTable :rows="profitAndLoss.expenses" :columns="expenseColumns" exportable export-filename="accounting-profit-and-loss-expenses">
             <template #empty-state>
               <EmptyState icon="i-lucide-check-circle" title="No expenses posted in this period" />
             </template>

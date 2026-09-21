@@ -31,7 +31,7 @@
         <StatTile label="Net paid to suppliers" :value="formatCurrency(report.totalSupplierNet)" icon="i-lucide-banknote" color="info" />
       </div>
       <UCard>
-        <DataTable :rows="report.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="report.rows" :columns="columns" exportable export-filename="payments-by-method">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No payments in this period" />
           </template>

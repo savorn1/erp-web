@@ -30,7 +30,7 @@
     <template v-else-if="report">
       <StatTile label="Total scrap quantity" :value="String(report.totalScrapQuantity)" icon="i-lucide-trash-2" color="error" class="mb-4" />
       <UCard>
-        <DataTable :rows="report.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="report.rows" :columns="columns" exportable export-filename="manufacturing-scrap-wastage">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No scrap or wastage in this period" />
           </template>

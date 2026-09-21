@@ -31,7 +31,7 @@
         <StatTile label="Total outstanding" :value="formatCurrency(outstandingInvoices.totalOutstanding)" icon="i-lucide-circle-dollar-sign" color="error" />
       </div>
       <UCard>
-        <DataTable :rows="outstandingInvoices.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="outstandingInvoices.rows" :columns="columns" exportable export-filename="sales-outstanding-invoices">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="Nothing outstanding" />
           </template>

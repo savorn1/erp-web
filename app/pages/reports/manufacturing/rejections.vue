@@ -30,7 +30,7 @@
     <template v-else-if="report">
       <StatTile label="Total rejected quantity" :value="String(report.totalRejectedQuantity)" icon="i-lucide-shield-x" color="error" class="mb-4" />
       <UCard>
-        <DataTable :rows="report.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="report.rows" :columns="columns" exportable export-filename="manufacturing-rejections">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No rejections in this period" />
           </template>

@@ -37,7 +37,7 @@
         description="This filter matches more lines than can be shown at once — narrow the date range or company to see everything."
       />
       <UCard>
-        <DataTable :rows="detail.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="detail.rows" :columns="columns" exportable export-filename="purchase-detail">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No purchases in this period" />
           </template>

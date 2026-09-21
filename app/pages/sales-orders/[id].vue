@@ -148,7 +148,7 @@
                     <span class="text-xs text-gray-400">{{ viewingLineDelivered[i] }} delivered</span>
                     <UButton
                       v-if="editingStatus === 'CONFIRMED' && (line.quantityOrdered || 0) > (line.quantityDelivered || 0)"
-                      size="2xs"
+                      size="xs"
                       color="warning"
                       variant="soft"
                       icon="i-lucide-ban"

@@ -28,7 +28,7 @@
     <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else-if="report">
-      <DataTable :rows="report.rows" :columns="columns" :exportable="false">
+      <DataTable :rows="report.rows" :columns="columns" exportable export-filename="sales-commissions">
         <template #actions-data="{ row }">
           <UButton v-if="row.unpaidCommissionAmount > 0" size="xs" color="primary" variant="soft" icon="i-lucide-banknote" @click="openMarkPaid(row)">
             Mark paid

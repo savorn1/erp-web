@@ -34,7 +34,7 @@
         title="Select a product"
         description="Choose a product above to see what's been paid for it over time."
       />
-      <DataTable v-else-if="history" :rows="history.rows" :columns="columns" :exportable="false">
+      <DataTable v-else-if="history" :rows="history.rows" :columns="columns" exportable export-filename="purchase-product-price-history">
         <template #empty-state>
           <EmptyState icon="i-lucide-check-circle" title="No purchases in this period" />
         </template>

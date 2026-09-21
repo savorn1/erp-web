@@ -19,7 +19,7 @@
     <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else>
-      <DataTable :rows="rows" :columns="columns" :exportable="false">
+      <DataTable :rows="rows" :columns="columns" exportable export-filename="inventory-uom-stock">
         <template #empty-state>
           <EmptyState icon="i-lucide-ruler" title="No stock yet" />
         </template>

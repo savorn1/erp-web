@@ -29,7 +29,7 @@
         <StatTile label="Total paid" :value="formatCurrency(payments.totalPaid)" icon="i-lucide-banknote" color="warning" />
       </div>
       <UCard>
-        <DataTable :rows="payments.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="payments.rows" :columns="columns" exportable export-filename="accounts-payable-payments">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No payments in this period" />
           </template>

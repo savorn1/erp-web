@@ -30,7 +30,7 @@
         <StatTile label="Revenue lost" :value="formatCurrency(cancellations.totalAmount)" icon="i-lucide-circle-dollar-sign" color="error" />
       </div>
       <UCard>
-        <DataTable :rows="cancellations.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="cancellations.rows" :columns="columns" exportable export-filename="sales-cancellations">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No cancellations in this period" />
           </template>

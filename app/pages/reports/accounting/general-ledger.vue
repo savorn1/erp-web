@@ -38,7 +38,7 @@
           <span class="text-gray-900 dark:text-white font-medium">{{ generalLedger.accountCode }} — {{ generalLedger.accountName }}</span>
           <span class="text-gray-400">Opening: {{ formatCurrency(generalLedger.openingBalance) }}</span>
         </div>
-        <DataTable :rows="generalLedger.lines" :columns="columns" :exportable="false">
+        <DataTable :rows="generalLedger.lines" :columns="columns" exportable export-filename="accounting-general-ledger">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No activity in this period" />
           </template>

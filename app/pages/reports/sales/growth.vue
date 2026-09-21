@@ -43,7 +43,7 @@
         />
       </div>
       <UCard>
-        <DataTable :rows="comparisonRows" :columns="columns" :exportable="false" />
+        <DataTable :rows="comparisonRows" :columns="columns" exportable export-filename="sales-growth" />
       </UCard>
     </template>
   </div>

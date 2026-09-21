@@ -29,7 +29,7 @@
         <StatTile label="Pending receipts" :value="String(pendingGoodsReceipts.receiptCount)" icon="i-lucide-package-search" color="warning" />
       </div>
       <UCard>
-        <DataTable :rows="pendingGoodsReceipts.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="pendingGoodsReceipts.rows" :columns="columns" exportable export-filename="purchase-pending-goods-receipts">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="Nothing pending" />
           </template>

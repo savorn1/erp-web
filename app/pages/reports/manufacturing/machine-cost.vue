@@ -31,7 +31,7 @@
     <template v-else-if="report">
       <StatTile label="Total machine cost" :value="formatCurrency(report.totalCost)" icon="i-lucide-cog" color="warning" class="mb-4" />
       <UCard>
-        <DataTable :rows="report.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="report.rows" :columns="columns" exportable export-filename="manufacturing-machine-cost">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No completed work orders with a machine assigned in this period" />
           </template>

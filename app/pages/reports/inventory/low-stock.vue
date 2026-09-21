@@ -42,7 +42,7 @@
         title="Only products with a reorder point set"
         description="Set a reorder point on a product to have it show up here once available stock falls below it."
       />
-      <DataTable :rows="lowStock.rows" :columns="columns" :exportable="false">
+      <DataTable :rows="lowStock.rows" :columns="columns" exportable export-filename="inventory-low-stock">
         <template #actions-data="{ row }">
           <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-shopping-cart" @click="openGenerateModal(row.productId)"> Create PR </UButton>
         </template>

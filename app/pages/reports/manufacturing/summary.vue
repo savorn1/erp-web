@@ -36,7 +36,7 @@
         <StatTile label="Scrap quantity" :value="String(report.totalScrapQuantity)" icon="i-lucide-trash-2" color="warning" />
       </div>
       <UCard>
-        <DataTable :rows="report.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="report.rows" :columns="columns" exportable export-filename="manufacturing-summary">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No manufacturing orders in this period" />
           </template>

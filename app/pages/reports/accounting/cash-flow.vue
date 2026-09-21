@@ -25,7 +25,7 @@
     <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else-if="cashFlow">
-      <DataTable :rows="cashFlow.accounts" :columns="columns" :exportable="false">
+      <DataTable :rows="cashFlow.accounts" :columns="columns" exportable export-filename="accounting-cash-flow">
         <template #empty-state>
           <EmptyState icon="i-lucide-landmark" title="No bank or cash accounts yet" />
         </template>

@@ -28,7 +28,7 @@
     <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else-if="salesByProduct">
-      <DataTable :rows="salesByProduct.rows" :columns="columns" :exportable="false">
+      <DataTable :rows="salesByProduct.rows" :columns="columns" exportable export-filename="sales-by-product">
         <template #empty-state>
           <EmptyState icon="i-lucide-check-circle" title="No sales in this period" />
         </template>

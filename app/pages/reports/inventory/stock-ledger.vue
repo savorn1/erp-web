@@ -39,7 +39,7 @@
         <StatTile label="Closing balance" :value="String(ledger.closingBalance)" icon="i-lucide-log-out" color="info" />
       </div>
       <UCard>
-        <DataTable :rows="ledger.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="ledger.rows" :columns="columns" exportable export-filename="inventory-stock-ledger">
           <template #empty-state>
             <EmptyState icon="i-lucide-history" title="No movements in this range" />
           </template>

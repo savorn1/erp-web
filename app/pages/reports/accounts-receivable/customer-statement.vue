@@ -34,7 +34,7 @@
           <span class="text-gray-900 dark:text-white font-medium">{{ statement.customerName }}</span>
           <span class="text-gray-400">Opening: {{ formatCurrency(statement.openingBalance) }}</span>
         </div>
-        <DataTable :rows="statement.lines" :columns="columns" :exportable="false">
+        <DataTable :rows="statement.lines" :columns="columns" exportable export-filename="accounts-receivable-customer-statement">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No activity in this period" />
           </template>

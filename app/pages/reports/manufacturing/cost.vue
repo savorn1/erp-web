@@ -35,7 +35,7 @@
         <StatTile label="Total cost" :value="formatCurrency(report.totalCost)" icon="i-lucide-calculator" color="primary" />
       </div>
       <UCard>
-        <DataTable :rows="report.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="report.rows" :columns="columns" exportable export-filename="manufacturing-cost">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No completed manufacturing orders in this period" />
           </template>

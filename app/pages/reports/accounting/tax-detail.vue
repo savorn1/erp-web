@@ -30,7 +30,7 @@
         <StatTile label="Input tax (purchases)" :value="formatCurrency(detail.totalInputTax)" icon="i-lucide-trending-down" color="info" />
       </div>
       <UCard>
-        <DataTable :rows="detail.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="detail.rows" :columns="columns" exportable export-filename="accounting-tax-detail">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No taxed lines in this period" />
           </template>

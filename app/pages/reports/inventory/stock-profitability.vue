@@ -37,7 +37,7 @@
         <StatTile label="Gross profit" :value="formatCurrency(result.totalGrossProfit)" icon="i-lucide-trending-up" color="success" />
       </div>
       <UCard>
-        <DataTable :rows="result.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="result.rows" :columns="columns" exportable export-filename="inventory-stock-profitability">
           <template #empty-state>
             <EmptyState icon="i-lucide-package-check" title="Nothing sold in this range" />
           </template>

@@ -22,7 +22,7 @@
     <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else-if="detail">
-      <DataTable :rows="detail.rows" :columns="columns" :exportable="false">
+      <DataTable :rows="detail.rows" :columns="columns" exportable export-filename="accounts-payable-detail">
         <template #empty-state>
           <EmptyState icon="i-lucide-check-circle" title="Nothing outstanding" />
         </template>

@@ -20,7 +20,7 @@
         </UFormField>
         <UBadge v-if="supplierId" color="primary" variant="subtle" class="gap-1.5">
           One supplier only
-          <UButton size="2xs" color="primary" variant="link" icon="i-lucide-x" class="p-0" @click="supplierId = undefined" />
+          <UButton size="xs" color="primary" variant="link" icon="i-lucide-x" class="p-0" @click="supplierId = undefined" />
         </UBadge>
       </div>
       <p class="text-xs text-gray-400 mt-3">
@@ -34,7 +34,7 @@
     <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else-if="performance">
-      <DataTable :rows="performance.rows" :columns="columns" :exportable="false">
+      <DataTable :rows="performance.rows" :columns="columns" exportable export-filename="purchase-supplier-performance">
         <template #empty-state>
           <EmptyState icon="i-lucide-check-circle" title="No purchases in this period" />
         </template>

@@ -39,7 +39,7 @@
 
       <UCard>
         <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">Components</h2></template>
-        <DataTable :rows="componentRows" :columns="columns" :exportable="false">
+        <DataTable :rows="componentRows" :columns="columns" exportable export-filename="manufacturing-bom-comparison">
           <template #empty-state>
             <EmptyState icon="i-lucide-list" title="No components on either version" />
           </template>

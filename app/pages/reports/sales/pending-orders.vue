@@ -30,7 +30,7 @@
         <StatTile label="Total value" :value="formatCurrency(pendingOrders.totalAmount)" icon="i-lucide-circle-dollar-sign" color="warning" />
       </div>
       <UCard>
-        <DataTable :rows="pendingOrders.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="pendingOrders.rows" :columns="columns" exportable export-filename="sales-pending-orders">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="Nothing pending approval" />
           </template>

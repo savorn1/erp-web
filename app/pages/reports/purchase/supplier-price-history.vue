@@ -34,7 +34,7 @@
         title="Select a supplier"
         description="Choose a supplier above to see what's been paid to them over time."
       />
-      <DataTable v-else-if="history" :rows="history.rows" :columns="columns" :exportable="false">
+      <DataTable v-else-if="history" :rows="history.rows" :columns="columns" exportable export-filename="purchase-supplier-price-history">
         <template #empty-state>
           <EmptyState icon="i-lucide-check-circle" title="No purchases in this period" />
         </template>

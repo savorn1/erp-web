@@ -30,7 +30,7 @@
     <template v-else-if="report">
       <StatTile label="Total material cost consumed" :value="formatCurrency(report.totalConsumedCost)" icon="i-lucide-boxes" color="warning" class="mb-4" />
       <UCard>
-        <DataTable :rows="report.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="report.rows" :columns="columns" exportable export-filename="manufacturing-material-consumption">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No material consumption in this period" />
           </template>

@@ -40,7 +40,7 @@
         <StatTile label="Ending equity" :value="formatCurrency(statement.endingEquity)" icon="i-lucide-landmark" color="primary" />
       </div>
       <UCard>
-        <DataTable :rows="statement.lines" :columns="columns" :exportable="false" />
+        <DataTable :rows="statement.lines" :columns="columns" exportable export-filename="accounting-statement-of-changes-in-equity" />
       </UCard>
     </template>
   </div>

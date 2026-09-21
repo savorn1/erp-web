@@ -37,7 +37,7 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <UCard>
           <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">Assets</h2></template>
-          <DataTable :rows="balanceSheet.assets" :columns="assetsColumns" :exportable="false">
+          <DataTable :rows="balanceSheet.assets" :columns="assetsColumns" exportable export-filename="accounting-balance-sheet-assets">
             <template #empty-state>
               <EmptyState icon="i-lucide-check-circle" title="Nothing posted yet" />
             </template>
@@ -46,7 +46,7 @@
         <div class="space-y-4">
           <UCard>
             <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">Liabilities</h2></template>
-            <DataTable :rows="balanceSheet.liabilities" :columns="liabilitiesColumns" :exportable="false">
+            <DataTable :rows="balanceSheet.liabilities" :columns="liabilitiesColumns" exportable export-filename="accounting-balance-sheet-liabilities">
               <template #empty-state>
                 <EmptyState icon="i-lucide-check-circle" title="Nothing posted yet" />
               </template>
@@ -54,7 +54,7 @@
           </UCard>
           <UCard>
             <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">Equity</h2></template>
-            <DataTable :rows="balanceSheet.equity" :columns="equityColumns" :exportable="false" />
+            <DataTable :rows="balanceSheet.equity" :columns="equityColumns" exportable export-filename="accounting-balance-sheet-equity" />
           </UCard>
         </div>
       </div>

@@ -28,7 +28,7 @@
     <div v-if="loading" class="text-sm text-gray-400 py-8 text-center">Loading…</div>
 
     <UCard v-else-if="report">
-      <DataTable :rows="report.rows" :columns="columns" :exportable="false">
+      <DataTable :rows="report.rows" :columns="columns" exportable export-filename="manufacturing-machine-utilization">
         <template #empty-state>
           <EmptyState icon="i-lucide-check-circle" title="No completed work orders with a machine assigned in this period" />
         </template>

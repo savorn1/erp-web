@@ -36,7 +36,7 @@
              usually mixes units of measure (boxes + kg + pcs…) — that total
              can't be expressed in any single UOM, so only value is totaled
              here. Quantity in a real unit lives in the by-product table below. -->
-        <DataTable :rows="stockValuation.rows" :columns="warehouseColumns" :exportable="false">
+        <DataTable :rows="stockValuation.rows" :columns="warehouseColumns" exportable export-filename="inventory-stock-valuation-by-warehouse">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No stock yet" />
           </template>
@@ -45,7 +45,7 @@
 
       <UCard>
         <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">By product</h2></template>
-        <DataTable :rows="productRows" :columns="productColumns" :exportable="false">
+        <DataTable :rows="productRows" :columns="productColumns" exportable export-filename="inventory-stock-valuation-by-product">
           <template #empty-state>
             <EmptyState icon="i-lucide-package" title="No stock yet" />
           </template>

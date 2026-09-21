@@ -30,7 +30,7 @@
     <template v-else-if="report">
       <UCard v-if="revenueRows.length > 0" class="mb-4">
         <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">Revenue</h2></template>
-        <DataTable :rows="revenueRows" :columns="columns" :exportable="false">
+        <DataTable :rows="revenueRows" :columns="columns" exportable export-filename="accounting-budget-vs-actual-revenue">
           <template #varianceAmount-data="{ row }">
             <span :class="row.varianceAmount >= 0 ? 'text-success' : 'text-error'">{{ formatCurrency(row.varianceAmount) }}</span>
           </template>
@@ -38,7 +38,7 @@
       </UCard>
       <UCard v-if="expenseRows.length > 0" class="mb-4">
         <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">Expenses</h2></template>
-        <DataTable :rows="expenseRows" :columns="columns" :exportable="false">
+        <DataTable :rows="expenseRows" :columns="columns" exportable export-filename="accounting-budget-vs-actual-expenses">
           <template #varianceAmount-data="{ row }">
             <span :class="row.varianceAmount <= 0 ? 'text-success' : 'text-error'">{{ formatCurrency(row.varianceAmount) }}</span>
           </template>
@@ -46,7 +46,7 @@
       </UCard>
       <UCard v-if="otherRows.length > 0" class="mb-4">
         <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">Other accounts</h2></template>
-        <DataTable :rows="otherRows" :columns="columns" :exportable="false" />
+        <DataTable :rows="otherRows" :columns="columns" exportable export-filename="accounting-budget-vs-actual-other-accounts" />
       </UCard>
       <EmptyState
         v-if="report.rows.length === 0"

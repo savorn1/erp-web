@@ -36,7 +36,7 @@
         />
       </div>
       <UCard>
-        <DataTable :rows="aging.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="aging.rows" :columns="columns" exportable export-filename="inventory-stock-aging">
           <template #empty-state>
             <EmptyState icon="i-lucide-boxes" title="No stock yet" />
           </template>

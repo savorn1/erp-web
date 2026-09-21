@@ -27,7 +27,7 @@
         <StatTile label="Total cost" :value="formatCurrency(totalCost)" icon="i-lucide-circle-dollar-sign" color="neutral" />
       </div>
       <UCard>
-        <DataTable :rows="rows" :columns="columns" :exportable="false">
+        <DataTable :rows="rows" :columns="columns" exportable export-filename="inventory-stock-cost">
           <template #empty-state>
             <EmptyState icon="i-lucide-package" title="No stock yet" />
           </template>

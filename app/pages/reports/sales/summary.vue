@@ -35,7 +35,7 @@
       </div>
       <UCard>
         <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">By status</h2></template>
-        <DataTable :rows="salesSummary.byStatus" :columns="salesByStatusColumns" :exportable="false">
+        <DataTable :rows="salesSummary.byStatus" :columns="salesByStatusColumns" exportable export-filename="sales-summary">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No orders in this period" />
           </template>

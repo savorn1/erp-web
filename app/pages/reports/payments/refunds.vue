@@ -34,7 +34,7 @@
         <StatTile label="Refunded by suppliers" :value="formatCurrency(report.totalSupplierRefunds)" icon="i-lucide-undo-2" color="info" />
       </div>
       <UCard>
-        <DataTable :rows="report.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="report.rows" :columns="columns" exportable export-filename="payments-refunds">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No refunds in this period" />
           </template>

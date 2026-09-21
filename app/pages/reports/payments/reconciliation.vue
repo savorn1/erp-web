@@ -54,7 +54,7 @@
       </div>
       <UCard>
         <template #header><h2 class="text-sm font-semibold text-gray-900 dark:text-white">Per account</h2></template>
-        <DataTable :rows="report.rows" :columns="columns" :exportable="false">
+        <DataTable :rows="report.rows" :columns="columns" exportable export-filename="payments-reconciliation">
           <template #empty-state>
             <EmptyState icon="i-lucide-check-circle" title="No bank transactions in this period" />
           </template>
