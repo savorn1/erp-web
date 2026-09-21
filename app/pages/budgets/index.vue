@@ -48,9 +48,11 @@
       </div>
     </UCard>
 
-    <UModal v-model:open="showForm" :title="formTitle" :ui="{ content: 'sm:max-w-lg' }">
+    <!-- Wider than the default so two columns each keep a usable width; the
+         grid collapses to one column below sm. -->
+    <UModal v-model:open="showForm" :title="formTitle" :ui="{ content: 'sm:max-w-2xl' }">
       <template #body>
-        <div class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <UFormField label="Company" required>
             <USelect
               v-model="form.companyId"
@@ -88,7 +90,7 @@
           <UFormField label="Amount" required>
             <UInput v-model.number="form.amount" type="number" min="0" step="0.01" class="w-full" />
           </UFormField>
-          <UFormField label="Notes">
+          <UFormField label="Notes" class="sm:col-span-2">
             <UTextarea v-model="form.notes" :rows="2" class="w-full" />
           </UFormField>
         </div>

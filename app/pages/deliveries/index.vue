@@ -222,6 +222,7 @@
             :status="viewingDelivery.status"
             :steps="deliveryWorkflowSteps"
             :next-hint="deliveryWorkflowHint(viewingDelivery.status)"
+            :stopped-at="viewingDelivery.cancelledFromStatus"
             class="mb-4"
           />
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">

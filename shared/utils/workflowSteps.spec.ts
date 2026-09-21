@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isStoppedStatus, resolveWorkflowStepIndex, type WorkflowStep } from './workflowSteps'
+import { isStoppedStatus, resolveWorkflowStepIndex, stoppedVerb, workflowStepStates, type WorkflowStep } from './workflowSteps'
 
 // Mirrors the sales-order rail, the most involved one in the app: it has an
 // explicit PARTIALLY_ step of its own, which the purchase-order rail doesn't.
@@ -76,5 +76,56 @@ describe('isStoppedStatus', () => {
     // the lookup has to be on own keys only.
     expect(isStoppedStatus('constructor')).toBe(false)
     expect(isStoppedStatus('toString')).toBe(false)
+  })
+})
+
+describe('workflowStepStates', () => {
+  const steps: WorkflowStep[] = [
+    { value: 'DRAFT', label: 'Draft' },
+    { value: 'SUBMITTED', label: 'Submitted' },
+    { value: 'CONFIRMED', label: 'Confirmed' },
+    { value: 'DELIVERED', label: 'Delivered' }
+  ]
+
+  it('marks progress up to the current step', () => {
+    expect(workflowStepStates(steps, { activeIndex: 2, stopped: false, stoppedAtIndex: -1 })).toEqual(['done', 'done', 'current', 'pending'])
+  })
+
+  it('shows nothing as current when the status is off the rail', () => {
+    expect(workflowStepStates(steps, { activeIndex: -1, stopped: false, stoppedAtIndex: -1 })).toEqual(['pending', 'pending', 'pending', 'pending'])
+  })
+
+  it('shows where a cancelled document stopped', () => {
+    // Cancelled after being confirmed: the first two are genuinely done, and
+    // "Confirmed" is where it died — that is what decides what to unwind.
+    expect(workflowStepStates(steps, { activeIndex: -1, stopped: true, stoppedAtIndex: 2 })).toEqual(['done', 'done', 'stopped', 'pending'])
+  })
+
+  it('claims no progress for a cancelled document with no recorded stop point', () => {
+    // Rows cancelled before cancelledFromStatus existed. Showing them as
+    // done-up-to-somewhere would be inventing history.
+    expect(workflowStepStates(steps, { activeIndex: -1, stopped: true, stoppedAtIndex: -1 })).toEqual(['pending', 'pending', 'pending', 'pending'])
+  })
+
+  it('handles a document cancelled at the very first step', () => {
+    expect(workflowStepStates(steps, { activeIndex: -1, stopped: true, stoppedAtIndex: 0 })).toEqual(['stopped', 'pending', 'pending', 'pending'])
+  })
+
+  it('ignores activeIndex once the document is stopped', () => {
+    // status is CANCELLED, so activeIndex is meaningless — stoppedAtIndex wins.
+    expect(workflowStepStates(steps, { activeIndex: 3, stopped: true, stoppedAtIndex: 1 })).toEqual(['done', 'stopped', 'pending', 'pending'])
+  })
+})
+
+describe('stoppedVerb', () => {
+  it('names each terminal state', () => {
+    expect(stoppedVerb('CANCELLED')).toBe('Cancelled')
+    expect(stoppedVerb('REJECTED')).toBe('Rejected')
+    expect(stoppedVerb('VOIDED')).toBe('Voided')
+    expect(stoppedVerb('FAILED')).toBe('Failed')
+  })
+
+  it('falls back for anything else', () => {
+    expect(stoppedVerb('DRAFT')).toBe('Stopped')
   })
 })

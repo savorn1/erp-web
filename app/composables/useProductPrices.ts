@@ -14,7 +14,10 @@ export interface ProductPrice {
   productSku: string | null
   priceGroupId: number
   priceGroupName: string | null
+  // Per one of these. A line ordered in a larger unit is priced at this
+  // times its conversion factor, so the unit is not cosmetic.
   price: number
+  unitOfMeasureAbbreviation: string | null
 }
 
 export interface ProductPriceFilter {

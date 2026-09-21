@@ -100,9 +100,9 @@
     </UCard>
 
     <!-- Create/edit modal -->
-    <UModal v-model:open="showForm" :title="formTitle">
+    <UModal v-model:open="showForm" :title="formTitle" :ui="{ content: 'sm:max-w-2xl' }">
       <template #body>
-        <div class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <UFormField label="Account code" required>
             <UInput v-model="form.accountCode" placeholder="e.g. 1100" class="w-full" />
           </UFormField>
@@ -115,7 +115,7 @@
           <UFormField label="Parent account" :hint="form.accountType ? undefined : 'Pick a type first'">
             <USelect v-model="form.parentAccountId" :items="parentOptionsFor(form.accountType, editingId)" placeholder="No parent (top-level)" class="w-full" />
           </UFormField>
-          <UFormField label="Description">
+          <UFormField label="Description" class="sm:col-span-2">
             <UTextarea v-model="form.description" class="w-full" />
           </UFormField>
           <UFormField label="Active">

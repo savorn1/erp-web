@@ -39,6 +39,9 @@ export interface Rma {
   rmaNumber: string
   requestDate: string
   status: RmaStatus
+  // The status the document held when it was cancelled or rejected.
+  // Null when it was never cancelled, or was cancelled before this was recorded.
+  cancelledFromStatus: string | null
   resolutionType: RmaResolutionType | null
   reason: string | null
   notes: string | null

@@ -81,9 +81,9 @@
       </div>
     </UCard>
 
-    <UModal v-model:open="showCreate" title="New petty cash entry" :ui="{ content: 'sm:max-w-lg' }">
+    <UModal v-model:open="showCreate" title="New petty cash entry" :ui="{ content: 'sm:max-w-2xl' }">
       <template #body>
-        <div class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <UFormField label="Company" required>
             <USelect v-model="form.companyId" :items="activeCompanyOptions" class="w-full" @update:model-value="onFormCompanyChanged" />
           </UFormField>
@@ -97,7 +97,9 @@
               @update:model-value="form.accountId = undefined"
             />
           </UFormField>
-          <UFormField :label="form.type === 'TOPUP' ? 'Funding source (cash/bank account)' : 'Expense account'" required>
+          <!-- Full width: the label changes with the type and the searchable
+               account list needs the room. -->
+          <UFormField :label="form.type === 'TOPUP' ? 'Funding source (cash/bank account)' : 'Expense account'" required class="sm:col-span-2">
             <USelectMenu v-model="form.accountId" :items="accountOptionsForType" value-key="value" placeholder="Select an account" class="w-full" />
           </UFormField>
           <UFormField label="Date" required>
@@ -106,7 +108,7 @@
           <UFormField label="Amount" required>
             <UInput v-model.number="form.amount" type="number" min="0.01" step="0.01" class="w-full" />
           </UFormField>
-          <UFormField label="Description">
+          <UFormField label="Description" class="sm:col-span-2">
             <UTextarea v-model="form.description" :rows="2" class="w-full" />
           </UFormField>
         </div>

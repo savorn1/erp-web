@@ -38,6 +38,9 @@ export interface Invoice {
   invoiceDate: string
   dueDate: string | null
   status: InvoiceStatus
+  // The status the document held when it was cancelled or rejected.
+  // Null when it was never cancelled, or was cancelled before this was recorded.
+  cancelledFromStatus: string | null
   notes: string | null
   createdBy: string | null
   subtotal: number

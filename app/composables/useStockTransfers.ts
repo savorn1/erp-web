@@ -39,6 +39,9 @@ export interface StockTransfer {
   shipDate: string | null
   receiveDate: string | null
   status: StockTransferStatus
+  // The status the document held when it was cancelled or rejected.
+  // Null when it was never cancelled, or was cancelled before this was recorded.
+  cancelledFromStatus: string | null
   notes: string | null
   requestedBy: string | null
   approvedBy: string | null

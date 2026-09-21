@@ -41,6 +41,9 @@ export interface PurchaseOrder {
   orderDate: string
   expectedDate: string | null
   status: PurchaseOrderStatus
+  // The status the document held when it was cancelled or rejected.
+  // Null when it was never cancelled, or was cancelled before this was recorded.
+  cancelledFromStatus: string | null
   notes: string | null
   createdBy: string | null
   subtotal: number

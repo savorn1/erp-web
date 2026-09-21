@@ -45,6 +45,9 @@ export interface SalesOrder {
   orderDate: string
   expectedDate: string | null
   status: SalesOrderStatus
+  // The status the document held when it was cancelled or rejected.
+  // Null when it was never cancelled, or was cancelled before this was recorded.
+  cancelledFromStatus: string | null
   notes: string | null
   createdBy: string | null
   // The salesperson credited on this order for commission purposes — see

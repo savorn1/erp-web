@@ -196,9 +196,9 @@
     </UModal>
 
     <!-- Transfer modal -->
-    <UModal v-model:open="showTransferForm" title="Transfer between accounts">
+    <UModal v-model:open="showTransferForm" title="Transfer between accounts" :ui="{ content: 'sm:max-w-2xl' }">
       <template #body>
-        <div class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <UFormField label="From" required>
             <UInput :model-value="ledgerAccount?.name" disabled class="w-full" />
           </UFormField>
@@ -214,7 +214,7 @@
           <UFormField label="Reference">
             <UInput v-model="transferForm.reference" class="w-full" />
           </UFormField>
-          <UFormField label="Description">
+          <UFormField label="Description" class="sm:col-span-2">
             <UTextarea v-model="transferForm.description" class="w-full" />
           </UFormField>
         </div>

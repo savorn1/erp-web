@@ -9,7 +9,13 @@
     <DetailSkeleton v-if="loadingDetail" :lines="false" />
     <template v-else>
       <div class="space-y-6">
-        <WorkflowStatusStepper v-if="!isNew && rma" :status="rma.status" :steps="workflowSteps" :next-hint="workflowHint" />
+        <WorkflowStatusStepper
+          v-if="!isNew && rma"
+          :status="rma.status"
+          :steps="workflowSteps"
+          :next-hint="workflowHint"
+          :stopped-at="rma.cancelledFromStatus"
+        />
         <UCard>
           <template #header>
             <div class="flex items-center gap-2">

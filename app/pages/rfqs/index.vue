@@ -101,7 +101,14 @@
       <template #body>
         <div v-if="loadingDetail" class="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">Loading…</div>
         <template v-else>
-          <WorkflowStatusStepper v-if="editingStatus" :status="editingStatus" :steps="workflowSteps" :next-hint="workflowHint" class="mb-4" />
+          <WorkflowStatusStepper
+            v-if="editingStatus"
+            :status="editingStatus"
+            :steps="workflowSteps"
+            :next-hint="workflowHint"
+            :stopped-at="detail?.cancelledFromStatus"
+            class="mb-4"
+          />
           <UAlert
             v-if="detail?.purchaseRequestNumber"
             color="info"

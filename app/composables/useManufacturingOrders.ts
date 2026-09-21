@@ -44,6 +44,9 @@ export interface ManufacturingOrder {
   scrapQuantity: number
   scrapReason: string | null
   status: ManufacturingOrderStatus
+  // The status the document held when it was cancelled or rejected.
+  // Null when it was never cancelled, or was cancelled before this was recorded.
+  cancelledFromStatus: string | null
   qualityStatus: MoQualityCheckStatus | null
   qualityNotes: string | null
   qualityCheckedBy: string | null

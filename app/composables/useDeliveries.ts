@@ -33,6 +33,9 @@ export interface Delivery {
   deliveryNumber: string
   deliveryDate: string
   status: DeliveryStatus
+  // The status the document held when it was cancelled or rejected.
+  // Null when it was never cancelled, or was cancelled before this was recorded.
+  cancelledFromStatus: string | null
   notes: string | null
   createdBy: string | null
   pickedBy: string | null

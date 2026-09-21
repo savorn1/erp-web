@@ -8,7 +8,13 @@
     <DetailSkeleton v-if="loadingDetail" />
     <template v-else>
       <div class="space-y-6">
-        <WorkflowStatusStepper v-if="!isNew && editingStatus" :status="editingStatus" :steps="workflowSteps" :next-hint="workflowHint" />
+        <WorkflowStatusStepper
+          v-if="!isNew && editingStatus"
+          :status="editingStatus"
+          :steps="workflowSteps"
+          :next-hint="workflowHint"
+          :stopped-at="cancelledFromStatus"
+        />
         <UCard>
           <template #header>
             <div class="flex items-center gap-2">
@@ -261,6 +267,8 @@ interface LineForm {
 }
 
 const editingStatus = ref<PurchaseOrderStatus | null>(null)
+// Where the workflow got to before it was cancelled — see the stepper.
+const cancelledFromStatus = ref<string | null>(null)
 const loadingDetail = ref(true)
 const saving = ref(false)
 const formError = ref('')
@@ -397,6 +405,7 @@ async function loadDetail() {
 
     const detail = await get(Number(idParam))
     editingStatus.value = detail.status
+    cancelledFromStatus.value = detail.cancelledFromStatus
     form.companyId = detail.companyId
     form.supplierId = detail.supplierId
     form.warehouseId = detail.warehouseId

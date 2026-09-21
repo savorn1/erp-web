@@ -174,6 +174,7 @@
             :status="viewingTransfer.status"
             :steps="transferWorkflowSteps"
             :next-hint="transferWorkflowHint(viewingTransfer.status)"
+            :stopped-at="viewingTransfer.cancelledFromStatus"
             class="mb-4"
           />
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">

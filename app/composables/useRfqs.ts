@@ -53,6 +53,9 @@ export interface Rfq {
   rfqNumber: string
   issueDate: string
   status: RfqStatus
+  // The status the document held when it was cancelled or rejected.
+  // Null when it was never cancelled, or was cancelled before this was recorded.
+  cancelledFromStatus: string | null
   notes: string | null
   createdBy: string | null
   awardedSupplierId: number | null

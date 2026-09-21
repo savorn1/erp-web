@@ -11,6 +11,17 @@
     <UCard class="mb-4">
       <div class="flex flex-wrap gap-3">
         <UInput v-model="search" placeholder="Search product or price group" icon="i-lucide-search" class="w-64" />
+        <!-- Server-side, unlike the search box next to it: that one filters
+             only the page already fetched, so a product beyond the first 200
+             rows can't be found with it. This narrows the query itself. -->
+        <USelectMenu
+          v-model="filter.productId"
+          :items="productFilterOptions"
+          value-key="value"
+          placeholder="Any product"
+          icon="i-lucide-package"
+          class="w-60"
+        />
         <USelect v-model="filter.priceGroupId" :items="priceGroupFilterOptions" placeholder="Price group" class="w-48" />
         <UButton v-if="hasActiveFilter" size="sm" color="neutral" variant="ghost" icon="i-lucide-x" @click="clearFilters"> Clear filters </UButton>
       </div>
@@ -110,6 +121,7 @@
 </template>
 
 <script setup lang="ts">
+import { priceDelta } from '#shared/utils/priceDelta'
 import type { ColumnDef, FieldDef } from '#shared/types'
 import type { ProductPrice, ProductPricePayload } from '~/composables/useProductPrices'
 import type { PriceGroup } from '~/composables/usePriceGroups'
@@ -127,18 +139,38 @@ const error = ref('')
 
 const priceGroups = ref<PriceGroup[]>([])
 const products = ref<Product[]>([])
+// Caught rather than allowed to reject: onMounted awaits this before load(),
+// so an unhandled failure here left the page empty with no error and no
+// spinner — looking exactly like "there are no overrides".
 async function loadLookups() {
-  priceGroups.value = (await listPriceGroups({ active: true, size: 200 })).data
-  products.value = (await listProducts({ size: 500 })).data
+  try {
+    const [groupRes, productRes] = await Promise.all([listPriceGroups({ active: true, size: 200 }), listProducts({ size: 500 })])
+    priceGroups.value = groupRes.data
+    products.value = productRes.data
+  } catch (err) {
+    error.value = apiErrorMessage(err)
+  }
 }
+
+// List prices come from the already-loaded product list, so the comparison
+// column costs no extra request.
+const productById = computed(() => new Map(products.value.map((p) => [p.id, p])))
 const priceGroupFilterOptions = computed(() => [
   { label: 'All price groups', value: undefined },
   ...priceGroups.value.map((g) => ({ label: g.name, value: g.id }))
 ])
-const priceGroupOptions = computed(() => priceGroups.value.map((g) => ({ label: g.name, value: g.id })))
+// The group's own default discount decides whether a per-product override is
+// even needed, so it belongs on the option rather than only on the matrix.
+const priceGroupOptions = computed(() =>
+  priceGroups.value.map((g) => ({
+    label: g.discountPercent == null ? g.name : `${g.name} (−${g.discountPercent}% default)`,
+    value: g.id
+  }))
+)
 const productOptions = computed(() => products.value.map((p) => ({ label: `${p.name} (${p.sku})`, value: p.id })))
+const productFilterOptions = computed(() => [{ label: 'Any product', value: undefined }, ...productOptions.value])
 
-const filter = reactive<{ priceGroupId: number | undefined }>({ priceGroupId: undefined })
+const filter = reactive<{ productId: number | undefined; priceGroupId: number | undefined }>({ productId: undefined, priceGroupId: undefined })
 
 const sort = ref<{ column: string; direction: 'asc' | 'desc' } | undefined>({ column: 'id', direction: 'desc' })
 const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientTable(rows, { pageSize: 10, searchFields: ['productName', 'priceGroupName'] })
@@ -146,15 +178,34 @@ const { page, pageSize, total, rows: pagedRows, truncated, search } = useClientT
 const columns: ColumnDef<ProductPrice>[] = [
   { key: 'productName', label: 'Product', sortable: true, value: (row) => `${row.productName ?? '—'}${row.productSku ? ` (${row.productSku})` : ''}` },
   { key: 'priceGroupName', label: 'Price group', value: (row) => row.priceGroupName ?? '—' },
-  { key: 'price', type: 'currency' },
+  // Suffixed with the base unit: the price is per one of those, and an order
+  // line in a larger unit multiplies by its conversion factor. A bare number
+  // here reads as "the price", which is only true at factor 1.
+  { key: 'price', label: 'Price', type: 'currency', suffix: (row) => (row.unitOfMeasureAbbreviation ? ` / ${row.unitOfMeasureAbbreviation}` : '') },
+  // The list price this overrides, and by how much. An override is only
+  // meaningful relative to the price it replaces, and without this you can't
+  // tell a 5% trade discount from a 50% one — or spot a row priced *above*
+  // list, which is a typo rather than a policy.
+  { key: 'listPrice', label: 'List', type: 'currency', value: (row) => productById.value.get(row.productId)?.sellingPrice ?? null },
+  {
+    key: 'vsList',
+    label: 'vs list',
+    value: (row) => deltaFor(row).label,
+    class: (row) => (deltaFor(row).aboveList ? 'text-error-600 dark:text-error-400 font-medium' : 'text-gray-500 dark:text-gray-400')
+  },
   { key: 'actions', label: '' }
 ]
+
+function deltaFor(row: ProductPrice) {
+  return priceDelta(row.price, productById.value.get(row.productId)?.sellingPrice)
+}
 
 async function load() {
   loading.value = true
   error.value = ''
   try {
     const res = await list({
+      productId: filter.productId,
       priceGroupId: filter.priceGroupId,
       sortBy: sort.value?.column,
       sortOrder: sort.value?.direction,
@@ -169,9 +220,27 @@ async function load() {
 }
 
 const formFields = computed<FieldDef[]>(() => [
-  { name: 'productId', label: 'Product', type: 'select', required: true, options: productOptions.value },
+  // combobox, not select: there are up to 500 products here and a plain
+  // dropdown makes you scroll for the one you want.
+  {
+    name: 'productId',
+    label: 'Product',
+    type: 'combobox',
+    required: true,
+    options: productOptions.value,
+    placeholder: 'Search products…'
+  },
   { name: 'priceGroupId', label: 'Price group', type: 'select', required: true, options: priceGroupOptions.value },
-  { name: 'price', label: 'Price', type: 'currency', required: true }
+  {
+    name: 'price',
+    label: 'Price',
+    type: 'currency',
+    required: true,
+    // The list price this replaces, and the unit it is per — both decide
+    // whether the number being typed is right, and neither is otherwise on
+    // screen while the modal is open.
+    hint: selectedProductPriceHint.value
+  }
 ])
 
 const {
@@ -206,16 +275,28 @@ const {
   }
 )
 
+// Declared after useCrudModals because it reads the open form. Both this and
+// formFields are lazy computeds, so the forward reference in formFields only
+// resolves at render time, by which point these exist.
+const selectedProductPriceHint = computed(() => {
+  const productId = showEdit.value ? editForm.value?.productId : createForm.value?.productId
+  const product = productId == null ? undefined : productById.value.get(Number(productId))
+  if (!product) return 'Overrides the product’s own selling price for this price group.'
+  const unit = product.unitOfMeasureAbbreviation ?? 'base unit'
+  return `List price ${product.sellingPrice.toFixed(2)} / ${unit}. Enter the tier price per ${unit}.`
+})
+
 onMounted(async () => {
   await loadLookups()
   await load()
 })
 watch(sort, load)
-watch(() => filter.priceGroupId, load)
+watch(() => [filter.productId, filter.priceGroupId], load)
 
-const hasActiveFilter = computed(() => search.value !== '' || filter.priceGroupId !== undefined)
+const hasActiveFilter = computed(() => search.value !== '' || filter.productId !== undefined || filter.priceGroupId !== undefined)
 function clearFilters() {
   search.value = ''
+  filter.productId = undefined
   filter.priceGroupId = undefined
   load()
 }

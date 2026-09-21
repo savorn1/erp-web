@@ -31,6 +31,54 @@ export function stoppedStatusMessage(status: string): string {
   return isStoppedStatus(status) ? (STOPPED_STATUSES[status] ?? '') : ''
 }
 
+/** The verb for a stopped status, for "Cancelled at Confirmed"-style labels. */
+export function stoppedVerb(status: string): string {
+  switch (status) {
+    case 'CANCELLED':
+      return 'Cancelled'
+    case 'REJECTED':
+      return 'Rejected'
+    case 'VOIDED':
+      return 'Voided'
+    case 'FAILED':
+      return 'Failed'
+    default:
+      return 'Stopped'
+  }
+}
+
+/**
+ * How each step should render.
+ *
+ * <p>`stopped` marks the step a cancelled/rejected document was sitting on
+ * when it ended — the one piece of information a bare status can't carry,
+ * since overwriting the status destroys it.
+ */
+export type WorkflowStepState = 'done' | 'current' | 'stopped' | 'pending'
+
+/**
+ * Per-step render state for a rail.
+ *
+ * <p>`stoppedAtIndex` is where a stopped document died: steps before it are
+ * `done`, that one is `stopped`, the rest are `pending`. Pass -1 (or omit the
+ * source field) when it isn't known — every step is then `pending`, which
+ * says "this workflow ended" without inventing progress it can't verify.
+ */
+export function workflowStepStates(
+  steps: WorkflowStep[],
+  { activeIndex, stopped, stoppedAtIndex }: { activeIndex: number; stopped: boolean; stoppedAtIndex: number }
+): WorkflowStepState[] {
+  return steps.map((_, index) => {
+    if (stopped) {
+      if (stoppedAtIndex < 0) return 'pending'
+      if (index < stoppedAtIndex) return 'done'
+      return index === stoppedAtIndex ? 'stopped' : 'pending'
+    }
+    if (index < activeIndex) return 'done'
+    return index === activeIndex ? 'current' : 'pending'
+  })
+}
+
 /**
  * Where `status` sits on `steps`, or -1 when it isn't on the rail at all.
  *

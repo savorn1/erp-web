@@ -115,12 +115,16 @@
             <USelect v-model="createSourceId" :items="invoiceableReceiptOptions" placeholder="Select a quality-checked receipt" class="w-full" />
           </UFormField>
 
-          <UFormField label="Invoice date" required>
-            <UInput v-model="createInvoiceDate" type="date" class="w-full" />
-          </UFormField>
-          <UFormField label="Due date">
-            <UInput v-model="createDueDate" type="date" class="w-full" />
-          </UFormField>
+          <!-- The only pair here that reads better side by side; the source
+               radio and its long option list still want the full width. -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <UFormField label="Invoice date" required>
+              <UInput v-model="createInvoiceDate" type="date" class="w-full" />
+            </UFormField>
+            <UFormField label="Due date">
+              <UInput v-model="createDueDate" type="date" class="w-full" />
+            </UFormField>
+          </div>
           <UFormField label="Notes">
             <UTextarea v-model="createNotes" class="w-full" />
           </UFormField>
@@ -144,6 +148,7 @@
             :status="viewingInvoice.status"
             :steps="invoiceWorkflowSteps"
             :next-hint="invoiceWorkflowHint(viewingInvoice.status)"
+            :stopped-at="viewingInvoice.cancelledFromStatus"
             class="mb-4"
           />
           <dl class="grid grid-cols-2 gap-3 text-sm mb-4">
